@@ -3,9 +3,10 @@ title: JOBLESS
 emoji: 🤖
 colorFrom: red
 colorTo: yellow
-sdk: static
+sdk: docker
 pinned: false
 license: mit
+docker_runtime: debian
 ---
 
 # JOBLESS - How fast is AI replacing human jobs?
