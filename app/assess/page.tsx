@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import {
   ArrowRight, Calendar, AlertTriangle, Shield, Target, Sparkles,
   Clock, BarChart3, CheckCircle2, ChevronRight, Database, FileText,
-  Workflow, Bot, TrendingUp, Eye, Info, Zap, Brain, Activity
+  Workflow, Bot, TrendingUp, Eye, Info, Zap, Brain, Activity,
+  History, Building2, Globe, Lightbulb
 } from 'lucide-react';
 import Link from 'next/link';
 import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
@@ -153,7 +154,29 @@ const translations = {
       'medium': 'Medium Risk',
       'high': 'High Risk',
       'critical': 'Critical Risk'
-    }
+    },
+
+    // 新增：AI发展水平相关
+    aiEvolution: 'AI Evolution: Where Are We?',
+    aiEvolutionDesc: 'Understanding the historical context helps predict your future',
+    evolutionStages: {
+      revolution1: 'Industrial Revolution (1760-1950)',
+      revolution1Desc: 'Machines replaced physical labor',
+      revolution2: 'Computer Revolution (1970s-2010s)',
+      revolution2Desc: 'Automation of routine cognitive tasks',
+      revolution3: 'AI Revolution (2015-Present)',
+      revolution3Desc: 'Generative AI conquers creative and analytical work',
+      currentStage: 'We are here: Cognitive automation wave'
+    },
+    industryInsight: 'Industry AI Impact Analysis',
+    industryInsightDesc: 'Research data on your industry\'s AI exposure',
+    modeAnalysis: 'Your Position: Substitution vs Augmentation',
+    modeAnalysisDesc: 'Based on your assessment, here\'s how AI will affect your role',
+    substitution: 'Complete Substitution',
+    augmentation: 'Human-AI Collaboration',
+    newTasks: 'New Task Creation',
+    researchSources: 'Research Sources',
+    researchSourcesList: 'MIT, Stanford, Goldman Sachs, McKinsey, WEF, ILO, OECD'
   },
   zh: {
     title: 'AI替代风险评估 V2',
@@ -294,7 +317,121 @@ const translations = {
       'medium': '中等风险',
       'high': '高风险',
       'critical': '极高风险'
-    }
+    },
+
+    // 新增：AI发展水平相关
+    aiEvolution: 'AI发展演变：我们现在在哪里？',
+    aiEvolutionDesc: '了解历史背景有助于预测你的未来',
+    evolutionStages: {
+      revolution1: '工业革命 (1760-1950)',
+      revolution1Desc: '机器替代体力劳动',
+      revolution2: '计算机革命 (1970s-2010s)',
+      revolution2Desc: '常规认知任务的自动化',
+      revolution3: 'AI革命 (2015-至今)',
+      revolution3Desc: '生成式AI攻克创造性及分析工作',
+      currentStage: '我们在这里：认知自动化浪潮'
+    },
+    industryInsight: '行业AI影响分析',
+    industryInsightDesc: '基于研究数据的行业AI暴露度分析',
+    modeAnalysis: '你的定位：替代 vs 增强',
+    modeAnalysisDesc: '基于你的评估，AI将如何影响你的职位',
+    substitution: '完全替代',
+    augmentation: '人机协作',
+    newTasks: '新任务创造',
+    researchSources: '研究来源',
+    researchSourcesList: '麻省理工学院、斯坦福大学、高盛、麦肯锡、世界经济论坛、国际劳工组织、经合组织'
+  }
+};
+
+// 行业AI影响分析数据
+const INDUSTRY_AI_DATA = {
+  tech: {
+    name: { en: 'Technology', zh: '科技/互联网' },
+    mode: { en: 'Structural Shift', zh: '结构性转变' },
+    modeDesc: { en: 'Junior positions compressed, Senior enhanced', zh: '初级职位压缩，高级职位增强' },
+    exposure: '75%',
+    trend: { en: 'GitHub Copilot: 56% productivity boost', zh: 'GitHub Copilot: 56%生产力提升' },
+    research: { en: 'Stanford 2025: Junior hiring down 16% in AI-exposed roles', zh: '斯坦福2025: AI高暴露职位初级招聘下降16%' }
+  },
+  finance: {
+    name: { en: 'Finance & Banking', zh: '金融/银行' },
+    mode: { en: 'Mixed: Low-end Replaced + High-end Enhanced', zh: '混合：低端替代+高端增强' },
+    modeDesc: { en: 'Algorithmic trading, automated analysis', zh: '算法交易、自动化分析' },
+    exposure: '50%',
+    trend: { en: 'Goldman Sachs: 6-7% jobs automatable', zh: '高盛: 6-7%工作可自动化' },
+    research: { en: 'AI handles data, humans handle trust', zh: 'AI处理数据，人类处理信任' }
+  },
+  healthcare: {
+    name: { en: 'Healthcare', zh: '医疗健康' },
+    mode: { en: 'Strong Augmentation', zh: '强增强模式' },
+    modeDesc: { en: 'AI assists diagnosis, reduces paperwork', zh: 'AI辅助诊断，减少文书工作' },
+    exposure: '30%',
+    trend: { en: 'BLS: Radiology +5% growth (2024-2034)', zh: 'BLS: 放射科+5%增长(2024-2034)' },
+    research: { en: 'High human interaction = strong protection', zh: '高人际交互=强保护' }
+  },
+  education: {
+    name: { en: 'Education', zh: '教育' },
+    mode: { en: 'Clear Enhancement', zh: '明确增强模式' },
+    modeDesc: { en: 'AI helps with grading, lesson planning', zh: 'AI辅助评分、教案设计' },
+    exposure: '25%',
+    trend: { en: '60% teachers use AI, save 5.9 hours/week', zh: '60%教师使用AI，每周节省5.9小时' },
+    research: { en: 'Emotional support irreplaceable', zh: '情感支持不可替代' }
+  },
+  marketing: {
+    name: { en: 'Marketing & Media', zh: '营销/媒体' },
+    mode: { en: 'Mixed: Low-end Replaced + Creative Enhanced', zh: '混合：低端替代+创意增强' },
+    modeDesc: { en: 'AI generates content, humans curate', zh: 'AI生成内容，人类策展' },
+    exposure: '60%',
+    trend: { en: 'Pew: 59% believe AI will reduce journalism jobs', zh: '皮尤: 59%认为AI将减少新闻工作' },
+    research: { en: 'High creativity in strategy still valued', zh: '高创意策略仍受重视' }
+  },
+  sales: {
+    name: { en: 'Sales', zh: '销售' },
+    mode: { en: 'Augmentation Dominant', zh: '增强主导' },
+    modeDesc: { en: 'AI assists research, humans close deals', zh: 'AI辅助研究，人类促成交易' },
+    exposure: '35%',
+    trend: { en: 'AI-powered lead scoring and CRM', zh: 'AI驱动的线索评分和客户管理' },
+    research: { en: 'Relationship building remains human domain', zh: '建立关系仍属人类领域' }
+  },
+  customerService: {
+    name: { en: 'Customer Service', zh: '客服' },
+    mode: { en: 'High Replacement Ratio', zh: '高替代率' },
+    modeDesc: { en: 'Chatbots handle 80% of standard queries', zh: '聊天机器人处理80%常规查询' },
+    exposure: '70%',
+    trend: { en: 'One of first sectors with significant reduction', zh: '首批显著减少的行业之一' },
+    research: { en: 'ILO: Highest complete automation risk', zh: 'ILO: 完全自动化风险最高' }
+  },
+  admin: {
+    name: { en: 'Administration', zh: '行政/文秘' },
+    mode: { en: 'High Replacement Ratio', zh: '高替代率' },
+    modeDesc: { en: 'AI handles scheduling, documents, data entry', zh: 'AI处理日程、文档、数据录入' },
+    exposure: '75%',
+    trend: { en: 'ILO: Clerical jobs at highest risk', zh: 'ILO: 文书类工作风险最高' },
+    research: { en: 'Women disproportionately affected', zh: '女性受影响不成比例' }
+  },
+  manufacturing: {
+    name: { en: 'Manufacturing', zh: '制造业' },
+    mode: { en: 'Human-Machine Collaboration', zh: '人机协作' },
+    modeDesc: { en: 'Workers shift to monitoring and maintenance', zh: '工人转向监控和维护' },
+    exposure: '45%',
+    trend: { en: 'BLS: Employment stable post-pandemic', zh: 'BLS: 疫情后就业稳定' },
+    research: { en: 'No mass layoffs observed', zh: '未观察到大规模裁员' }
+  },
+  legal: {
+    name: { en: 'Legal', zh: '法律' },
+    mode: { en: 'Augmentation with Caveats', zh: '有条件的增强' },
+    modeDesc: { en: 'AI researches case law, humans argue in court', zh: 'AI研究案例，人类出庭辩护' },
+    exposure: '40%',
+    trend: { en: 'Document review increasingly automated', zh: '文件审查日益自动化' },
+    research: { en: 'Ethical judgment and client trust remain human', zh: '伦理判断和客户信任仍属人类' }
+  },
+  other: {
+    name: { en: 'Other Industries', zh: '其他行业' },
+    mode: { en: 'Varies by Role', zh: '因职位而异' },
+    modeDesc: { en: 'Assess based on specific role characteristics', zh: '根据具体职位特征评估' },
+    exposure: '50%',
+    trend: { en: 'Individual assessment recommended', zh: '建议个别评估' },
+    research: { en: 'Consider your specific work context', zh: '考虑您的具体工作环境' }
   }
 };
 
@@ -838,6 +975,149 @@ export default function AssessPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* AI发展演变 - 新增 */}
+              <div className="bg-gradient-to-br from-surface-elevated/50 to-background rounded-2xl p-6 border border-surface-elevated">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                  <History className="w-5 h-5 text-primary" />
+                  {t.aiEvolution}
+                </h3>
+                <p className="text-sm text-foreground-muted mb-4">{t.aiEvolutionDesc}</p>
+
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                    <div className="w-8 h-8 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center flex-shrink-0 text-xs font-bold">1.0</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm">{t.evolutionStages.revolution1}</div>
+                      <div className="text-xs text-foreground-muted">{t.evolutionStages.revolution1Desc}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                    <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center flex-shrink-0 text-xs font-bold">2.0</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm">{t.evolutionStages.revolution2}</div>
+                      <div className="text-xs text-foreground-muted">{t.evolutionStages.revolution2Desc}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/10 border border-primary/30">
+                    <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center flex-shrink-0 text-xs font-bold animate-pulse">3.0</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-primary">{t.evolutionStages.revolution3}</div>
+                      <div className="text-xs text-foreground-muted">{t.evolutionStages.revolution3Desc}</div>
+                      <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                        </span>
+                        {t.evolutionStages.currentStage}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 行业AI影响分析 - 新增 */}
+              {formData.industry && INDUSTRY_AI_DATA[formData.industry as keyof typeof INDUSTRY_AI_DATA] && (
+                <div className="bg-surface rounded-2xl p-6 border border-surface-elevated">
+                  <h3 className="font-bold mb-4 flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-risk-high" />
+                    {t.industryInsight}
+                  </h3>
+                  <p className="text-sm text-foreground-muted mb-4">{t.industryInsightDesc}</p>
+
+                  {(() => {
+                    const industryData = INDUSTRY_AI_DATA[formData.industry as keyof typeof INDUSTRY_AI_DATA];
+                    return (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-3 rounded-lg bg-background/50">
+                            <div className="text-xs text-foreground-muted mb-1">{lang === 'en' ? 'Industry' : '行业'}</div>
+                            <div className="font-semibold">{industryData.name[lang]}</div>
+                          </div>
+                          <div className="p-3 rounded-lg bg-background/50">
+                            <div className="text-xs text-foreground-muted mb-1">{lang === 'en' ? 'AI Exposure' : 'AI暴露度'}</div>
+                            <div className="font-bold text-risk-high">{industryData.exposure}</div>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-gradient-to-r from-risk-high/10 to-risk-medium/10 border border-risk-high/20">
+                          <div className="text-xs text-foreground-muted mb-1">{lang === 'en' ? 'Mode' : '影响模式'}</div>
+                          <div className="font-bold text-risk-high mb-1">{industryData.mode[lang]}</div>
+                          <div className="text-xs text-foreground-muted">{industryData.modeDesc[lang]}</div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-background/50">
+                          <div className="text-xs text-foreground-muted mb-1">{lang === 'en' ? 'Key Trend' : '关键趋势'}</div>
+                          <div className="text-sm">{industryData.trend[lang]}</div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                          <div className="text-xs text-foreground-muted mb-1">{lang === 'en' ? 'Research Finding' : '研究发现'}</div>
+                          <div className="text-sm font-medium text-primary">{industryData.research[lang]}</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* 模式分析 - 新增 */}
+              <div className="bg-surface rounded-2xl p-6 border border-surface-elevated">
+                <h3 className="font-bold mb-4 flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-amber-500" />
+                  {t.modeAnalysis}
+                </h3>
+                <p className="text-sm text-foreground-muted mb-4">{t.modeAnalysisDesc}</p>
+
+                <div className="space-y-3">
+                  {/* 根据评估结果判断模式 */}
+                  {result.replacementProbability > 60 ? (
+                    <div className="p-4 rounded-lg bg-risk-high/10 border border-risk-high/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-5 h-5 text-risk-high" />
+                        <span className="font-bold text-risk-high">{t.substitution}</span>
+                      </div>
+                      <p className="text-sm text-foreground-muted">
+                        {lang === 'en'
+                          ? 'Your work has high standardization and digitization. AI is likely to directly replace a significant portion of your tasks. Focus on developing uniquely human skills like complex creativity and emotional intelligence.'
+                          : '你的工作具有高度标准化和数字化特征。AI很可能直接替代你大部分工作任务。建议专注于培养复杂创造力和情商等人类独有技能。'}
+                      </p>
+                    </div>
+                  ) : result.replacementProbability > 30 ? (
+                    <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Brain className="w-5 h-5 text-amber-500" />
+                        <span className="font-bold text-amber-500">{t.augmentation}</span>
+                      </div>
+                      <p className="text-sm text-foreground-muted">
+                        {lang === 'en'
+                          ? 'AI will enhance your productivity but may reduce demand for junior roles. Learn to leverage AI tools and focus on high-value tasks like strategy, creativity, and relationship building.'
+                          : 'AI将提升你的生产力，但可能减少对初级职位的需求。学习利用AI工具，专注于战略、创意和关系建立等高价值任务。'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg bg-risk-low/10 border border-risk-low/30">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="w-5 h-5 text-risk-low" />
+                        <span className="font-bold text-risk-low">{t.newTasks}</span>
+                      </div>
+                      <p className="text-sm text-foreground-muted">
+                        {lang === 'en'
+                          ? 'Your role involves strong human interaction, creativity, or physical operation. AI is more likely to create new opportunities than replace your job. Focus on areas where human judgment and trust are essential.'
+                          : '你的职位涉及强人际交互、创造力或物理操作。AI更可能创造新机会而非替代你的工作。专注于人类判断和信任至关重要的领域。'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 研究来源 - 新增 */}
+              <div className="text-center py-4">
+                <p className="text-xs text-foreground-muted mb-1">{t.researchSources}</p>
+                <p className="text-xs text-foreground-muted font-medium">{t.researchSourcesList}</p>
               </div>
 
               {/* 重新开始 */}
