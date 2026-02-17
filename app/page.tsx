@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Area, AreaChart } from 'recharts';
-import { AlertTriangle, TrendingUp, Users, Clock, Search, Shield, Zap, Target, Skull, Flame, Building2, Calendar, AlertCircle, Languages, Cpu, Sparkles, Bot } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Users, Clock, Search, Shield, Zap, Target, Skull, Flame, Building2, Calendar, AlertCircle, Languages, Cpu, Sparkles, Bot, ClipboardCheck, Database, FileText, Workflow, Activity, Eye, ChevronRight, CheckCircle2, BarChart3, Brain, ArrowUpRight, History, RefreshCw, TrendingDown, Info } from 'lucide-react';
+import Link from 'next/link';
+import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
 
 // 语言类型
 type Language = 'en' | 'zh';
@@ -103,7 +105,7 @@ const translations = {
     highRiskTitle: "AI's First Targets: High-Risk Jobs",
     highRiskSubtitle: "If your job appears on this list, you need to be nervous",
     industry: 'Industry',
-    riskLevel: 'Risk Level',
+    tableRiskLevel: 'Risk Level',
     highRiskJobs: 'High-Risk Jobs',
     evidence: 'Evidence & Trend',
     pickSoftTargets: "AI doesn't affect everyone equally—it picks the soft targets first.",
@@ -118,32 +120,79 @@ const translations = {
     oneInTwenty: 'In 2025, about 1 in 20 layoffs officially cited AI as the reason.',
     source: 'Source: Layoff tracking reports, 2024-2025',
 
-    // 生存指数
-    survivalTitle: 'Calculate: Your AI Survival Index',
-    survivalSubtitle: 'Stop asking "Will AI replace me?" Ask "When will it be my turn?"',
-    q1: "How much of your daily work involves repetitive documents, reports, emails, spreadsheets?",
-    q1High: 'Over 50%',
-    q1Options: ['Less than 20%', '20-50%', 'Over 50%'],
-    q2: "Does your industry frequently use these terms in presentations?",
-    q2High: 'Appears frequently',
-    q2Options: ['Rarely', 'Sometimes', 'Frequently'],
-    q2Keywords: ['Automation', 'AI empowerment', 'Cost reduction', 'Efficiency revolution'],
-    q3: "Has anyone in your company left due to 'restructuring' or 'optimization'?",
-    q3High: 'Yes, recently',
-    q3Options: ['No', 'Yes, a while ago', 'Yes, recently'],
+    // 生存指数 V2
+    survivalTitle: 'Calculate: Your AI Replacement Risk',
+    survivalSubtitle: 'Four dimensions, three metrics, data-driven answers',
+    coreDimensions: 'Four Core Dimensions',
+    // 新的四个维度
+    dim1Title: 'Data Openness',
+    dim1Desc: 'How accessible is the data needed for your work?',
+    dim1Low: 'Closed/Proprietary',
+    dim1High: 'Open/Public',
+    dim1Detail: 'Training data availability determines AI learning speed',
+    dim2Title: 'Work Data Digitalization',
+    dim2Desc: 'How digitized is your work input/output?',
+    dim2Low: 'Mostly Physical',
+    dim2High: 'Fully Digital',
+    dim2Detail: 'Digital work is easier for AI to process',
+    dim3Title: 'Process Standardization',
+    dim3Desc: 'How standardized are your work processes?',
+    dim3Low: 'Highly Variable',
+    dim3High: 'Standardized',
+    dim3Detail: 'Standardized processes are easier to automate',
+    dim4Title: 'Current AI Problem-Solving',
+    dim4Desc: 'What % of your work can AI already handle?',
+    dim4Low: '0%',
+    dim4High: '100%',
+    dim4Detail: 'Current adoption shows proven AI capability',
+    // 额外保护因素（可选）
+    protectiveFactors: 'Protective Factors (Optional)',
+    ctx1Title: 'Creative Requirement',
+    ctx1Desc: 'How much creativity does your work require?',
+    ctx2Title: 'Human Interaction',
+    ctx2Desc: 'How much person-to-person interaction?',
+    ctx3Title: 'Physical Operation',
+    ctx3Desc: 'Does your work require physical manipulation?',
+    // 按钮和结果
+    toggleOptional: 'Show Optional Factors',
+    toggleRequired: 'Back to Core Dimensions',
     calculate: 'Calculate My Risk',
+    // 三个核心指标
+    threeMetrics: 'Your Three Core Metrics',
+    metric1Title: 'Replacement Probability',
+    metric1Desc: 'Likelihood AI will replace your job',
+    metric2Title: 'Predicted Year',
+    metric2Desc: 'When AI will significantly impact your job',
+    metric3Title: 'Current Degree',
+    metric3Desc: 'How much AI can already do now',
+    yearRange: 'Prediction Range',
+    riskLevel: 'Risk Level',
+    insights: 'Key Insights',
+    primaryDriver: 'Primary Risk Driver',
+    secondaryFactors: 'Contributing Factors',
+    protectionFactors: 'Protective Factors',
+    recommendations: 'Recommendations',
+    recalculate: 'Recalculate',
     yourRisk: 'AI Replacement Risk',
     realityCheck: 'Reality check:',
     realityCheckText: 'AI won\'t make you unemployed overnight. First, it will quietly take over the most replaceable parts of your work—until you realize, what\'s left isn\'t worth a full-time salary.',
     notTalkShow: 'This isn\'t a talk show. This is a timeline.',
     decideYear: 'What decides which year you become unemployed isn\'t AI—it\'s when you start preparing.',
+    detailedAssessment: 'Get Detailed Assessment →',
+    detailedAssessmentDesc: 'Want a personalized prediction with specific timeline and recommendations?',
+    // 风险等级
+    riskVeryLow: 'Very Low Risk',
+    riskLow: 'Low Risk',
+    riskMedium: 'Medium Risk',
+    riskHigh: 'High Risk',
+    riskCritical: 'Critical Risk',
 
     // Footer
     title: 'JOBLESS',
     tagline: 'AI Era Job Observation Platform',
     dataSources: 'Data Sources:',
-    sources: 'MIT Study, McKinsey Global Institute, World Economic Forum',
-    sources2: 'CNBC, Fortune, Forbes, Exploding Topics',
+    sources: 'MIT, McKinsey, WEF, PwC, Goldman Sachs, OECD, BLS, ILO',
+    sources2: 'Stanford Digital Economy Lab, Gallup, World Bank',
     disclaimer: 'This website data is for reference only and does not constitute investment or career advice.',
     disclaimer2: 'All statistics cited from public research reports and news sources.',
 
@@ -152,6 +201,112 @@ const translations = {
     techAgent: 'Agent',
     techSkills: 'Skills',
     techAgentic: 'Agentic AI',
+
+    // 新增：历史脉络章节
+    historyTitle: 'History Shows: Technology Always Reshapes Work',
+    historySubtitle: 'Every technological revolution creates winners and losers. The question is: where will you stand?',
+    historyPeriod1: 'Mechanization (1850-1950)',
+    historyPeriod1Desc: 'Steam and machines replaced farm labor → Manufacturing boom',
+    historyPeriod2: 'Computerization (1970-2000)',
+    historyPeriod2Desc: 'Office automation → Job polarization: middle-skill jobs declined',
+    historyPeriod3: 'Early AI (2000-2015)',
+    historyPeriod3Desc: 'Task-level automation → Jobs redesigned, not eliminated',
+    historyPeriod4: 'Generative AI (2015-Present)',
+    historyPeriod4Desc: 'From analysis to creation → High-skill work now affected',
+    historyLesson: 'The Pattern:',
+    historyLessonText: 'Jobs change, but those who adapt survive. The difference this time: AI learns faster than any technology before.',
+
+    // 新增：净就业效应章节
+    netImpactTitle: 'The Full Picture: Displacement vs Creation',
+    netImpactSubtitle: 'WEF predicts 92M jobs lost, but 170M new jobs created. Net: +78M.',
+    wefData: 'WEF Future of Jobs 2025',
+    wefDisplaced: '92M displaced',
+    wefCreated: '170M new jobs',
+    wefNet: '+78M net gain',
+    wefPeriod: '2025-2030',
+    pwcData: 'PwC Global AI Jobs Barometer',
+    pwcExposedGrowth: 'AI-exposed jobs: +38% growth',
+    pwcNonExposedGrowth: 'Non-exposed jobs: +65% growth',
+    pwcWagePremium: 'AI skills wage premium: +56%',
+    mitSloanData: 'MIT Sloan Study',
+    mitSloanFinding: 'AI adoption correlates with +6% employment growth',
+    oecdData: 'OECD Survey 2024',
+    oecdFinding: '4/5 workers say AI improved their performance',
+    theReality: 'The Reality:',
+    theRealityText: 'Structural reshuffling, not total collapse. New jobs > displaced jobs, but transition pain is real.',
+
+    // 新增：行业深度分析章节
+    industryDiveTitle: 'Industry Deep Dive: 7 Sectors, Different Fates',
+    industryDiveSubtitle: 'AI affects every industry differently. Know your sector\'s pattern.',
+    tabManufacturing: 'Manufacturing',
+    tabFinance: 'Finance',
+    tabHealthcare: 'Healthcare',
+    tabEducation: 'Education',
+    tabMedia: 'Media & Content',
+    tabCustomerService: 'Customer Service',
+    tabSoftware: 'Software Dev',
+
+    // 制造业
+    manufTitle: 'Manufacturing',
+    manufMode: 'Human-Machine Collaboration',
+    manufDesc: 'Workers shift from operation to monitoring and maintenance',
+    manufJobs: 'Quality inspection, equipment monitoring, process optimization',
+    manufTrend: 'No mass layoffs observed. Employment stable in post-pandemic recovery.',
+    manufSource: 'Source: BLS Manufacturing Trends 2025',
+
+    // 金融
+    financeTitle: 'Finance & Banking',
+    financeMode: 'Mixed: Low-end Replaced + High-end Enhanced',
+    financeDesc: 'Algorithmic trading, automated credit scoring, AI advisory',
+    financeJobs: 'Junior analysts, loan officers, compliance staff',
+    financeTrend: 'Goldman Sachs: 6-7% jobs replacable in baseline scenario',
+    financeSource: 'Source: Goldman Sachs Economic Research',
+
+    // 医疗
+    healthcareTitle: 'Healthcare',
+    healthcareMode: 'Strong Augmentation, Weak Replacement',
+    healthcareDesc: 'AI assists diagnosis, medical coding, patient triage',
+    healthcareJobs: 'Radiologists, medical records, diagnostic support',
+    healthcareTrend: 'BLS predicts radiology +5% growth (2024-2034), above average',
+    healthcareSource: 'Source: CNN/BLS Employment Projections',
+
+    // 教育
+    eduTitle: 'Education',
+    eduMode: 'Clear Enhancement',
+    eduDesc: 'AI helps with grading, lesson planning, personalized tutoring',
+    eduJobs: 'K-12 teachers, university faculty, corporate trainers',
+    eduTrend: '60% of teachers use AI, saving 5.9 hours/week',
+    eduSource: 'Source: Gallup Education Poll 2024-2025',
+
+    // 媒体
+    mediaTitle: 'Media & Content',
+    mediaMode: 'Mixed: Low-end Replaced + Creative Enhanced',
+    mediaDesc: 'AI generates content at scale, humans curate and direct',
+    mediaJobs: 'Copywriters, basic designers, video editors',
+    mediaTrend: 'WGA strike 2023 highlighted AI concerns, but industry continues growing',
+    mediaSource: 'Source: WEF Media & Entertainment Report',
+
+    // 客服
+    csTitle: 'Customer Service',
+    csMode: 'High Replacement Ratio',
+    csDesc: 'Chatbots handle 80% of standard queries by 2025',
+    csJobs: 'Phone support, online chat, Tier-1 support',
+    csTrend: 'One of the first sectors with significant job reduction',
+    csSource: 'Source: Okoone AI Trends 2025',
+
+    // 软件开发
+    softTitle: 'Software Development',
+    softMode: 'Structural Shift: Junior Compressed, Senior Enhanced',
+    softDesc: 'AI code assistants boost productivity, reducing junior demand',
+    softJobs: 'Junior developers, QA engineers, basic coders',
+    softTrend: 'Young devs (-20%), but overall +17.9% growth predicted (2023-2033)',
+    softSource: 'Source: Stanford Digital Economy Lab & BLS',
+
+    // 模式标签
+    modeHighReplacement: 'High Replacement',
+    modeMixed: 'Mixed Impact',
+    modeAugmentation: 'Strong Augmentation',
+    modeCollaboration: 'Collaboration',
   },
   zh: {
     // 首屏
@@ -246,7 +401,7 @@ const translations = {
     highRiskTitle: 'AI 的第一批猎物：高危行业与岗位清单',
     highRiskSubtitle: '如果你的工作出现在这张表里，你需要紧张',
     industry: '行业',
-    riskLevel: '风险等级',
+    tableRiskLevel: '风险等级',
     highRiskJobs: '典型高危岗位',
     evidence: '证据与趋势',
     pickSoftTargets: 'AI 不会平均地影响所有人，它是"挑软柿子捏"的。',
@@ -261,32 +416,79 @@ const translations = {
     oneInTwenty: '2025 年约 1/20 的裁员在官方理由中点名 AI。',
     source: '来源：裁员追踪报告，2024-2025',
 
-    // 生存指数
-    survivalTitle: '算一算：你的 AI 生存指数',
-    survivalSubtitle: '别再问"AI 会不会替代我"，问："什么时候轮到我"',
-    q1: '你的日常工作中，有多少时间在处理重复性的文档、报表、邮件、表格？',
-    q1High: '超过 50%',
-    q1Options: ['少于 20%', '20-50%', '超过 50%'],
-    q2: '你所在行业是否频繁使用这些词汇？',
-    q2High: '频繁出现',
-    q2Options: ['很少', '有时', '频繁'],
-    q2Keywords: ['自动化', 'AI 赋能', '降本增效', '效率革命'],
-    q3: '你公司里是否有人因为"业务重组""优化结构"而离开？',
-    q3High: '是的，最近',
-    q3Options: ['没有', '是的，之前', '是的，最近'],
+    // 生存指数 V2
+    survivalTitle: '算一算：你的 AI 替代风险',
+    survivalSubtitle: '四个维度，三个指标，数据驱动答案',
+    coreDimensions: '四个核心维度',
+    // 新的四个维度
+    dim1Title: '数据开放程度',
+    dim1Desc: '你工作所需的数据可获取性如何？',
+    dim1Low: '封闭/私有',
+    dim1High: '开放/公开',
+    dim1Detail: '训练数据的可获得性决定 AI 学习速度',
+    dim2Title: '工作数据数字化',
+    dim2Desc: '你的工作输入/输出数字化程度如何？',
+    dim2Low: '主要依赖实体',
+    dim2High: '完全数字化',
+    dim2Detail: '数字化工作更容易被 AI 处理',
+    dim3Title: '流程标准化',
+    dim3Desc: '你的工作流程标准化程度如何？',
+    dim3Low: '高度变化',
+    dim3High: '标准化',
+    dim3Detail: '标准化流程更容易自动化',
+    dim4Title: '当前 AI 解决问题占比',
+    dim4Desc: 'AI 目前能处理你工作的百分之多少？',
+    dim4Low: '0%',
+    dim4High: '100%',
+    dim4Detail: '当前采用率反映已验证的 AI 能力',
+    // 额外保护因素（可选）
+    protectiveFactors: '保护因素（可选）',
+    ctx1Title: '创造性要求',
+    ctx1Desc: '你的工作需要多少创造力？',
+    ctx2Title: '人际交互',
+    ctx2Desc: '需要多少人与人之间的互动？',
+    ctx3Title: '物理操作',
+    ctx3Desc: '你的工作是否需要物理操作？',
+    // 按钮和结果
+    toggleOptional: '显示可选因素',
+    toggleRequired: '返回核心维度',
     calculate: '计算我的风险',
+    // 三个核心指标
+    threeMetrics: '你的三个核心指标',
+    metric1Title: '被 AI 替代的概率',
+    metric1Desc: 'AI 替代你工作的可能性',
+    metric2Title: '预测年份',
+    metric2Desc: 'AI 显著影响你工作的时间',
+    metric3Title: '当前程度',
+    metric3Desc: 'AI 目前能完成多少',
+    yearRange: '预测范围',
+    riskLevel: '风险等级',
+    insights: '关键洞察',
+    primaryDriver: '主要风险驱动因素',
+    secondaryFactors: '次要因素',
+    protectionFactors: '保护因素',
+    recommendations: '行动建议',
+    recalculate: '重新计算',
     yourRisk: 'AI 替代风险',
     realityCheck: '现实检查：',
     realityCheckText: 'AI 不会"一天之内"让你失业，它会先悄悄拿走你工作里最好替代的那一部分——等你发现，剩下那点工作，已经不值一个全职工资了。',
     notTalkShow: '这不是访谈节目，这是时间轴。',
     decideYear: '决定你站在哪一年失业的，不是 AI，而是你什么时候开始准备。',
+    detailedAssessment: '获取详细评估 →',
+    detailedAssessmentDesc: '想要个性化的时间预测和具体建议？',
+    // 风险等级
+    riskVeryLow: '极低风险',
+    riskLow: '低风险',
+    riskMedium: '中等风险',
+    riskHigh: '高风险',
+    riskCritical: '极高风险',
 
     // Footer
     title: 'JOBLESS',
     tagline: 'AI 时代就业观察平台',
     dataSources: '数据来源：',
-    sources: 'MIT 研究、麦肯锡全球研究院、世界经济论坛',
-    sources2: 'CNBC、Fortune、Forbes、Exploding Topics',
+    sources: 'MIT、麦肯锡、WEF、PwC、高盛、OECD、BLS、ILO',
+    sources2: '斯坦福数字经济实验室、Gallup、世界银行',
     disclaimer: '本网站数据仅供参考，不构成投资或职业建议。',
     disclaimer2: '所有统计数据引用自公开研究报告和新闻来源。',
 
@@ -295,6 +497,112 @@ const translations = {
     techAgent: '智能体',
     techSkills: '技能',
     techAgentic: '智能体 AI',
+
+    // 新增：历史脉络章节
+    historyTitle: '历史证明：技术总在重塑工作',
+    historySubtitle: '每次技术革命都有赢家和输家。问题是：你会站在哪一边？',
+    historyPeriod1: '机械化时代 (1850-1950)',
+    historyPeriod1Desc: '蒸汽机和机器取代农场劳动力 → 制造业繁荣',
+    historyPeriod2: '计算机化时代 (1970-2000)',
+    historyPeriod2Desc: '办公自动化 → 就业两极化：中等技能岗位减少',
+    historyPeriod3: '早期 AI (2000-2015)',
+    historyPeriod3Desc: '任务级自动化 → 岗位重构而非消失',
+    historyPeriod4: '生成式 AI (2015-至今)',
+    historyPeriod4Desc: '从分析到创作 → 高技能工作受影响',
+    historyLesson: '规律：',
+    historyLessonText: '工作会改变，但适应的人能生存。这次的不同：AI比任何技术都学得更快。',
+
+    // 新增：净就业效应章节
+    netImpactTitle: '全貌：替代 vs 创造',
+    netImpactSubtitle: 'WEF 预测 9200 万岗位流失，但 1.7 亿新岗位被创造。净增：+7800 万。',
+    wefData: 'WEF 就业未来报告 2025',
+    wefDisplaced: '9200 万被替代',
+    wefCreated: '1.7 亿新岗位',
+    wefNet: '+7800 万净增长',
+    wefPeriod: '2025-2030',
+    pwcData: 'PwC 全球 AI 就业晴雨表',
+    pwcExposedGrowth: 'AI暴露岗位：+38% 增长',
+    pwcNonExposedGrowth: '非暴露岗位：+65% 增长',
+    pwcWagePremium: 'AI技能工资溢价：+56%',
+    mitSloanData: 'MIT 斯隆商学院研究',
+    mitSloanFinding: 'AI采用与企业就业增长 +6% 相关',
+    oecdData: 'OECD 2024 调查',
+    oecdFinding: '4/5 工人说 AI 提升了他们的工作表现',
+    theReality: '现实：',
+    theRealityText: '结构性洗牌，而非全面崩盘。新岗位 > 被替代岗位，但转型痛苦是真实的。',
+
+    // 新增：行业深度分析章节
+    industryDiveTitle: '行业深度分析：7个行业，不同命运',
+    industryDiveSubtitle: 'AI对不同行业影响不同。了解你所在行业的模式。',
+    tabManufacturing: '制造业',
+    tabFinance: '金融',
+    tabHealthcare: '医疗',
+    tabEducation: '教育',
+    tabMedia: '媒体内容',
+    tabCustomerService: '客服',
+    tabSoftware: '软件开发',
+
+    // 制造业
+    manufTitle: '制造业',
+    manufMode: '人机协作增强',
+    manufDesc: '工人从操作转向监控和维护',
+    manufJobs: '质检、设备监控、流程优化',
+    manufTrend: '未观察到大规模裁员。疫情后就业稳定恢复。',
+    manufSource: '来源：BLS 制造业趋势 2025',
+
+    // 金融
+    financeTitle: '金融银行业',
+    financeMode: '混合：低端替代 + 高端增强',
+    financeDesc: '算法交易、自动信贷评分、AI 投顾',
+    financeJobs: '初级分析师、信贷员、合规人员',
+    financeTrend: '高盛：基准情景下 6-7% 岗位可被替代',
+    financeSource: '来源：高盛经济研究',
+
+    // 医疗
+    healthcareTitle: '医疗健康',
+    healthcareMode: '强增强、弱替代',
+    healthcareDesc: 'AI 辅助诊断、医疗编码、患者分诊',
+    healthcareJobs: '放射科医生、病历管理、诊断辅助',
+    healthcareTrend: 'BLS 预测放射科 +5% 增长 (2024-2034)，高于平均',
+    healthcareSource: '来源：CNN/BLS 就业预测',
+
+    // 教育
+    eduTitle: '教育',
+    eduMode: '明显增强',
+    eduDesc: 'AI 帮助批改作业、备课、个性化辅导',
+    eduJobs: '中小学教师、大学教师、企业培训师',
+    eduTrend: '60% 教师使用 AI，每周节省 5.9 小时',
+    eduSource: '来源：Gallup 教育民调 2024-2025',
+
+    // 媒体
+    mediaTitle: '媒体与内容',
+    mediaMode: '混合：低端替代 + 创意增强',
+    mediaDesc: 'AI 大规模生成内容，人类策展和导演',
+    mediaJobs: '文案、基础设计、视频剪辑',
+    mediaTrend: '2023 年编剧罢工突显 AI 焦虑，但行业持续增长',
+    mediaSource: '来源：WEF 媒体与娱乐报告',
+
+    // 客服
+    csTitle: '客户服务',
+    csMode: '高比例替代',
+    csDesc: '到 2025 年，聊天机器人可处理 80% 标准询问',
+    csJobs: '电话客服、在线客服、一级支持',
+    csTrend: '首批显著减少就业的领域之一',
+    csSource: '来源：Okoone AI 趋势 2025',
+
+    // 软件开发
+    softTitle: '软件开发',
+    softMode: '结构性洗牌：初级压缩、资深增强',
+    softDesc: 'AI 代码助手提升效率，降低初级人力需求',
+    softJobs: '初级开发者、QA 工程师、基础编码',
+    softTrend: '年轻开发者 -20%，但整体预测 +17.9% 增长 (2023-2033)',
+    softSource: '来源：斯坦福数字经济实验室 & BLS',
+
+    // 模式标签
+    modeHighReplacement: '高替代',
+    modeMixed: '混合影响',
+    modeAugmentation: '强增强',
+    modeCollaboration: '协作',
   },
 };
 
@@ -311,16 +619,127 @@ const layoffCases = [
   { company: { en: 'Tech Sector', zh: '科技行业' }, layoffs: '276,000+', reason: { en: 'AI-driven restructuring', zh: 'AI 驱动的重组' }, industry: { en: '2024-25', zh: '2024-25' } },
 ];
 
-// 高风险职业
+// 高风险职业 - 包含替代/增强模式
 const highRiskJobs = [
-  { industry: { en: 'Customer Service', zh: '客服/呼叫中心' }, risk: 95, jobs: { en: 'Phone support, Online chat', zh: '电话客服、在线客服' }, reason: { en: 'AI handles 70% of standard queries', zh: 'AI 可处理 70% 标准问答' } },
-  { industry: { en: 'Admin / Support', zh: '行政/文秘' }, risk: 90, jobs: { en: 'Assistants, Data entry', zh: '助理、数据录入' }, reason: { en: 'Part of MIT\'s 11.7%', zh: 'MIT 11.7% 的重要组成部分' } },
-  { industry: { en: 'Finance / Accounting', zh: '金融/会计' }, risk: 75, jobs: { en: 'Junior analysts', zh: '初级分析师' }, reason: { en: '30-70% tasks AI-handled', zh: '30-70% 任务可由 AI 处理' } },
-  { industry: { en: 'Manufacturing', zh: '制造业' }, risk: 70, jobs: { en: 'Quality inspection', zh: '质检员' }, reason: { en: '80%+ QC automated', zh: '80%+ 质检已自动化' } },
-  { industry: { en: 'Logistics', zh: '物流/仓储' }, risk: 65, jobs: { en: 'Sorting, Scheduling', zh: '分拣、调度' }, reason: { en: 'UPS cutting 30,000 jobs', zh: 'UPS 计划削减 3 万岗位' } },
-  { industry: { en: 'Media / Content', zh: '媒体/内容' }, risk: 55, jobs: { en: 'Copywriting', zh: '文案写作' }, reason: { en: 'AI generates at scale', zh: 'AI 大规模生成内容' } },
-  { industry: { en: 'Legal Services', zh: '法律服务' }, risk: 40, jobs: { en: 'Contract review', zh: '合同初审' }, reason: { en: 'AI handles routine work', zh: 'AI 处理常规工作' } },
-  { industry: { en: 'Healthcare', zh: '医疗(非面对面)' }, risk: 30, jobs: { en: 'Imaging, Records', zh: '影像、病历' }, reason: { en: 'AI diagnosis improving', zh: 'AI 诊断准确率提升' } },
+  { industry: { en: 'Customer Service', zh: '客服/呼叫中心' }, risk: 95, mode: 'high-replacement', jobs: { en: 'Phone support, Online chat', zh: '电话客服、在线客服' }, reason: { en: 'AI handles 80% of standard queries by 2025', zh: '2025年AI可处理80%标准问答' } },
+  { industry: { en: 'Admin / Support', zh: '行政/文秘' }, risk: 90, mode: 'high-replacement', jobs: { en: 'Assistants, Data entry', zh: '助理、数据录入' }, reason: { en: 'Part of MIT\'s 11.7%', zh: 'MIT 11.7% 的重要组成部分' } },
+  { industry: { en: 'Software Development', zh: '软件开发' }, risk: 45, mode: 'mixed', jobs: { en: 'Junior developers', zh: '初级开发者' }, reason: { en: 'Young devs -20%, but overall +17.9% growth', zh: '年轻开发者-20%，但整体增长+17.9%' } },
+  { industry: { en: 'Finance / Accounting', zh: '金融/会计' }, risk: 65, mode: 'mixed', jobs: { en: 'Junior analysts', zh: '初级分析师' }, reason: { en: 'Entry-level at risk, high-level enhanced', zh: '入门级有风险，高级岗位增强' } },
+  { industry: { en: 'Manufacturing', zh: '制造业' }, risk: 55, mode: 'collaboration', jobs: { en: 'Quality inspection, Monitoring', zh: '质检、监控' }, reason: { en: 'Human-machine collaboration, no mass layoffs', zh: '人机协作，无大规模裁员' } },
+  { industry: { en: 'Education', zh: '教育' }, risk: 20, mode: 'augmentation', jobs: { en: 'K-12 Teachers', zh: '中小学教师' }, reason: { en: 'BLS predicts +5% growth (2024-2034)', zh: 'BLS预测+5%增长(2024-2034)' } },
+  { industry: { en: 'Healthcare (Radiology)', zh: '医疗(放射科)' }, risk: 15, mode: 'augmentation', jobs: { en: 'Radiologists', zh: '放射科医生' }, reason: { en: 'BLS predicts +5% growth, AI as assistant', zh: 'BLS预测+5%增长，AI作为助手' } },
+  { industry: { en: 'Media / Content', zh: '媒体/内容' }, risk: 50, mode: 'mixed', jobs: { en: 'Copywriting, Basic design', zh: '文案、基础设计' }, reason: { en: 'Low-end replaced, creative enhanced', zh: '低端被替代，创意岗位增强' } },
+];
+
+// 模式标签颜色和图标映射
+const modeConfig: Record<string, { color: string; label: { en: string; zh: string }; icon: any }> = {
+  'high-replacement': { color: '#ff2d37', label: { en: '🔴 High Replacement', zh: '🔴 高替代' }, icon: AlertTriangle },
+  'mixed': { color: '#ff9500', label: { en: '🟡 Mixed Impact', zh: '🟡 混合影响' }, icon: RefreshCw },
+  'collaboration': { color: '#30d158', label: { en: '🟢 Collaboration', zh: '🟢 协作' }, icon: Users },
+  'augmentation': { color: '#30d158', label: { en: '🟢 Strong Augmentation', zh: '🟢 强增强' }, icon: TrendingUp },
+};
+
+// 净就业效应数据
+const netImpactData = [
+  {
+    source: { en: 'WEF Future of Jobs 2025', zh: 'WEF 就业未来报告 2025' },
+    displaced: '92M',
+    created: '170M',
+    net: '+78M',
+    period: '2025-2030',
+    color: '#30d158'
+  },
+  {
+    source: { en: 'PwC Global AI Jobs Barometer', zh: 'PwC 全球 AI 就业晴雨表' },
+    exposedGrowth: '38%',
+    nonExposedGrowth: '65%',
+    wagePremium: '56%',
+    color: '#64d2ff'
+  },
+  {
+    source: { en: 'MIT Sloan Study', zh: 'MIT 斯隆研究' },
+    finding: { en: '+6% employment growth with AI', zh: 'AI 采用企业就业 +6% 增长' },
+    color: '#0a84ff'
+  },
+  {
+    source: { en: 'OECD Survey 2024', zh: 'OECD 2024 调查' },
+    finding: { en: '4/5 workers say AI helps', zh: '4/5 工人说 AI 有帮助' },
+    color: '#30d158'
+  },
+];
+
+// 行业深度分析数据
+const industryDiveData = [
+  {
+    id: 'manufacturing',
+    title: { en: 'Manufacturing', zh: '制造业' },
+    mode: 'collaboration',
+    color: '#30d158',
+    desc: { en: 'Human-machine collaboration', zh: '人机协作增强' },
+    jobs: { en: 'Quality inspection, monitoring', zh: '质检、监控' },
+    trend: { en: 'No mass layoffs, stable employment', zh: '无大规模裁员，就业稳定' },
+    source: { en: 'BLS Manufacturing Trends 2025', zh: 'BLS 制造业趋势 2025' }
+  },
+  {
+    id: 'finance',
+    title: { en: 'Finance & Banking', zh: '金融银行业' },
+    mode: 'mixed',
+    color: '#ff9500',
+    desc: { en: 'Low-end replaced, high-end enhanced', zh: '低端替代、高端增强' },
+    jobs: { en: 'Junior analysts, loan officers', zh: '初级分析师、信贷员' },
+    trend: { en: '6-7% jobs replacable (Goldman Sachs)', zh: '6-7%可替代（高盛）' },
+    source: { en: 'Goldman Sachs Economic Research', zh: '高盛经济研究' }
+  },
+  {
+    id: 'healthcare',
+    title: { en: 'Healthcare', zh: '医疗健康' },
+    mode: 'augmentation',
+    color: '#30d158',
+    desc: { en: 'Strong augmentation, weak replacement', zh: '强增强、弱替代' },
+    jobs: { en: 'Radiologists, diagnostic support', zh: '放射科、诊断辅助' },
+    trend: { en: '+5% growth predicted (2024-2034)', zh: '预测 +5% 增长 (2024-2034)' },
+    source: { en: 'CNN/BLS Employment Projections', zh: 'CNN/BLS 就业预测' }
+  },
+  {
+    id: 'education',
+    title: { en: 'Education', zh: '教育' },
+    mode: 'augmentation',
+    color: '#30d158',
+    desc: { en: 'Clear enhancement', zh: '明显增强' },
+    jobs: { en: 'K-12 teachers, faculty', zh: '中小学教师、大学教师' },
+    trend: { en: '60% use AI, save 5.9hrs/week', zh: '60%使用AI，每周省5.9小时' },
+    source: { en: 'Gallup Education Poll 2024-2025', zh: 'Gallup 教育民调 2024-2025' }
+  },
+  {
+    id: 'media',
+    title: { en: 'Media & Content', zh: '媒体内容' },
+    mode: 'mixed',
+    color: '#ff9500',
+    desc: { en: 'Low-end replaced, creative enhanced', zh: '低端被替代，创意增强' },
+    jobs: { en: 'Copywriters, basic designers', zh: '文案、基础设计' },
+    trend: { en: 'Industry growing despite AI', zh: '尽管有AI，行业仍在增长' },
+    source: { en: 'WEF Media Report 2025', zh: 'WEF 媒体报告 2025' }
+  },
+  {
+    id: 'customer-service',
+    title: { en: 'Customer Service', zh: '客户服务' },
+    mode: 'high-replacement',
+    color: '#ff2d37',
+    desc: { en: 'High replacement ratio', zh: '高比例替代' },
+    jobs: { en: 'Phone support, online chat', zh: '电话客服、在线客服' },
+    trend: { en: '80% queries handled by AI by 2025', zh: '2025年80%询问由AI处理' },
+    source: { en: 'Okoone AI Trends 2025', zh: 'Okoone AI 趋势 2025' }
+  },
+  {
+    id: 'software',
+    title: { en: 'Software Development', zh: '软件开发' },
+    mode: 'mixed',
+    color: '#ff9500',
+    desc: { en: 'Junior compressed, senior enhanced', zh: '初级压缩、资深增强' },
+    jobs: { en: 'Junior developers, QA engineers', zh: '初级开发者、QA工程师' },
+    trend: { en: 'Young -20%, overall +17.9% growth', zh: '年轻-20%，整体+17.9%增长' },
+    source: { en: 'Stanford & BLS Data', zh: '斯坦福 & BLS 数据' }
+  },
 ];
 
 // 时间线数据 - 突出重要技术节点
@@ -629,6 +1048,68 @@ function ProgressStages({ lang, t }: { lang: Language; t: typeof translations.en
   );
 }
 
+// 历史脉络章节
+function HistoricalContextSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
+  const historyPeriods = [
+    { periodKey: 'historyPeriod1', descKey: 'historyPeriod1Desc', icon: History, color: 'bg-amber-500/20 text-amber-500' },
+    { periodKey: 'historyPeriod2', descKey: 'historyPeriod2Desc', icon: Clock, color: 'bg-blue-500/20 text-blue-500' },
+    { periodKey: 'historyPeriod3', descKey: 'historyPeriod3Desc', icon: Cpu, color: 'bg-purple-500/20 text-purple-500' },
+    { periodKey: 'historyPeriod4', descKey: 'historyPeriod4Desc', icon: Zap, color: 'bg-risk-high/20 text-risk-high' },
+  ] as const;
+
+  return (
+    <section className="py-20 px-6 bg-surface">
+      <div className="max-w-6xl mx-auto">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-3xl md:text-5xl font-bold text-center mb-4"
+        >
+          {t.historyTitle}
+        </motion.h2>
+        <p className="text-center text-foreground-muted mb-16 max-w-2xl mx-auto">
+          {t.historySubtitle}
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {historyPeriods.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-background rounded-xl p-6 border border-surface-elevated"
+            >
+              <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-4 ${item.color}`}>
+                <item.icon className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg mb-2">{t[item.periodKey]}</h3>
+              <p className="text-sm text-foreground-muted">{t[item.descKey]}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="bg-risk-high/10 border border-risk-high/30 rounded-xl p-6"
+        >
+          <div className="flex items-start gap-4">
+            <Info className="w-6 h-6 text-risk-high flex-shrink-0 mt-1" />
+            <div>
+              <h4 className="font-bold text-risk-high mb-2">{t.historyLesson}</h4>
+              <p className="text-foreground-muted">{t.historyLessonText}</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 // 时间线
 function TimelineSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
   return (
@@ -730,42 +1211,51 @@ function HighRiskJobsSection({ lang, t }: { lang: Language; t: typeof translatio
             <thead>
               <tr className="border-b border-surface-elevated">
                 <th className="text-left py-4 px-4">{t.industry}</th>
-                <th className="text-left py-4 px-4">{t.riskLevel}</th>
+                <th className="text-left py-4 px-4">{t.tableRiskLevel}</th>
                 <th className="text-left py-4 px-4">{t.highRiskJobs}</th>
+                <th className="text-left py-4 px-4">AI Impact Mode</th>
                 <th className="text-left py-4 px-4">{t.evidence}</th>
               </tr>
             </thead>
             <tbody>
-              {highRiskJobs.map((job, index) => (
-                <motion.tr
-                  key={job.industry.en}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  className="border-b border-surface-elevated hover:bg-surface-elevated/50 transition-colors"
-                >
-                  <td className="py-4 px-4 font-semibold">{job.industry[lang]}</td>
-                  <td className="py-4 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 h-2 bg-surface rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: `${job.risk}%` }}
-                          viewport={{ once: true }}
-                          className="h-full"
-                          style={{ backgroundColor: job.risk >= 70 ? '#ff2d37' : job.risk >= 50 ? '#ff9500' : '#30d158' }}
-                        />
+              {highRiskJobs.map((job, index) => {
+                const config = modeConfig[job.mode];
+                const Icon = config.icon;
+                return (
+                  <motion.tr
+                    key={job.industry.en}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05 }}
+                    className="border-b border-surface-elevated hover:bg-surface-elevated/50 transition-colors"
+                  >
+                    <td className="py-4 px-4 font-semibold">{job.industry[lang]}</td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-surface rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${job.risk}%` }}
+                            viewport={{ once: true }}
+                            className="h-full"
+                            style={{ backgroundColor: config.color }}
+                          />
+                        </div>
+                        <span className="font-bold mono" style={{ color: config.color }}>{job.risk}%</span>
                       </div>
-                      <span className={`font-bold mono ${
-                        job.risk >= 70 ? 'text-risk-high' : job.risk >= 50 ? 'text-risk-medium' : 'text-risk-low'
-                      }`}>{job.risk}%</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-4 text-sm text-foreground-muted">{job.jobs[lang]}</td>
-                  <td className="py-4 px-4 text-sm text-foreground-muted">{job.reason[lang]}</td>
-                </motion.tr>
-              ))}
+                    </td>
+                    <td className="py-4 px-4 text-sm text-foreground-muted">{job.jobs[lang]}</td>
+                    <td className="py-4 px-4">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium`} style={{ backgroundColor: config.color + '20', color: config.color }}>
+                        <Icon className="w-3 h-3" />
+                        <span>{config.label[lang]}</span>
+                      </span>
+                    </td>
+                    <td className="py-4 px-4 text-sm text-foreground-muted">{job.reason[lang]}</td>
+                  </motion.tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -849,39 +1339,302 @@ function LayoffCasesSection({ lang, t }: { lang: Language; t: typeof translation
   );
 }
 
-// 生存指数测试
-function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
-  const [answers, setAnswers] = useState<{ [key: number]: number }>({});
-  const [result, setResult] = useState<number | null>(null);
+// 净就业效应章节
+function NetJobImpactSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
+  return (
+    <section className="py-20 px-6 bg-surface">
+      <div className="max-w-6xl mx-auto">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-3xl md:text-5xl font-bold text-center mb-4"
+        >
+          {t.netImpactTitle}
+        </motion.h2>
+        <p className="text-center text-foreground-muted mb-16 max-w-2xl mx-auto">
+          {t.netImpactSubtitle}
+        </p>
 
-  const questions = [
-    {
-      q: t.q1,
-      highRisk: t.q1High,
-      options: t.q1Options,
-    },
-    {
-      q: t.q2,
-      highRisk: t.q2High,
-      options: t.q2Options,
-    },
-    {
-      q: t.q3,
-      highRisk: t.q3High,
-      options: t.q3Options,
-    },
-  ];
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {netImpactData.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-background rounded-xl p-6 border-2"
+              style={{ borderColor: item.color + '30' }}
+            >
+              <h3 className="font-bold text-sm mb-4" style={{ color: item.color }}>{item.source[lang]}</h3>
+              {item.displaced && (
+                <>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-foreground-muted">{t.wefDisplaced}:</span>
+                    <span className="text-lg font-bold text-risk-high">{item.displaced}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-foreground-muted">{t.wefCreated}:</span>
+                    <span className="text-lg font-bold text-risk-low">{item.created}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-surface-elevated">
+                    <span className="text-xs text-foreground-muted">{t.wefNet}:</span>
+                    <span className="text-xl font-bold text-risk-low">{item.net}</span>
+                  </div>
+                </>
+              )}
+              {item.exposedGrowth && (
+                <>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-foreground-muted">{t.pwcExposedGrowth}:</span>
+                    <span className="text-lg font-bold" style={{ color: item.color }}>{item.exposedGrowth}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs text-foreground-muted">{t.pwcNonExposedGrowth}:</span>
+                    <span className="text-lg font-bold text-foreground-muted">{item.nonExposedGrowth}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-surface-elevated">
+                    <span className="text-xs text-foreground-muted">{t.pwcWagePremium}:</span>
+                    <span className="text-lg font-bold text-data-blue">{item.wagePremium}</span>
+                  </div>
+                </>
+              )}
+              {item.finding && (
+                <div className="text-center py-4">
+                  <p className="text-base font-semibold mb-2" style={{ color: item.color }}>{item.finding[lang]}</p>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="bg-surface-elevated/50 border border-surface-elevated rounded-xl p-6"
+        >
+          <div className="flex items-start gap-4">
+            <Info className="w-6 h-6 text-data-blue flex-shrink-0 mt-1" />
+            <div>
+              <h4 className="font-bold text-foreground mb-2">{t.theReality}</h4>
+              <p className="text-foreground-muted">{t.theRealityText}</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// 行业深度分析章节
+function IndustryDeepDiveSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
+  const [selectedIndustry, setSelectedIndustry] = useState(0);
+
+  return (
+    <section className="py-20 px-6">
+      <div className="max-w-6xl mx-auto">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-3xl md:text-5xl font-bold text-center mb-4"
+        >
+          {t.industryDiveTitle}
+        </motion.h2>
+        <p className="text-center text-foreground-muted mb-12 max-w-2xl mx-auto">
+          {t.industryDiveSubtitle}
+        </p>
+
+        {/* 行业标签 */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {industryDiveData.map((industry, index) => {
+            const Icon = modeConfig[industry.mode].icon;
+            return (
+              <button
+                key={index}
+                onClick={() => setSelectedIndustry(index)}
+                className={`px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                  selectedIndustry === index
+                    ? 'bg-risk-high text-white shadow-lg shadow-risk-high/30'
+                    : 'bg-surface hover:bg-surface-elevated text-foreground'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{industry.title[lang]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 行业详情 */}
+        <motion.div
+          key={selectedIndustry}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-surface rounded-2xl p-8 border border-surface-elevated"
+        >
+          {(() => {
+            const industry = industryDiveData[selectedIndustry];
+            const config = modeConfig[industry.mode];
+            const Icon = config.icon;
+
+            return (
+              <>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-xl flex items-center justify-center" style={{ backgroundColor: config.color + '20' }}>
+                    <Icon className="w-8 h-8" style={{ color: config.color }} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-2xl font-bold mb-1">{industry.title[lang]}</h3>
+                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium`} style={{ backgroundColor: config.color + '20', color: config.color }}>
+                      <span>{config.label[lang]}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="bg-background/50 rounded-lg p-4 border border-surface-elevated">
+                      <div className="text-xs text-foreground-muted mb-1">主导模式</div>
+                      <div className="font-semibold">{industry.desc[lang]}</div>
+                    </div>
+                    <div className="bg-background/50 rounded-lg p-4 border border-surface-elevated">
+                      <div className="text-xs text-foreground-muted mb-1">典型岗位</div>
+                      <div className="font-semibold">{industry.jobs[lang]}</div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="bg-background/50 rounded-lg p-4 border border-surface-elevated">
+                      <div className="text-xs text-foreground-muted mb-1">就业趋势</div>
+                      <div className="font-semibold text-foreground">{industry.trend[lang]}</div>
+                    </div>
+                    <div className="bg-background/50 rounded-lg p-4 border border-surface-elevated">
+                      <div className="text-xs text-foreground-muted mb-1">数据来源</div>
+                      <div className="text-xs text-foreground-muted">{industry.source[lang]}</div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// 维度滑块组件
+function DimensionSlider({
+  title,
+  desc,
+  detail,
+  value,
+  onChange,
+  lowLabel,
+  highLabel,
+  icon: Icon,
+  color
+}: {
+  title: string;
+  desc: string;
+  detail: string;
+  value: number;
+  onChange: (val: number) => void;
+  lowLabel: string;
+  highLabel: string;
+  icon: any;
+  color: string;
+}) {
+  return (
+    <div className="bg-surface rounded-xl p-4 border border-surface-elevated">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color + '20' }}>
+          <Icon className="w-5 h-5" style={{ color }} />
+        </div>
+        <div className="flex-1">
+          <h4 className="font-bold mb-1">{title}</h4>
+          <p className="text-xs text-foreground-muted mb-1">{desc}</p>
+          <p className="text-xs text-foreground-muted opacity-70">{detail}</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex justify-between text-xs text-foreground-muted">
+          <span>{lowLabel}</span>
+          <span className="font-bold" style={{ color }}>{Math.round(value)}%</span>
+          <span>{highLabel}</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="w-full h-2 bg-surface-elevated rounded-full appearance-none cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, ${color} 0%, ${color} ${value}%, var(--surface-elevated) ${value}%, var(--surface-elevated) 100%)`
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// 生存指数测试 V2
+function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
+  const [showOptional, setShowOptional] = useState(false);
+  const [result, setResult] = useState<RiskOutputResult | null>(null);
+
+  // 核心维度状态
+  const [dimensions, setDimensions] = useState({
+    dataOpenness: 50,
+    workDataDigitalization: 50,
+    processStandardization: 50,
+    currentAIAdoption: 20,
+  });
+
+  // 可选保护因素状态
+  const [protections, setProtections] = useState({
+    creativeRequirement: 50,
+    humanInteraction: 50,
+    physicalOperation: 50,
+  });
+
+  const updateDimension = (key: string, value: number) => {
+    setDimensions(prev => ({ ...prev, [key]: value }));
+  };
+
+  const updateProtection = (key: string, value: number) => {
+    setProtections(prev => ({ ...prev, [key]: value }));
+  };
 
   const calculateRisk = () => {
-    const total = Object.values(answers).reduce((a, b) => a + b, 0);
-    const maxScore = questions.length * 2;
-    const percentage = (total / maxScore) * 100;
-    setResult(percentage);
+    const inputData: RiskInputData = {
+      jobTitle: 'User',
+      industry: 'other',
+      yearsOfExperience: 5,
+      ...dimensions,
+      ...protections,
+    };
+    const assessment = calculateAIRisk(inputData, lang);
+    setResult(assessment);
+  };
+
+  const resetCalculator = () => {
+    setResult(null);
+    setDimensions({
+      dataOpenness: 50,
+      workDataDigitalization: 50,
+      processStandardization: 50,
+      currentAIAdoption: 20,
+    });
   };
 
   return (
     <section className="py-20 px-6 bg-surface">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -890,7 +1643,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
         >
           {t.survivalTitle}
         </motion.h2>
-        <p className="text-center text-foreground-muted mb-12">
+        <p className="text-center text-foreground-muted mb-8">
           {t.survivalSubtitle}
         </p>
 
@@ -898,55 +1651,236 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="bg-background rounded-2xl p-8 border border-surface-elevated"
+          className="bg-background rounded-2xl p-6 md:p-8 border border-surface-elevated"
         >
-          <div className="space-y-8 mb-8">
-            {questions.map((question, qIndex) => (
-              <div key={qIndex}>
-                <h4 className="font-semibold mb-4">{question.q}</h4>
-                <div className="grid grid-cols-3 gap-3">
-                  {question.options.map((option, oIndex) => (
-                    <button
-                      key={oIndex}
-                      onClick={() => setAnswers({ ...answers, [qIndex]: oIndex })}
-                      className={`p-3 rounded-lg border text-sm transition-all ${
-                        answers[qIndex] === oIndex
-                          ? 'bg-risk-high text-white border-risk-high'
-                          : 'bg-surface border-surface-elevated hover:border-risk-high'
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
+          {!result ? (
+            <>
+              {/* 四个核心维度 */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Brain className="w-5 h-5 text-risk-high" />
+                  <h3 className="font-bold text-lg">{t.coreDimensions}</h3>
+                </div>
+                <div className="space-y-4">
+                  <DimensionSlider
+                    title={t.dim1Title}
+                    desc={t.dim1Desc}
+                    detail={t.dim1Detail}
+                    value={dimensions.dataOpenness}
+                    onChange={(v) => updateDimension('dataOpenness', v)}
+                    lowLabel={t.dim1Low}
+                    highLabel={t.dim1High}
+                    icon={Database}
+                    color="#6366f1"
+                  />
+                  <DimensionSlider
+                    title={t.dim2Title}
+                    desc={t.dim2Desc}
+                    detail={t.dim2Detail}
+                    value={dimensions.workDataDigitalization}
+                    onChange={(v) => updateDimension('workDataDigitalization', v)}
+                    lowLabel={t.dim2Low}
+                    highLabel={t.dim2High}
+                    icon={FileText}
+                    color="#8b5cf6"
+                  />
+                  <DimensionSlider
+                    title={t.dim3Title}
+                    desc={t.dim3Desc}
+                    detail={t.dim3Detail}
+                    value={dimensions.processStandardization}
+                    onChange={(v) => updateDimension('processStandardization', v)}
+                    lowLabel={t.dim3Low}
+                    highLabel={t.dim3High}
+                    icon={Workflow}
+                    color="#ec4899"
+                  />
+                  <DimensionSlider
+                    title={t.dim4Title}
+                    desc={t.dim4Desc}
+                    detail={t.dim4Detail}
+                    value={dimensions.currentAIAdoption}
+                    onChange={(v) => updateDimension('currentAIAdoption', v)}
+                    lowLabel={t.dim4Low}
+                    highLabel={t.dim4High}
+                    icon={Bot}
+                    color="#f43f5e"
+                  />
                 </div>
               </div>
-            ))}
-          </div>
 
-          <button
-            onClick={calculateRisk}
-            disabled={Object.keys(answers).length < questions.length}
-            className="w-full bg-risk-high hover:bg-risk-high/80 disabled:bg-surface-elevated disabled:text-foreground-muted text-white py-4 rounded-lg font-semibold transition-all"
-          >
-            {t.calculate}
-          </button>
+              {/* 可选保护因素切换按钮 */}
+              <button
+                onClick={() => setShowOptional(!showOptional)}
+                className="w-full mb-4 py-2 px-4 bg-surface-elevated hover:bg-surface-elevated/80 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2"
+              >
+                {showOptional ? <ChevronRight className="w-4 h-4 rotate-90" /> : <ChevronRight className="w-4 h-4" />}
+                {showOptional ? t.toggleRequired : t.toggleOptional}
+              </button>
 
-          {result !== null && (
+              {/* 可选保护因素 */}
+              {showOptional && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-6 p-4 bg-surface rounded-xl border border-surface-elevated"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <Shield className="w-4 h-4 text-risk-low" />
+                    <h4 className="font-semibold text-sm">{t.protectiveFactors}</h4>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-foreground-muted mb-1 block">{t.ctx1Title}</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={protections.creativeRequirement}
+                        onChange={(e) => updateProtection('creativeRequirement', parseFloat(e.target.value))}
+                        className="w-full h-2 bg-surface-elevated rounded-full appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, #30d158 0%, #30d158 ${protections.creativeRequirement}%, var(--surface-elevated) ${protections.creativeRequirement}%, var(--surface-elevated) 100%)`
+                        }}
+                      />
+                      <div className="text-xs text-center mt-1 text-risk-low font-medium">{Math.round(protections.creativeRequirement)}%</div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-foreground-muted mb-1 block">{t.ctx2Title}</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={protections.humanInteraction}
+                        onChange={(e) => updateProtection('humanInteraction', parseFloat(e.target.value))}
+                        className="w-full h-2 bg-surface-elevated rounded-full appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, #30d158 0%, #30d158 ${protections.humanInteraction}%, var(--surface-elevated) ${protections.humanInteraction}%, var(--surface-elevated) 100%)`
+                        }}
+                      />
+                      <div className="text-xs text-center mt-1 text-risk-low font-medium">{Math.round(protections.humanInteraction)}%</div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-foreground-muted mb-1 block">{t.ctx3Title}</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={protections.physicalOperation}
+                        onChange={(e) => updateProtection('physicalOperation', parseFloat(e.target.value))}
+                        className="w-full h-2 bg-surface-elevated rounded-full appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, #30d158 0%, #30d158 ${protections.physicalOperation}%, var(--surface-elevated) ${protections.physicalOperation}%, var(--surface-elevated) 100%)`
+                        }}
+                      />
+                      <div className="text-xs text-center mt-1 text-risk-low font-medium">{Math.round(protections.physicalOperation)}%</div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              <button
+                onClick={calculateRisk}
+                className="w-full bg-risk-high hover:bg-risk-high/90 text-white py-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+              >
+                <BarChart3 className="w-5 h-5" />
+                {t.calculate}
+              </button>
+            </>
+          ) : (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-8 pt-8 border-t border-surface-elevated"
             >
+              {/* 风险等级标题 */}
               <div className="text-center mb-6">
-                <div className={`text-6xl font-bold mono ${
-                  result >= 66 ? 'text-risk-high' : result >= 33 ? 'text-risk-medium' : 'text-risk-low'
-                }`}>
-                  {Math.round(result)}%
+                <div className="text-sm text-foreground-muted mb-2">{t.riskLevel}</div>
+                <div className="text-2xl font-bold" style={{ color: RISK_LEVEL_INFO[result.riskLevel].color }}>
+                  {result.riskLevel === 'very-low' ? t.riskVeryLow :
+                   result.riskLevel === 'low' ? t.riskLow :
+                   result.riskLevel === 'medium' ? t.riskMedium :
+                   result.riskLevel === 'high' ? t.riskHigh : t.riskCritical}
                 </div>
-                <div className="text-foreground-muted mt-2">{t.yourRisk}</div>
               </div>
 
-              <div className="bg-surface rounded-lg p-4 border border-surface-elevated">
+              {/* 三个核心指标 */}
+              <div className="mb-6">
+                <h4 className="font-bold mb-4 flex items-center justify-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-risk-high" />
+                  {t.threeMetrics}
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-surface rounded-xl p-4 border-2 text-center" style={{ borderColor: '#f43f5e' }}>
+                    <Activity className="w-6 h-6 mx-auto mb-2" style={{ color: '#f43f5e' }} />
+                    <div className="text-xs text-foreground-muted mb-1">{t.metric1Title}</div>
+                    <div className="text-2xl font-bold" style={{ color: '#f43f5e' }}>{result.replacementProbability}%</div>
+                  </div>
+                  <div className="bg-surface rounded-xl p-4 border-2 text-center" style={{ borderColor: '#f59e0b' }}>
+                    <Calendar className="w-6 h-6 mx-auto mb-2" style={{ color: '#f59e0b' }} />
+                    <div className="text-xs text-foreground-muted mb-1">{t.metric2Title}</div>
+                    <div className="text-2xl font-bold" style={{ color: '#f59e0b' }}>{result.predictedReplacementYear}</div>
+                  </div>
+                  <div className="bg-surface rounded-xl p-4 border-2 text-center" style={{ borderColor: '#6366f1' }}>
+                    <Bot className="w-6 h-6 mx-auto mb-2" style={{ color: '#6366f1' }} />
+                    <div className="text-xs text-foreground-muted mb-1">{t.metric3Title}</div>
+                    <div className="text-2xl font-bold" style={{ color: '#6366f1' }}>{result.currentReplacementDegree}%</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 置信区间 */}
+              <div className="bg-surface rounded-lg p-3 border border-surface-elevated mb-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-foreground-muted">{t.yearRange}:</span>
+                  <span className="font-mono font-bold">
+                    {result.confidenceInterval.earliest} - {result.confidenceInterval.latest}
+                  </span>
+                </div>
+              </div>
+
+              {/* 洞察 */}
+              <div className="bg-surface rounded-xl p-4 border border-surface-elevated mb-4">
+                <h5 className="font-semibold mb-3 flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-data-blue" />
+                  {t.insights}
+                </h5>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-foreground-muted">{t.primaryDriver}: </span>
+                    <span className="font-bold text-risk-high">{result.insights.primaryDriver}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {result.insights.secondaryFactors.map((factor, i) => (
+                      <span key={i} className="px-2 py-0.5 bg-risk-high/10 text-risk-high text-xs rounded">{factor}</span>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {result.insights.protectionFactors.map((factor, i) => (
+                      <span key={i} className="px-2 py-0.5 bg-risk-low/20 text-risk-low text-xs rounded">{factor}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 建议 */}
+              <div className="bg-surface rounded-xl p-4 border border-surface-elevated mb-4">
+                <h5 className="font-semibold mb-3 flex items-center gap-2">
+                  <Target className="w-4 h-4 text-data-blue" />
+                  {t.recommendations}
+                </h5>
+                <div className="space-y-2">
+                  {result.insights.recommendations.slice(0, 4).map((rec, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-risk-low flex-shrink-0 mt-0.5" />
+                      <span>{rec}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 现实检查 */}
+              <div className="bg-surface rounded-lg p-4 border border-surface-elevated mb-4">
                 <p className="text-sm text-foreground-muted">
                   <Flame className="w-4 h-4 inline text-risk-high mr-2" />
                   <span className="font-semibold text-foreground">{t.realityCheck}</span>
@@ -955,10 +1889,12 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                 </p>
               </div>
 
-              <div className="mt-6 text-center text-sm text-foreground-muted">
-                <p className="font-semibold">{t.notTalkShow}</p>
-                <p className="mt-2">{t.decideYear}</p>
-              </div>
+              <button
+                onClick={resetCalculator}
+                className="w-full bg-surface-elevated hover:bg-surface-elevated/80 py-3 rounded-lg font-semibold transition-all"
+              >
+                {t.recalculate}
+              </button>
             </motion.div>
           )}
         </motion.div>
@@ -1001,9 +1937,12 @@ export default function Home() {
       <LanguageButton lang={lang} setLang={setLang} />
       <HeroSection lang={lang} t={t} />
       <ProgressStages lang={lang} t={t} />
+      <HistoricalContextSection lang={lang} t={t} />
       <TimelineSection lang={lang} t={t} />
       <HighRiskJobsSection lang={lang} t={t} />
       <LayoffCasesSection lang={lang} t={t} />
+      <NetJobImpactSection lang={lang} t={t} />
+      <IndustryDeepDiveSection lang={lang} t={t} />
       <SurvivalIndexSection lang={lang} t={t} />
       <Footer lang={lang} t={t} />
     </main>

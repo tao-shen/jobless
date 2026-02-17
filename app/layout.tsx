@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "JOBLESS - How fast is AI replacing human jobs?",
-  description: "Data-driven insights on AI's replacement of human jobs. View job risk rankings, global impact data, and future predictions.",
-  keywords: ["AI", "employment", "jobs", "automation", "replacement risk", "data visualization"],
+  title: "JOBLESS - AI's Impact on Jobs: Displacement, Creation, and Your Future",
+  description: "Comprehensive data-driven insights on AI's impact on employment. View job displacement AND creation, industry analysis, and personalized risk assessment with action recommendations.",
+  keywords: ["AI", "employment", "jobs", "automation", "replacement risk", "job creation", "WEF", "PwC", "MIT"],
 };
 
 export default function RootLayout({
