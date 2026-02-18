@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Area, AreaChart } from 'recharts';
-import { AlertTriangle, TrendingUp, Users, Clock, Search, Shield, Zap, Target, Skull, Flame, Building2, Calendar, AlertCircle, Languages, Cpu, Sparkles, Bot, ClipboardCheck, Database, FileText, Workflow, Activity, Eye, ChevronRight, CheckCircle2, BarChart3, Brain, ArrowUpRight, History, RefreshCw, TrendingDown, Info, BookOpen } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Users, Clock, Search, Shield, Zap, Target, Skull, Flame, Building2, Calendar, AlertCircle, Languages, Cpu, Sparkles, Bot, ClipboardCheck, Database, FileText, Workflow, Activity, Eye, ChevronRight, ChevronDown, CheckCircle2, BarChart3, Brain, ArrowUpRight, History, RefreshCw, TrendingDown, Info, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
 
@@ -123,6 +123,13 @@ const translations = {
     // 生存指数 V2
     survivalTitle: 'Calculate: Your AI Replacement Risk',
     survivalSubtitle: 'Four dimensions, three metrics, data-driven answers',
+    // 职业预设
+    selectProfession: 'Select Your Profession (Optional)',
+    selectProfessionDesc: 'Choose a profession to auto-fill preset values',
+    customProfession: 'Custom Configuration',
+    customProfessionDesc: 'Adjust values manually',
+    professionName: 'Profession',
+    // 四个核心维度
     coreDimensions: 'Four Core Dimensions',
     // 新的四个维度
     dim1Title: 'Data Openness',
@@ -195,10 +202,6 @@ const translations = {
     sources2: 'Stanford Digital Economy Lab, Gallup, World Bank',
     disclaimer: 'This website data is for reference only and does not constitute investment or career advice.',
     disclaimer2: 'All statistics cited from public research reports and news sources.',
-
-    // 研究报告按钮
-    researchReport: 'Research Report',
-    researchReportTitle: 'Read the comprehensive research report on AI\'s impact on labor',
 
     // 技术标签
     techLLM: 'LLM',
@@ -473,6 +476,13 @@ const translations = {
     // 生存指数 V2
     survivalTitle: '算一算：你的 AI 替代风险',
     survivalSubtitle: '四个维度，三个指标，数据驱动答案',
+    // 职业预设
+    selectProfession: '选择你的职业（可选）',
+    selectProfessionDesc: '选择职业自动填充预设值',
+    customProfession: '自定义配置',
+    customProfessionDesc: '手动调整各项数值',
+    professionName: '职业',
+    // 四个核心维度
     coreDimensions: '四个核心维度',
     // 新的四个维度
     dim1Title: '数据开放程度',
@@ -545,10 +555,6 @@ const translations = {
     sources2: '斯坦福数字经济实验室、Gallup、世界银行',
     disclaimer: '本网站数据仅供参考，不构成投资或职业建议。',
     disclaimer2: '所有统计数据引用自公开研究报告和新闻来源。',
-
-    // 研究报告按钮
-    researchReport: '研究报告',
-    researchReportTitle: '阅读关于AI对劳动力影响的综合研究报告',
 
     // 技术标签
     techLLM: 'LLM',
@@ -997,21 +1003,6 @@ function LanguageButton({ lang, setLang }: { lang: Language; setLang: (lang: Lan
 }
 
 // 研究报告按钮
-function ResearchButton({ lang, t }: { lang: Language; t: typeof translations.en }) {
-  return (
-    <motion.a
-      href="/research"
-      className="fixed top-6 left-6 z-50 flex items-center gap-2 bg-primary/90 hover:bg-primary text-white px-4 py-2 rounded-lg border border-primary transition-all card-hover shadow-lg shadow-primary/20"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      title={t.researchReportTitle}
-    >
-      <BookOpen className="w-5 h-5" />
-      <span className="font-medium hidden md:inline">{t.researchReport}</span>
-    </motion.a>
-  );
-}
-
 // 首屏
 function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
   return (
@@ -1898,6 +1889,145 @@ function DimensionSlider({
   );
 }
 
+// 职业预设数据
+const PROFESSION_PRESETS: Record<string, {
+  name: { en: string; zh: string };
+  dimensions: {
+    dataOpenness: number;
+    workDataDigitalization: number;
+    processStandardization: number;
+    currentAIAdoption: number;
+  };
+  protections?: {
+    creativeRequirement?: number;
+    humanInteraction?: number;
+    physicalOperation?: number;
+  };
+}> = {
+  // 客服/行政类 - 高风险
+  'customer-service': {
+    name: { en: 'Customer Service / Admin', zh: '客服/行政' },
+    dimensions: {
+      dataOpenness: 70,
+      workDataDigitalization: 90,
+      processStandardization: 85,
+      currentAIAdoption: 60,
+    },
+  },
+
+  // 技术/开发类 - 中等风险
+  'tech': {
+    name: { en: 'Developer / Tech', zh: '程序员/技术' },
+    dimensions: {
+      dataOpenness: 70,
+      workDataDigitalization: 100,
+      processStandardization: 50,
+      currentAIAdoption: 50,
+    },
+    protections: {
+      creativeRequirement: 70,
+      humanInteraction: 55,
+      physicalOperation: 5,
+    },
+  },
+
+  // 创意/设计类 - 中高风险
+  'creative': {
+    name: { en: 'Creative / Designer', zh: '创意/设计' },
+    dimensions: {
+      dataOpenness: 75,
+      workDataDigitalization: 100,
+      processStandardization: 55,
+      currentAIAdoption: 55,
+    },
+    protections: {
+      creativeRequirement: 70,
+      humanInteraction: 50,
+      physicalOperation: 5,
+    },
+  },
+
+  // 金融/分析类 - 中等风险
+  'finance': {
+    name: { en: 'Finance / Analyst', zh: '金融/分析' },
+    dimensions: {
+      dataOpenness: 60,
+      workDataDigitalization: 95,
+      processStandardization: 70,
+      currentAIAdoption: 45,
+    },
+    protections: {
+      creativeRequirement: 40,
+      humanInteraction: 50,
+      physicalOperation: 5,
+    },
+  },
+
+  // 销售/管理类 - 低风险
+  'sales': {
+    name: { en: 'Sales / Management', zh: '销售/管理' },
+    dimensions: {
+      dataOpenness: 50,
+      workDataDigitalization: 75,
+      processStandardization: 50,
+      currentAIAdoption: 30,
+    },
+    protections: {
+      creativeRequirement: 50,
+      humanInteraction: 80,
+      physicalOperation: 10,
+    },
+  },
+
+  // 医疗/教育类 - 低风险
+  'healthcare-edu': {
+    name: { en: 'Healthcare / Education', zh: '医疗/教育' },
+    dimensions: {
+      dataOpenness: 40,
+      workDataDigitalization: 60,
+      processStandardization: 40,
+      currentAIAdoption: 25,
+    },
+    protections: {
+      creativeRequirement: 65,
+      humanInteraction: 95,
+      physicalOperation: 50,
+    },
+  },
+
+  // 体力/手工类 - 极低风险
+  'manual': {
+    name: { en: 'Manual / Skilled Trade', zh: '体力/技术工种' },
+    dimensions: {
+      dataOpenness: 30,
+      workDataDigitalization: 30,
+      processStandardization: 45,
+      currentAIAdoption: 10,
+    },
+    protections: {
+      creativeRequirement: 45,
+      humanInteraction: 45,
+      physicalOperation: 95,
+    },
+  },
+
+  // 内容/写作类 - 中高风险
+  'writer': {
+    name: { en: 'Writer / Content', zh: '写作/内容' },
+    dimensions: {
+      dataOpenness: 80,
+      workDataDigitalization: 100,
+      processStandardization: 60,
+      currentAIAdoption: 70,
+    },
+    protections: {
+      creativeRequirement: 60,
+      humanInteraction: 40,
+      physicalOperation: 5,
+    },
+  },
+};
+
 // 生存指数测试 V2
 function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
   const [showOptional, setShowOptional] = useState(false);
@@ -1918,12 +2048,34 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
     physicalOperation: 50,
   });
 
+  // 职业选择状态
+  const [selectedProfession, setSelectedProfession] = useState<string | null>(null);
+
   const updateDimension = (key: string, value: number) => {
     setDimensions(prev => ({ ...prev, [key]: value }));
   };
 
   const updateProtection = (key: string, value: number) => {
     setProtections(prev => ({ ...prev, [key]: value }));
+  };
+
+  // 应用职业预设
+  const applyProfessionPreset = (professionKey: string | null) => {
+    if (professionKey && PROFESSION_PRESETS[professionKey]) {
+      const preset = PROFESSION_PRESETS[professionKey];
+      setDimensions(preset.dimensions);
+      if (preset.protections) {
+        setProtections(prev => ({
+          creativeRequirement: preset.protections!.creativeRequirement ?? prev.creativeRequirement,
+          humanInteraction: preset.protections!.humanInteraction ?? prev.humanInteraction,
+          physicalOperation: preset.protections!.physicalOperation ?? prev.physicalOperation,
+        }));
+      }
+      setSelectedProfession(professionKey);
+    } else {
+      // 取消选择
+      setSelectedProfession(null);
+    }
   };
 
   const calculateRisk = () => {
@@ -1946,6 +2098,12 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       processStandardization: 50,
       currentAIAdoption: 20,
     });
+    setProtections({
+      creativeRequirement: 50,
+      humanInteraction: 50,
+      physicalOperation: 50,
+    });
+    setSelectedProfession(null);
   };
 
   return (
@@ -1971,6 +2129,53 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
         >
           {!result ? (
             <>
+              {/* 职业快速预设 */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-5 h-5 text-data-blue" />
+                  <h3 className="font-bold text-lg">{t.selectProfession}</h3>
+                </div>
+                <p className="text-sm text-foreground-muted mb-3">{t.selectProfessionDesc}</p>
+
+                {/* 职业按钮网格 */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                  {Object.entries(PROFESSION_PRESETS).map(([profKey, prof]) => {
+                    const isSelected = selectedProfession === profKey;
+                    return (
+                      <button
+                        key={profKey}
+                        onClick={() => applyProfessionPreset(isSelected ? null : profKey)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                          isSelected
+                            ? 'bg-data-blue text-white shadow-lg scale-105'
+                            : 'bg-surface hover:bg-surface-elevated border border-surface-elevated'
+                        }`}
+                      >
+                        {prof.name[lang]}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 当前选择提示 */}
+                {selectedProfession && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-2 bg-data-blue/10 border border-data-blue/30 rounded-lg flex items-center gap-2 text-sm"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-data-blue flex-shrink-0" />
+                    <span className="text-foreground-muted">
+                      {lang === 'en' ? 'Preset: ' : '预设：'}
+                      <span className="font-semibold text-data-blue">
+                        {PROFESSION_PRESETS[selectedProfession].name[lang]}
+                      </span>
+                      {lang === 'en' ? ' - adjust sliders below' : ' - 可在下方微调'}
+                    </span>
+                  </motion.div>
+                )}
+              </div>
+
               {/* 四个核心维度 */}
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -2251,8 +2456,8 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <LanguageButton lang={lang} setLang={setLang} />
-      <ResearchButton lang={lang} t={t} />
       <HeroSection lang={lang} t={t} />
+      <SurvivalIndexSection lang={lang} t={t} />
       <ProgressStages lang={lang} t={t} />
       <HistoricalContextSection lang={lang} t={t} />
       <TimelineSection lang={lang} t={t} />
@@ -2261,7 +2466,6 @@ export default function Home() {
       <NetJobImpactSection lang={lang} t={t} />
       <IndustryDeepDiveSection lang={lang} t={t} />
       <CareerDivergenceSection lang={lang} t={t} />
-      <SurvivalIndexSection lang={lang} t={t} />
       <Footer lang={lang} t={t} />
     </main>
   );
