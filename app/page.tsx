@@ -1007,25 +1007,40 @@ function LanguageButton({ lang, setLang }: { lang: Language; setLang: (lang: Lan
 function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-risk-high/30 rounded-full blur-3xl animate-pulse-glow"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-risk-high/20 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '1s' }}></div>
+      {/* Enhanced Dynamic Background */}
+      <div className="absolute inset-0">
+        {/* Animated mesh gradient overlay */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-risk-high/40 rounded-full blur-[120px] animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-brand-primary/30 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-accent/20 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
+
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 grid-bg opacity-40"></div>
+
+        {/* Animated scanline */}
+        <div className="absolute inset-0 scanline"></div>
       </div>
 
-      <div className="relative z-10 text-center px-6 max-w-6xl mx-auto">
+      <div className="relative z-10 text-center px-6 max-w-6xl mx-auto hero-glow">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <div className="inline-flex items-center gap-2 bg-risk-high/20 text-risk-high px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <AlertCircle className="w-4 h-4" />
-            <span>{t.alertBadge}</span>
+          {/* Enhanced alert badge */}
+          <div className="inline-flex items-center gap-2 bg-risk-critical/20 text-risk-critical px-5 py-2.5 rounded-full text-sm font-medium mb-8 animate-border-pulse backdrop-blur-sm border border-risk-critical/30">
+            <AlertCircle className="w-4 h-4 animate-glow-pulse" />
+            <span className="tracking-wide">{t.alertBadge}</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 glitch">
-            <span className="gradient-text">{t.heroTitle}</span>
+
+          {/* Enhanced hero title */}
+          <h1 className="text-5xl md:text-8xl font-bold mb-8 leading-tight">
+            <span className="gradient-text-cyber inline-block animate-fade-in">{t.heroTitle}</span>
           </h1>
-          <p className="text-xl md:text-2xl text-foreground-muted mb-8 max-w-3xl mx-auto">
+
+          <p className="text-xl md:text-2xl text-foreground-muted mb-10 max-w-3xl mx-auto leading-relaxed">
             {t.heroSubtitlePre}{t.heroSubtitlePost}{t.heroSubtitleEnd}
           </p>
         </motion.div>
@@ -1034,26 +1049,26 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3 }}
-          className="bg-surface rounded-2xl p-8 md:p-12 border border-surface-elevated glow-box mb-8"
+          className="card-elevated rounded-3xl p-8 md:p-12 border border-surface-elevated/50 mb-8 backdrop-blur-xl"
         >
-          <h2 className="text-2xl md:text-3xl font-bold mb-8">{t.progressTitle}</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 bg-gradient-to-r from-foreground to-foreground-muted bg-clip-text text-transparent">{t.progressTitle}</h2>
 
           <div className="mb-10">
             <div className="flex justify-between items-center mb-3">
               <div className="text-left">
                 <div className="text-sm text-foreground-muted">{t.currentReality}</div>
-                <div className="text-xs text-foreground-muted">{t.currentRealityDesc}</div>
+                <div className="text-xs text-foreground-dim">{t.currentRealityDesc}</div>
               </div>
-              <div className="text-4xl font-bold mono text-risk-high"><Counter end={MIT_REPLACEMENT_RATE} suffix="%" /></div>
+              <div className="text-4xl md:text-5xl font-bold mono text-risk-critical data-highlight"><Counter end={MIT_REPLACEMENT_RATE} suffix="%" /></div>
             </div>
-            <div className="h-6 bg-surface-elevated rounded-full overflow-hidden relative">
+            <div className="h-8 bg-surface-elevated rounded-full overflow-hidden relative shadow-inner">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${(MIT_REPLACEMENT_RATE / 60) * 100}%` }}
                 transition={{ duration: 2, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-risk-high to-risk-medium rounded-full"
+                className="h-full bg-gradient-to-r from-risk-critical via-risk-high to-risk-medium rounded-full relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                <div className="absolute inset-0 animate-shimmer"></div>
               </motion.div>
             </div>
           </div>
@@ -1062,18 +1077,18 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
             <div className="flex justify-between items-center mb-3">
               <div className="text-left">
                 <div className="text-sm text-foreground-muted">{t.technicalCeiling}</div>
-                <div className="text-xs text-foreground-muted">{t.technicalCeilingDesc}</div>
+                <div className="text-xs text-foreground-dim">{t.technicalCeilingDesc}</div>
               </div>
-              <div className="text-4xl font-bold mono text-risk-medium"><Counter end={MCKINSEY_AUTOMATION_POTENTIAL} suffix="%" /></div>
+              <div className="text-4xl md:text-5xl font-bold mono text-brand-accent data-highlight"><Counter end={MCKINSEY_AUTOMATION_POTENTIAL} suffix="%" /></div>
             </div>
-            <div className="h-6 bg-surface-elevated rounded-full overflow-hidden relative">
+            <div className="h-8 bg-surface-elevated rounded-full overflow-hidden relative shadow-inner">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${(MCKINSEY_AUTOMATION_POTENTIAL / 100) * 100}%` }}
                 transition={{ duration: 2.5, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-risk-medium to-risk-low rounded-full"
+                className="h-full bg-gradient-to-r from-brand-accent via-brand-primary to-brand-secondary rounded-full relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                <div className="absolute inset-0 animate-shimmer"></div>
               </motion.div>
             </div>
           </div>
@@ -1082,10 +1097,10 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5 }}
-            className="bg-risk-high/10 border border-risk-high/30 rounded-xl p-4 text-center"
+            className="card-risk rounded-xl p-5 text-center"
           >
-            <p className="text-risk-high font-semibold">
-              <Skull className="w-5 h-5 inline mr-2 animate-pulse-glow" />
+            <p className="text-risk-critical font-semibold text-lg">
+              <Skull className="w-5 h-5 inline mr-2 animate-glow-pulse" />
               {t.icebergWarning}
             </p>
           </motion.div>
@@ -1095,15 +1110,15 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-children"
         >
-          <div className="bg-surface rounded-xl p-4 border border-surface-elevated">
-            <div className="text-2xl md:text-3xl font-bold text-risk-high mono"><Counter end={11.7} suffix="%" /></div>
-            <div className="text-xs text-foreground-muted mt-1">{t.replaceableNow}</div>
+          <div className="glass-card rounded-xl p-5 border border-surface-elevated/50 card-hover">
+            <div className="text-2xl md:text-3xl font-bold text-risk-critical mono data-highlight"><Counter end={11.7} suffix="%" /></div>
+            <div className="text-xs text-foreground-muted mt-2 font-medium">{t.replaceableNow}</div>
           </div>
-          <div className="bg-surface rounded-xl p-4 border border-surface-elevated">
-            <div className="text-2xl md:text-3xl font-bold text-risk-medium mono"><Counter end={57} suffix="%" /></div>
-            <div className="text-xs text-foreground-muted mt-1">{t.technicallyPossible}</div>
+          <div className="glass-card rounded-xl p-5 border border-surface-elevated/50 card-hover">
+            <div className="text-2xl md:text-3xl font-bold text-brand-accent mono data-highlight"><Counter end={57} suffix="%" /></div>
+            <div className="text-xs text-foreground-muted mt-2 font-medium">{t.technicallyPossible}</div>
           </div>
           <div className="bg-surface rounded-xl p-4 border border-surface-elevated">
             <div className="text-2xl md:text-3xl font-bold text-data-blue mono"><Counter end={89} suffix="%" /></div>

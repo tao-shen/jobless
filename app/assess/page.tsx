@@ -469,37 +469,48 @@ function DimensionSlider({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-surface rounded-2xl p-6 border border-surface-elevated hover:border-opacity-50 transition-all"
-      style={{ borderColor: color }}
+      className="glass-card rounded-2xl p-6 border border-surface-elevated/50 card-hover"
+      style={{
+        borderColor: `${color}30`,
+        boxShadow: `0 0 30px ${color}10`
+      }}
     >
       <div className="flex items-start gap-4 mb-4">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color + '20' }}>
-          <Icon className="w-6 h-6" style={{ color }} />
+        <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 relative" style={{ backgroundColor: color + '20' }}>
+          <div className="absolute inset-0 rounded-xl animate-pulse" style={{ background: color, opacity: 0.1 }}></div>
+          <Icon className="w-7 h-7" style={{ color }} />
         </div>
         <div className="flex-1">
           <h3 className="font-bold text-lg mb-1">{title}</h3>
           <p className="text-foreground-muted text-sm mb-2">{desc}</p>
-          <p className="text-xs text-foreground-muted opacity-70">{detail}</p>
+          <p className="text-xs text-foreground-dim">{detail}</p>
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex justify-between text-xs text-foreground-muted">
-          <span>{lowLabel}</span>
-          <span className="font-bold" style={{ color }}>{Math.round(value)}%</span>
-          <span>{highLabel}</span>
+      <div className="space-y-4">
+        <div className="flex justify-between text-xs">
+          <span className="text-foreground-muted">{lowLabel}</span>
+          <span className="font-bold text-base px-3 py-1 rounded-lg" style={{
+            color,
+            backgroundColor: `${color}20`,
+            minWidth: '60px',
+            textAlign: 'center'
+          }}>{Math.round(value)}%</span>
+          <span className="text-foreground-muted">{highLabel}</span>
         </div>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full h-3 bg-surface-elevated rounded-full appearance-none cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, ${color} 0%, ${color} ${value}%, var(--surface-elevated) ${value}%, var(--surface-elevated) 100%)`
-          }}
-        />
+        <div className="relative">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value))}
+            className="w-full h-2 bg-surface-elevated rounded-full appearance-none cursor-pointer calc-slider"
+            style={{
+              background: `linear-gradient(to right, ${color} 0%, ${color} ${value}%, var(--surface-elevated) ${value}%, var(--surface-elevated) 100%)`
+            }}
+          />
+        </div>
       </div>
     </motion.div>
   );
@@ -549,24 +560,43 @@ function MetricCard({
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="bg-surface rounded-2xl p-6 border-2 border-surface-elevated relative overflow-hidden"
+      transition={{ type: "spring", stiffness: 200, damping: 20 }}
+      className="glass-card rounded-2xl p-6 border-2 relative overflow-hidden card-hover"
+      style={{
+        borderColor: `${color}40`,
+        boxShadow: `0 0 40px ${color}15`
+      }}
     >
-      <div className="absolute top-0 right-0 w-32 h-32 opacity-10" style={{ background: `radial-gradient(circle at top right, ${color}, transparent)` }} />
+      {/* Enhanced background glow */}
+      <div className="absolute top-0 right-0 w-40 h-40 opacity-20" style={{
+        background: `radial-gradient(circle at top right, ${color}, transparent 70%)`,
+        filter: 'blur(20px)'
+      }} />
+      <div className="absolute bottom-0 left-0 w-32 h-32 opacity-10" style={{
+        background: `radial-gradient(circle at bottom left, ${color}, transparent 70%)`,
+        filter: 'blur(15px)'
+      }} />
 
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: color + '20' }}>
-          <Icon className="w-5 h-5" style={{ color }} />
+      <div className="flex items-center gap-3 mb-6 relative z-10">
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
+          backgroundColor: `${color}25`,
+          boxShadow: `0 0 20px ${color}20`
+        }}>
+          <Icon className="w-6 h-6" style={{ color }} />
         </div>
         <div>
-          <h3 className="font-bold text-sm">{title}</h3>
+          <h3 className="font-bold text-base">{title}</h3>
           <p className="text-xs text-foreground-muted">{desc}</p>
         </div>
       </div>
 
-      <div className="text-center py-4">
-        <div className="text-4xl md:text-5xl font-bold" style={{ color }}>
+      <div className="text-center py-6 relative z-10">
+        <div className="text-5xl md:text-6xl font-bold metric-value" style={{
+          color,
+          textShadow: `0 0 30px ${color}40`
+        }}>
           {value}
-          {unit && <span className="text-lg ml-1">{unit}</span>}
+          {unit && <span className="text-xl ml-1 opacity-80">{unit}</span>}
         </div>
       </div>
     </motion.div>
@@ -608,16 +638,16 @@ export default function AssessPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* 导航 */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-surface-elevated">
+      {/* 导航 - Enhanced */}
+      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-surface-elevated/50">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-foreground-muted hover:text-foreground transition-colors">
+          <Link href="/" className="flex items-center gap-2 text-foreground-muted hover:text-foreground transition-all duration-300 hover:gap-3">
             <ArrowRight className="w-4 h-4 rotate-180" />
-            <span>{t.backHome}</span>
+            <span className="font-medium">{t.backHome}</span>
           </Link>
           <button
             onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
-            className="px-3 py-1.5 rounded-lg bg-surface-elevated text-sm font-medium hover:bg-surface-elevated/80 transition-colors"
+            className="px-4 py-2 rounded-lg bg-surface-elevated text-sm font-medium hover:bg-surface-elevated/80 transition-all duration-300 border border-surface-elevated/50 hover:border-brand-primary/50"
           >
             {lang === 'en' ? '中文' : 'EN'}
           </button>
@@ -626,17 +656,17 @@ export default function AssessPage() {
 
       <div className="pt-24 pb-16 px-6">
         <div className="max-w-3xl mx-auto">
-          {/* 标题 */}
+          {/* 标题 - Enhanced */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="text-center mb-10"
           >
-            <div className="inline-flex items-center gap-2 bg-risk-high/20 text-risk-high px-3 py-1 rounded-full text-sm font-medium mb-4">
-              <Zap className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 bg-brand-primary/20 text-brand-primary px-4 py-2 rounded-full text-sm font-medium mb-6 animate-border-pulse backdrop-blur-sm border border-brand-primary/30">
+              <Zap className="w-4 h-4 animate-glow-pulse" />
               <span>V2.0 新模型</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 gradient-text">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 gradient-text-cyber">
               {t.title}
             </h1>
             <p className="text-foreground-muted">
