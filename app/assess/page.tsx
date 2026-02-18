@@ -125,7 +125,7 @@ const translations = {
       value: 'probability'
     },
     metric2: {
-      title: 'Predicted Replacement Year',
+      title: 'AI Kill Line (Year)',
       desc: 'When AI is likely to significantly impact your job',
       value: 'year'
     },
@@ -288,7 +288,7 @@ const translations = {
       value: 'probability'
     },
     metric2: {
-      title: '预测被AI替代的年份',
+      title: 'AI 斩杀线（年份）',
       desc: 'AI可能显著影响你工作的时间',
       value: 'year'
     },

@@ -16,9 +16,9 @@ const translations = {
     // 首屏
     alertBadge: '2026: AI has started picking people off the bus',
     heroTitle: 'Are you still on board?',
-    heroSubtitlePre: 'MIT study: ',
-    heroSubtitlePost: ' of U.S. workforce. McKinsey: ',
-    heroSubtitleEnd: ' technically automatable.',
+    heroSubtitlePre: '',
+    heroSubtitlePost: 'The AI Kill Line is approaching.',
+    heroSubtitleEnd: '',
     mitStat: 'AI can already replace 11.7%',
     mckinseyStat: '57% of work hours',
 
@@ -26,9 +26,9 @@ const translations = {
     progressTitle: "AI Replacement Progress: Where are we?",
     currentReality: 'Current Reality',
     currentRealityDesc: 'MIT: AI can replace 11.7% of workforce',
-    technicalCeiling: 'Technical Ceiling',
+    technicalCeiling: 'AI Kill Line (Technical Ceiling)',
     technicalCeilingDesc: 'McKinsey: 57% of work hours automatable',
-    icebergWarning: 'What you see is just the 11.7% tip of the iceberg.',
+    icebergWarning: 'What you see is just the 11.7% tip of the iceberg. The AI Kill Line is approaching.',
 
     // 统计数据
     replaceableNow: 'Replaceable Now',
@@ -168,7 +168,7 @@ const translations = {
     threeMetrics: 'Your Three Core Metrics',
     metric1Title: 'Replacement Probability',
     metric1Desc: 'Likelihood AI will replace your job',
-    metric2Title: 'Predicted Year',
+    metric2Title: 'AI Kill Line (Year)',
     metric2Desc: 'When AI will significantly impact your job',
     metric3Title: 'Current Degree',
     metric3Desc: 'How much AI can already do now',
@@ -182,9 +182,9 @@ const translations = {
     recalculate: 'Recalculate',
     yourRisk: 'AI Replacement Risk',
     realityCheck: 'Reality check:',
-    realityCheckText: 'AI won\'t make you unemployed overnight. First, it will quietly take over the most replaceable parts of your work—until you realize, what\'s left isn\'t worth a full-time salary.',
+    realityCheckText: 'AI won\'t make you unemployed overnight. First, it will quietly take over the most replaceable parts of your work—until you realize, what\'s left isn\'t worth a full-time salary. That\'s when you\'ve crossed the AI Kill Line.',
     notTalkShow: 'This isn\'t a talk show. This is a timeline.',
-    decideYear: 'What decides which year you become unemployed isn\'t AI—it\'s when you start preparing.',
+    decideYear: 'What decides which year you cross the AI Kill Line isn\'t AI—it\'s when you start preparing.',
     detailedAssessment: 'Get Detailed Assessment →',
     detailedAssessmentDesc: 'Want a personalized prediction with specific timeline and recommendations?',
     // 风险等级
@@ -369,9 +369,9 @@ const translations = {
     // 首屏
     alertBadge: '2026：AI 已经开始让人下车了',
     heroTitle: '你还在车上吗？',
-    heroSubtitlePre: 'MIT研究：AI已可替代',
-    heroSubtitlePost: '的美国劳动力。麦肯锡：',
-    heroSubtitleEnd: '的工作时长理论上可自动化。',
+    heroSubtitlePre: '',
+    heroSubtitlePost: 'AI 斩杀线正在逼近。',
+    heroSubtitleEnd: '',
     mitStat: 'AI 已可替代 11.7%',
     mckinseyStat: '57% 工作时长',
 
@@ -379,9 +379,9 @@ const translations = {
     progressTitle: 'AI 替代进度：我们走到哪一步了？',
     currentReality: '现实进度',
     currentRealityDesc: 'MIT：AI 可替代 11.7% 劳动力',
-    technicalCeiling: '技术天花板',
+    technicalCeiling: 'AI 斩杀线（技术天花板）',
     technicalCeilingDesc: '麦肯锡：57% 工作时长可自动化',
-    icebergWarning: '你看到的只是冰山露出的那 11.7%。',
+    icebergWarning: '你看到的只是冰山露出的那 11.7%。AI 斩杀线正在逼近。',
 
     // 统计数据
     replaceableNow: '现已可替代',
@@ -521,7 +521,7 @@ const translations = {
     threeMetrics: '你的三个核心指标',
     metric1Title: '被 AI 替代的概率',
     metric1Desc: 'AI 替代你工作的可能性',
-    metric2Title: '预测年份',
+    metric2Title: 'AI 斩杀线（年份）',
     metric2Desc: 'AI 显著影响你工作的时间',
     metric3Title: '当前程度',
     metric3Desc: 'AI 目前能完成多少',
@@ -535,9 +535,9 @@ const translations = {
     recalculate: '重新计算',
     yourRisk: 'AI 替代风险',
     realityCheck: '现实检查：',
-    realityCheckText: 'AI 不会"一天之内"让你失业，它会先悄悄拿走你工作里最好替代的那一部分——等你发现，剩下那点工作，已经不值一个全职工资了。',
+    realityCheckText: 'AI 不会"一天之内"让你失业，它会先悄悄拿走你工作里最好替代的那一部分——等你发现，剩下那点工作，已经不值一个全职工资了。那一刻，你就已经跨过了 AI 斩杀线。',
     notTalkShow: '这不是访谈节目，这是时间轴。',
-    decideYear: '决定你站在哪一年失业的，不是 AI，而是你什么时候开始准备。',
+    decideYear: '决定你何时跨过 AI 斩杀线的，不是 AI，而是你什么时候开始准备。',
     detailedAssessment: '获取详细评估 →',
     detailedAssessmentDesc: '想要个性化的时间预测和具体建议？',
     // 风险等级
@@ -1026,7 +1026,7 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
             <span className="gradient-text">{t.heroTitle}</span>
           </h1>
           <p className="text-xl md:text-2xl text-foreground-muted mb-8 max-w-3xl mx-auto">
-            {t.heroSubtitlePre}<span className="text-risk-high font-bold">11.7%</span>{t.heroSubtitlePost}<span className="text-risk-high font-bold">57%</span>{t.heroSubtitleEnd}
+            {t.heroSubtitlePre}{t.heroSubtitlePost}{t.heroSubtitleEnd}
           </p>
         </motion.div>
 
