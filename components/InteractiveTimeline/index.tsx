@@ -435,10 +435,9 @@ function TimelineTrack({
       1879: 20,  // Electricity - historical
       2012: 30,  // Deep Learning - end of left 1/3
       2022: 55,  // ChatGPT - AI goes mainstream
-      2024: 70,  // AI Agents - autonomous AI
-      2025: 82,  // AI Skills - reasoning models
-      2026: 86,  // Current position (We Are Here)
-      2030: 95,  // AGI - future vision
+      2024: 72,  // AI Agents - autonomous AI
+      2026: 84,  // Current position (We Are Here)
+      2030: 94,  // AGI - future vision
     };
     return positions[year] ?? 50;
   };
