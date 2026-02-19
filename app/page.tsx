@@ -1884,22 +1884,33 @@ function DimensionSlider({
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between text-xs text-foreground-muted">
-          <span>{lowLabel}</span>
-          <span className="font-bold" style={{ color }}>{Math.round(value)}%</span>
-          <span>{highLabel}</span>
+        <div className="relative">
+          <div className="flex justify-between text-xs text-foreground-muted mb-1">
+            <span>{lowLabel}</span>
+            <span>{highLabel}</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value))}
+            className="w-full h-2 bg-surface-elevated rounded-full appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, ${color} 0%, ${color} ${value}%, var(--surface-elevated) ${value}%, var(--surface-elevated) 100%)`
+            }}
+          />
+          {/* 数值标签 - 跟随滑块位置 */}
+          <div
+            className="absolute -top-1 transform -translate-y-full -translate-x-1/2 text-xs font-bold px-2 py-0.5 rounded text-white whitespace-nowrap transition-all duration-75"
+            style={{
+              left: `${value}%`,
+              backgroundColor: color
+            }}
+          >
+            {Math.round(value)}%
+          </div>
         </div>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full h-2 bg-surface-elevated rounded-full appearance-none cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, ${color} 0%, ${color} ${value}%, var(--surface-elevated) ${value}%, var(--surface-elevated) 100%)`
-          }}
-        />
       </div>
     </div>
   );
@@ -2353,7 +2364,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={calculateRisk}
-                className="calc-btn-primary w-full bg-gradient-to-r from-data-blue to-accent-purple hover:from-data-blue/90 hover:to-accent-purple/90 text-white py-5 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 text-lg shadow-lg shadow-data-blue/20"
+                className="calc-btn-primary w-full text-white py-5 rounded-xl font-semibold flex items-center justify-center gap-3 text-lg"
               >
                 <BarChart3 className="w-6 h-6" />
                 {t.calculate}

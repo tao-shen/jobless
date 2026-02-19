@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Zap, Brain, Cpu, Sparkles, ChevronRight, Lightbulb } from 'lucide-react';
+import { X, Calendar, Zap, Brain, Cpu, Sparkles, ChevronRight, Lightbulb, Flame, Settings } from 'lucide-react';
 
 // ============================================
 // TYPES & DATA
@@ -46,9 +46,9 @@ const MILESTONES: Milestone[] = [
     nameEn: 'Steam Engine',
     nameZh: '蒸汽机',
     name: { en: 'Steam Engine', zh: '蒸汽机' },
-    icon: Zap,
-    color: '#f59e0b',
-    gradient: 'from-amber-500 to-orange-600',
+    icon: Settings,
+    color: '#94a3b8',
+    gradient: 'from-slate-400 to-slate-500',
     impactEn: 'Machines learned to move, replacing physical labor',
     impactZh: '机器学会运动，替代体力劳动',
     impact: { en: 'Machines learned to move, replacing physical labor', zh: '机器学会运动，替代体力劳动' },
@@ -83,7 +83,7 @@ const MILESTONES: Milestone[] = [
     nameEn: 'Electricity',
     nameZh: '电力革命',
     name: { en: 'Electricity', zh: '电力革命' },
-    icon: Lightbulb,
+    icon: Zap,
     color: '#fbbf24',
     gradient: 'from-yellow-400 to-amber-500',
     impactEn: 'Power distributed everywhere, factories ran 24/7',
@@ -116,7 +116,7 @@ const MILESTONES: Milestone[] = [
   },
   {
     id: 'deep-learning',
-    year: 2012,
+    year: 2015,
     nameEn: 'Deep Learning',
     nameZh: '深度学习',
     name: { en: 'Deep Learning', zh: '深度学习' },
@@ -188,7 +188,7 @@ const MILESTONES: Milestone[] = [
   },
   {
     id: 'ai-agents',
-    year: 2024,
+    year: 2025,
     nameEn: 'AI Agents',
     nameZh: 'AI智能体',
     name: { en: 'AI Agents', zh: 'AI智能体' },
@@ -227,7 +227,7 @@ const MILESTONES: Milestone[] = [
     nameEn: 'AGI',
     nameZh: '通用人工智能',
     name: { en: 'AGI', zh: '通用人工智能' },
-    icon: Sparkles,
+    icon: Flame,
     color: '#ec4899',
     gradient: 'from-pink-500 to-rose-600',
     impactEn: 'Human-level AI intelligence across all domains',
@@ -270,7 +270,7 @@ export default function ModernTimeline({ lang }: { lang: Language }) {
   }, []);
 
   const t = {
-    title: lang === 'en' ? 'From Steam to AI' : '从蒸汽机到AI',
+    title: lang === 'en' ? 'From Steam to AGI' : '从蒸汽机到AGI',
     subtitle: lang === 'en'
       ? '250 years of accelerating change. Where do you stand?'
       : '250年加速变革。你站在哪里？',
@@ -433,9 +433,9 @@ function TimelineTrack({
     const positions: Record<number, number> = {
       1769: 8,   // Steam Engine - left edge
       1879: 20,  // Electricity - historical
-      2012: 30,  // Deep Learning - end of left 1/3
+      2015: 30,  // Deep Learning - end of left 1/3
       2022: 55,  // ChatGPT - AI goes mainstream
-      2024: 72,  // AI Agents - autonomous AI
+      2025: 72,  // AI Agents - autonomous AI
       2026: 84,  // Current position (We Are Here)
       2030: 94,  // AGI - future vision
     };
@@ -445,6 +445,15 @@ function TimelineTrack({
   const currentYear = new Date().getFullYear();
   const currentPos = getPosition(currentYear);
 
+  // 时间轴渐变：与各里程碑图标颜色一致，按位置分布
+  const timelineGradient = (() => {
+    const stops = milestones
+      .map((m) => ({ pos: getPosition(m.year), color: m.color }))
+      .sort((a, b) => a.pos - b.pos);
+    const parts = stops.map((s) => `${s.color} ${s.pos}%`).join(', ');
+    return `linear-gradient(90deg, ${parts})`;
+  })();
+
   return (
     <div className="relative py-20">
       {/* Main timeline track */}
@@ -452,13 +461,14 @@ function TimelineTrack({
         {/* Background track */}
         <div className="absolute inset-0 bg-slate-800/50 rounded-full" />
 
-        {/* Animated progress line */}
+        {/* Animated progress line - 渐变与图标颜色一致 */}
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${currentPos}%` }}
           transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-amber-500 via-emerald-500 to-red-500 rounded-full"
+          className="absolute left-0 top-0 h-full rounded-full"
           style={{
+            background: timelineGradient,
             boxShadow: '0 0 30px rgba(16, 185, 129, 0.5), 0 0 60px rgba(16, 185, 129, 0.3)'
           }}
         />

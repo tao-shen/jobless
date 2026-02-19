@@ -617,10 +617,10 @@ body::after {
 
 /* Button - Primary Action - Enhanced */
 .calc-btn-primary {
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+  background: linear-gradient(135deg, var(--brand-accent), var(--brand-primary));
   background-size: 200% 200%;
   box-shadow:
-    0 4px 20px -5px var(--glow-primary),
+    0 4px 20px -5px var(--glow-accent),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
   transition: all 0.3s var(--ease-smooth);
   position: relative;
@@ -641,9 +641,9 @@ body::after {
 .calc-btn-primary:hover {
   background-position: 100% 0;
   box-shadow:
-    0 8px 30px -5px var(--glow-primary),
+    0 8px 30px -5px var(--glow-accent),
     0 0 0 1px rgba(255, 255, 255, 0.15) inset,
-    0 0 40px rgba(213, 0, 249, 0.3);
+    0 0 40px rgba(0, 229, 255, 0.3);
   transform: translateY(-2px);
 }
 
