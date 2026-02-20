@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Area, AreaChart } from 'recharts';
-import { AlertTriangle, TrendingUp, Users, Clock, Search, Shield, Zap, Target, Skull, Flame, Building2, Calendar, AlertCircle, Languages, Cpu, Sparkles, Bot, ClipboardCheck, Database, FileText, Workflow, Activity, Eye, ChevronRight, ChevronDown, CheckCircle2, BarChart3, Brain, ArrowUpRight, History, RefreshCw, TrendingDown, Info, BookOpen } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Users, Clock, Search, Shield, Zap, Target, Skull, Flame, Building2, Calendar, AlertCircle, Languages, Cpu, Sparkles, Bot, ClipboardCheck, Database, FileText, Workflow, Activity, Eye, ChevronRight, ChevronDown, CheckCircle2, BarChart3, Brain, ArrowUpRight, History, RefreshCw, TrendingDown, Info, BookOpen, Lock, Share2, Download, Copy, ExternalLink, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
 import InteractiveTimeline from '@/components/InteractiveTimeline';
+import { dataProtectionTranslations } from '@/lib/data-protection';
 
 // 语言类型
 type Language = 'en' | 'zh';
@@ -365,6 +366,60 @@ const translations = {
     // 关键洞察
     divergenceInsight: 'The Math:',
     divergenceInsightText: 'Both bets are rational. But only one of them is time-sensitive.',
+
+    // 数据威胁板块
+    dataThreatTitle: 'Your Data Is Training AI to Replace You',
+    dataThreatSubtitle: 'Skill is the last mile from general AI to your specific job. Your experience data is the last defense line.',
+    lastMileTitle: 'The Last Mile Problem',
+    lastMileDesc: 'A foundation model alone can\'t do your job. But add your industry data, your workflows, your expertise — and it becomes your replacement.',
+    lastMileStep1: 'Foundation Model',
+    lastMileStep1Desc: 'General capability, no specialization',
+    lastMileStep2: 'Your Data & Experience',
+    lastMileStep2Desc: 'Industry knowledge, workflows, expertise',
+    lastMileStep3: 'Your Replacement',
+    lastMileStep3Desc: 'AI that does YOUR specific job',
+    lastMileArrow1: 'Fine-tuning / Skills',
+    lastMileArrow2: 'Specialization',
+    lastMileWarning: 'The more open your experience data is, the faster AI crosses the last mile to replace you.',
+
+    // 平台协议
+    platformTitle: 'What You Already Agreed To',
+    platformSubtitle: 'Most people unknowingly "agreed" to let their data train AI. Here\'s what\'s in the fine print:',
+    platformName: 'Platform',
+    platformClause: 'AI Training Clause',
+    platformRisk: 'Risk',
+    platformTrains: 'What It Trains',
+    platformRiskHigh: 'Explicit Training',
+    platformRiskMedium: 'Ambiguous',
+    platformRiskLow: 'Opt-out Available',
+
+    // 反馈循环
+    feedbackLoopTitle: 'The Feedback Loop',
+    feedbackLoopDesc: 'You create data → Company collects it → AI trains on it → AI replaces you → Company profits',
+    feedbackLoopExample: 'Real example: Developers wrote code on GitHub → Copilot trained on it → Companies now hire fewer junior devs',
+    feedbackLoopStat: 'The people who created the training data are the first to be replaced.',
+
+    // 保护清单
+    protectionTitle: 'Protect Your Last Defense Line',
+    protectionSubtitle: 'Actionable steps to guard your experience data:',
+    protection1: 'Review AI training opt-out settings on every platform you use',
+    protection2: 'Understand your employer\'s data collection and AI training policies',
+    protection3: 'Develop non-digitizable skills: judgment, relationships, physical craft',
+    protection4: 'Keep proprietary knowledge in non-indexed, private formats',
+    protection5: 'Know your rights: GDPR (EU) and data protection laws grant you control',
+    viewFullDetails: 'View Full Data Protection Guide',
+    viewFullDetailsCta: 'See what platforms collect, the feedback loop, and how to protect yourself.',
+
+    // 社交分享
+    shareTitle: 'Share Your Result',
+    shareSubtitle: 'Let others know the risk',
+    shareCopyLink: 'Copy Link',
+    shareCopied: 'Copied!',
+    shareTwitter: 'Twitter/X',
+    shareWeChat: 'WeChat',
+    shareWeibo: 'Weibo',
+    shareDownload: 'Download',
+    shareText: 'My AI Replacement Risk: {level} ({prob}%). AI Kill Line: {year}. What\'s yours?',
   },
   zh: {
     // 首屏
@@ -718,6 +773,60 @@ const translations = {
     // 关键洞察
     divergenceInsight: '这笔账：',
     divergenceInsightText: '两个赌注都合理。但只有一个是时间敏感的。',
+
+    // 数据威胁板块
+    dataThreatTitle: '你的数据正在训练 AI 来取代你',
+    dataThreatSubtitle: '技能是通用 AI 到专业任务的最后一公里。你的经验数据，是最后一道防线。',
+    lastMileTitle: '最后一公里问题',
+    lastMileDesc: '基础模型本身做不了你的工作。但加上你的行业数据、你的工作流、你的专业知识——它就变成了你的替代者。',
+    lastMileStep1: '基础模型',
+    lastMileStep1Desc: '通用能力，无专业化',
+    lastMileStep2: '你的数据与经验',
+    lastMileStep2Desc: '行业知识、工作流程、专业技能',
+    lastMileStep3: '你的替代者',
+    lastMileStep3Desc: '能做你具体工作的 AI',
+    lastMileArrow1: '微调 / 技能',
+    lastMileArrow2: '专业化',
+    lastMileWarning: '你的经验数据越开放，AI 就越快跨过最后一公里来取代你。',
+
+    // 平台协议
+    platformTitle: '你签了什么？',
+    platformSubtitle: '大多数人在不知情的情况下已经"同意"了让自己的数据训练 AI。以下是细则里写的：',
+    platformName: '平台',
+    platformClause: 'AI 训练条款',
+    platformRisk: '风险',
+    platformTrains: '训练了什么',
+    platformRiskHigh: '明确训练',
+    platformRiskMedium: '模糊条款',
+    platformRiskLow: '可选退出',
+
+    // 反馈循环
+    feedbackLoopTitle: '死亡循环',
+    feedbackLoopDesc: '你创造数据 → 公司收集 → AI 训练 → AI 取代你 → 公司获利',
+    feedbackLoopExample: '真实案例：开发者在 GitHub 上写代码 → Copilot 用它训练 → 公司现在减少招聘初级开发者',
+    feedbackLoopStat: '创造训练数据的人，是第一批被替代的人。',
+
+    // 保护清单
+    protectionTitle: '保护你的最后防线',
+    protectionSubtitle: '立即可行的经验数据保护措施：',
+    protection1: '检查你使用的每个平台的 AI 训练退出设置',
+    protection2: '了解你的雇主的数据收集和 AI 训练政策',
+    protection3: '发展不可数字化的技能：判断力、人际关系、物理技艺',
+    protection4: '将专有知识保存在未被索引的私有格式中',
+    protection5: '了解你的权利：GDPR（欧盟）和《个人信息保护法》赋予你数据控制权',
+    viewFullDetails: '查看完整数据保护指南',
+    viewFullDetailsCta: '了解平台数据收集条款、反馈循环和保护措施。',
+
+    // 社交分享
+    shareTitle: '分享你的结果',
+    shareSubtitle: '让更多人知道风险',
+    shareCopyLink: '复制链接',
+    shareCopied: '已复制！',
+    shareTwitter: 'Twitter/X',
+    shareWeChat: '微信',
+    shareWeibo: '微博',
+    shareDownload: '下载图片',
+    shareText: '我的 AI 替代风险：{level}（{prob}%）。AI 斩杀线：{year}年。你呢？',
   },
 };
 
@@ -988,6 +1097,9 @@ function TechTag({ tech, lang }: { tech: string; lang: Language }) {
   );
 }
 
+// 主题类型
+type Theme = 'dark' | 'light';
+
 // 语言切换按钮
 function LanguageButton({ lang, setLang }: { lang: Language; setLang: (lang: Language) => void }) {
   return (
@@ -1003,6 +1115,25 @@ function LanguageButton({ lang, setLang }: { lang: Language; setLang: (lang: Lan
   );
 }
 
+// 主题切换按钮
+function ThemeButton({ theme, setTheme }: { theme: Theme; setTheme: (theme: Theme) => void }) {
+  return (
+    <motion.button
+      onClick={() => {
+        const next = theme === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('jobless-theme', next);
+      }}
+      className="z-50 flex items-center justify-center w-10 h-10 bg-surface-elevated hover:bg-brand-accent/80 text-foreground hover:text-white rounded-lg border border-surface-elevated transition-all theme-toggle-btn"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+    </motion.button>
+  );
+}
+
 // 研究报告按钮
 // 首屏
 function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
@@ -1012,9 +1143,9 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
       <div className="absolute inset-0">
         {/* Animated mesh gradient overlay */}
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-risk-high/40 rounded-full blur-[120px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-brand-primary/30 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-accent/20 rounded-full blur-[150px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/4 left-1/4 w-[250px] h-[250px] md:w-[500px] md:h-[500px] bg-risk-high/40 rounded-full blur-[80px] md:blur-[120px] animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] md:w-[400px] md:h-[400px] bg-brand-primary/30 rounded-full blur-[60px] md:blur-[100px] animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-brand-accent/20 rounded-full blur-[80px] md:blur-[150px] animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
 
         {/* Grid pattern overlay */}
@@ -1037,7 +1168,7 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
           </div>
 
           {/* Enhanced hero title */}
-          <h1 className="text-5xl md:text-8xl font-bold mb-8 leading-tight text-white">
+          <h1 className="text-3xl sm:text-5xl md:text-8xl font-bold mb-8 leading-tight text-foreground">
             <span className="inline-block animate-fade-in">{t.heroTitle}</span>
           </h1>
 
@@ -1060,7 +1191,7 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
                 <div className="text-sm text-foreground-muted">{t.currentReality}</div>
                 <div className="text-xs text-foreground-dim">{t.currentRealityDesc}</div>
               </div>
-              <div className="text-4xl md:text-5xl font-bold mono text-risk-critical data-highlight"><Counter end={MIT_REPLACEMENT_RATE} suffix="%" /></div>
+              <div className="text-2xl sm:text-4xl md:text-5xl font-bold mono text-risk-critical data-highlight"><Counter end={MIT_REPLACEMENT_RATE} suffix="%" /></div>
             </div>
             <div className="h-8 bg-surface-elevated rounded-full overflow-hidden relative shadow-inner">
               <motion.div
@@ -1080,7 +1211,7 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
                 <div className="text-sm text-foreground-muted">{t.technicalCeiling}</div>
                 <div className="text-xs text-foreground-dim">{t.technicalCeilingDesc}</div>
               </div>
-              <div className="text-4xl md:text-5xl font-bold mono text-brand-accent data-highlight"><Counter end={MCKINSEY_AUTOMATION_POTENTIAL} suffix="%" /></div>
+              <div className="text-2xl sm:text-4xl md:text-5xl font-bold mono text-brand-accent data-highlight"><Counter end={MCKINSEY_AUTOMATION_POTENTIAL} suffix="%" /></div>
             </div>
             <div className="h-8 bg-surface-elevated rounded-full overflow-hidden relative shadow-inner">
               <motion.div
@@ -1150,9 +1281,9 @@ function ProgressStages({ lang, t }: { lang: Language; t: typeof translations.en
         </motion.h2>
 
         <div className="relative">
-          <div className="absolute top-8 left-0 right-0 h-1 bg-gradient-to-r from-risk-low via-risk-medium to-risk-high rounded-full"></div>
+          <div className="hidden md:block absolute top-8 left-0 right-0 h-1 bg-gradient-to-r from-risk-low via-risk-medium to-risk-high rounded-full"></div>
 
-          <div className="grid grid-cols-5 gap-4 relative">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4 relative">
             {progressStages.map((stage, index) => (
               <motion.div
                 key={stage.label.en}
@@ -1160,7 +1291,9 @@ function ProgressStages({ lang, t }: { lang: Language; t: typeof translations.en
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="text-center relative"
+                className={`text-center relative ${
+                  stage.label.en === 'YOU ARE HERE' ? 'col-span-2 md:col-span-1' : ''
+                }`}
               >
                 <div className={`w-4 h-4 rounded-full mx-auto mb-4 border-4 border-background z-10 ${
                   stage.label.en === 'YOU ARE HERE' ? 'bg-risk-high scale-150 animate-pulse-glow' : 'bg-surface-elevated'
@@ -1337,7 +1470,8 @@ function HighRiskJobsSection({ lang, t }: { lang: Language; t: typeof translatio
           {t.highRiskSubtitle}
         </p>
 
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-surface-elevated">
@@ -1389,6 +1523,46 @@ function HighRiskJobsSection({ lang, t }: { lang: Language; t: typeof translatio
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-4">
+          {highRiskJobs.map((job, index) => {
+            const config = modeConfig[job.mode];
+            const Icon = config.icon;
+            return (
+              <motion.div
+                key={job.industry.en}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+                className="bg-surface rounded-xl p-4 border border-surface-elevated"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="font-semibold">{job.industry[lang]}</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium`} style={{ backgroundColor: config.color + '20', color: config.color }}>
+                    <Icon className="w-3 h-3" />
+                    <span>{config.label[lang]}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex-1 h-2 bg-surface-elevated rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${job.risk}%` }}
+                      viewport={{ once: true }}
+                      className="h-full"
+                      style={{ backgroundColor: config.color }}
+                    />
+                  </div>
+                  <span className="font-bold mono text-sm" style={{ color: config.color }}>{job.risk}%</span>
+                </div>
+                <div className="text-sm text-foreground-muted mb-2">{job.jobs[lang]}</div>
+                <div className="text-xs text-foreground-muted/70">{job.reason[lang]}</div>
+              </motion.div>
+            );
+          })}
         </div>
 
         <motion.div
@@ -2059,6 +2233,142 @@ const PROFESSION_PRESETS: Record<string, {
 function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
   const [showOptional, setShowOptional] = useState(false);
   const [result, setResult] = useState<RiskOutputResult | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // 分享功能
+  const getShareText = () => {
+    if (!result) return '';
+    const levelText = result.riskLevel === 'very-low' ? (lang === 'en' ? 'Very Low' : '极低') :
+      result.riskLevel === 'low' ? (lang === 'en' ? 'Low' : '低') :
+      result.riskLevel === 'medium' ? (lang === 'en' ? 'Medium' : '中等') :
+      result.riskLevel === 'high' ? (lang === 'en' ? 'High' : '高') :
+      (lang === 'en' ? 'Critical' : '极高');
+    return t.shareText
+      .replace('{level}', levelText)
+      .replace('{prob}', String(result.replacementProbability))
+      .replace('{year}', String(result.predictedReplacementYear));
+  };
+
+  const handleCopyLink = async () => {
+    const text = getShareText() + '\n' + window.location.href;
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleShareTwitter = () => {
+    const text = encodeURIComponent(getShareText() + '\n' + window.location.href);
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+  };
+
+  const handleShareWeibo = () => {
+    const text = encodeURIComponent(getShareText());
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://service.weibo.com/share/share.php?title=${text}&url=${url}`, '_blank');
+  };
+
+  const handleDownloadImage = () => {
+    if (!result) return;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 630;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Background
+    const grad = ctx.createLinearGradient(0, 0, 1200, 630);
+    grad.addColorStop(0, '#050507');
+    grad.addColorStop(0.4, '#0d0b10');
+    grad.addColorStop(1, '#15121a');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1200, 630);
+
+    // Glow effects
+    const glow1 = ctx.createRadialGradient(200, 150, 0, 200, 150, 200);
+    glow1.addColorStop(0, 'rgba(213,0,249,0.12)');
+    glow1.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow1;
+    ctx.fillRect(0, 0, 400, 350);
+
+    const riskColor = RISK_LEVEL_INFO[result.riskLevel].color;
+
+    // Title
+    ctx.fillStyle = '#8a8595';
+    ctx.font = '600 20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('JOBLESS - AI Replacement Risk Assessment', 600, 60);
+
+    // Risk level
+    ctx.fillStyle = riskColor;
+    ctx.font = 'bold 72px sans-serif';
+    ctx.fillText(
+      result.riskLevel === 'very-low' ? (lang === 'en' ? 'VERY LOW' : '极低风险') :
+      result.riskLevel === 'low' ? (lang === 'en' ? 'LOW RISK' : '低风险') :
+      result.riskLevel === 'medium' ? (lang === 'en' ? 'MEDIUM' : '中等风险') :
+      result.riskLevel === 'high' ? (lang === 'en' ? 'HIGH RISK' : '高风险') :
+      (lang === 'en' ? 'CRITICAL' : '极高风险'),
+      600, 180
+    );
+
+    // Metrics boxes
+    const metrics = [
+      { value: `${result.replacementProbability}%`, label: lang === 'en' ? 'Replacement Probability' : '替代概率', color: '#ff1744' },
+      { value: `${result.predictedReplacementYear}`, label: lang === 'en' ? 'AI Kill Line' : 'AI 斩杀线', color: '#ff5722' },
+      { value: `${result.currentReplacementDegree}%`, label: lang === 'en' ? 'Current Degree' : '当前程度', color: '#d500f9' },
+    ];
+
+    metrics.forEach((m, i) => {
+      const x = 150 + i * 340;
+      const y = 240;
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.beginPath();
+      ctx.roundRect(x, y, 280, 160, 16);
+      ctx.fill();
+      ctx.strokeStyle = m.color + '40';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(x, y, 280, 160, 16);
+      ctx.stroke();
+      ctx.fillStyle = m.color;
+      ctx.font = 'bold 48px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(m.value, x + 140, y + 80);
+      ctx.fillStyle = '#8a8595';
+      ctx.font = '500 16px sans-serif';
+      ctx.fillText(m.label, x + 140, y + 120);
+    });
+
+    // Confidence interval
+    ctx.fillStyle = '#fafafa';
+    ctx.font = '500 22px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      `${lang === 'en' ? 'Range' : '预测范围'}: ${result.confidenceInterval.earliest} — ${result.confidenceInterval.latest}`,
+      600, 470
+    );
+
+    // CTA
+    ctx.fillStyle = '#00e5ff';
+    ctx.font = '500 20px sans-serif';
+    ctx.fillText(lang === 'en' ? 'Calculate your risk → jobless.wiki' : '计算你的风险 → jobless.wiki', 600, 560);
+
+    // Top accent bar
+    const barGrad = ctx.createLinearGradient(0, 0, 1200, 0);
+    barGrad.addColorStop(0, riskColor);
+    barGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = barGrad;
+    ctx.fillRect(0, 0, 1200, 4);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ai-risk-result.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  };
 
   // 核心维度状态
   const [dimensions, setDimensions] = useState({
@@ -2147,7 +2457,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
           transition={{ duration: 0.6 }}
           className="text-center mb-12"
         >
-          <h2 className="calc-title text-4xl md:text-6xl lg:text-7xl mb-4 bg-gradient-to-r from-foreground via-foreground to-foreground-muted bg-clip-text text-transparent">
+          <h2 className="calc-title text-2xl sm:text-4xl md:text-6xl lg:text-7xl mb-4 bg-gradient-to-r from-foreground via-foreground to-foreground-muted bg-clip-text text-transparent">
             {t.survivalTitle}
           </h2>
           <p className="text-foreground-muted text-lg md:text-xl max-w-2xl mx-auto">
@@ -2392,7 +2702,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.2, type: 'spring' }}
-                    className="text-5xl md:text-6xl font-bold mb-3"
+                    className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3"
                     style={{ color: RISK_LEVEL_INFO[result.riskLevel].color, fontFamily: 'var(--font-display)' }}
                   >
                     {result.riskLevel === 'very-low' ? t.riskVeryLow :
@@ -2405,14 +2715,14 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
               </motion.div>
 
               {/* Three Metrics - Clean Number Display */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
                   className="result-card rounded-xl p-6 text-center group hover-lift"
                 >
-                  <div className="metric-value text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-critical)' }}>
+                  <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-critical)' }}>
                     {result.replacementProbability}%
                   </div>
                   <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric1Title}</div>
@@ -2424,7 +2734,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                   transition={{ delay: 0.2 }}
                   className="result-card rounded-xl p-6 text-center group hover-lift"
                 >
-                  <div className="metric-value text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-high)' }}>
+                  <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-high)' }}>
                     {result.predictedReplacementYear}
                   </div>
                   <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric2Title}</div>
@@ -2436,7 +2746,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                   transition={{ delay: 0.3 }}
                   className="result-card rounded-xl p-6 text-center group hover-lift"
                 >
-                  <div className="metric-value text-4xl md:text-5xl mb-2" style={{ color: 'var(--brand-primary)' }}>
+                  <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--brand-primary)' }}>
                     {result.currentReplacementDegree}%
                   </div>
                   <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric3Title}</div>
@@ -2511,6 +2821,75 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                 <p className="text-sm text-foreground-muted mt-2 leading-relaxed">{t.realityCheckText}</p>
               </div>
 
+              {/* Social Sharing */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="result-card rounded-xl p-6"
+                style={{ borderColor: RISK_LEVEL_INFO[result.riskLevel].color + '30', borderWidth: 1 }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: RISK_LEVEL_INFO[result.riskLevel].color + '20' }}>
+                    <Share2 className="w-4 h-4" style={{ color: RISK_LEVEL_INFO[result.riskLevel].color }} />
+                  </div>
+                  <div>
+                    <h5 className="font-semibold">{t.shareTitle}</h5>
+                    <p className="text-xs text-foreground-muted">{t.shareSubtitle}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleCopyLink}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-surface-elevated hover:bg-surface-elevated/80 border border-white/10 text-sm font-medium transition-all"
+                  >
+                    <Copy className="w-4 h-4" />
+                    {copied ? t.shareCopied : t.shareCopyLink}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleShareTwitter}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 border border-[#1DA1F2]/20 text-sm font-medium text-[#1DA1F2] transition-all"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    {t.shareTwitter}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      const text = encodeURIComponent(getShareText() + '\n' + window.location.href);
+                      window.open(`weixin://dl/business/?t=${text}`, '_self');
+                    }}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#07C160]/10 hover:bg-[#07C160]/20 border border-[#07C160]/20 text-sm font-medium text-[#07C160] transition-all"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    {t.shareWeChat}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleShareWeibo}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#E6162D]/10 hover:bg-[#E6162D]/20 border border-[#E6162D]/20 text-sm font-medium text-[#E6162D] transition-all"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    {t.shareWeibo}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleDownloadImage}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 text-sm font-medium text-brand-primary transition-all"
+                  >
+                    <Download className="w-4 h-4" />
+                    {t.shareDownload}
+                  </motion.button>
+                </div>
+              </motion.div>
+
               {/* Recalculate Button */}
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -2551,6 +2930,144 @@ function Footer({ lang, t }: { lang: Language; t: typeof translations.en }) {
         </div>
       </div>
     </footer>
+  );
+}
+
+// 数据威胁板块（精简版，完整版在 /data-protection）
+function DataThreatSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <section className="py-20 px-6 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-0 left-1/4 w-48 h-48 md:w-96 md:h-96 bg-risk-critical/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-48 h-48 md:w-96 md:h-96 bg-brand-primary/5 rounded-full blur-3xl" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-risk-critical/10 border border-risk-critical/20 mb-6">
+            <Lock className="w-4 h-4 text-risk-critical" />
+            <span className="text-sm font-medium text-risk-critical">DATA THREAT</span>
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+            {t.dataThreatTitle}
+          </h2>
+          <p className="text-foreground-muted max-w-3xl mx-auto text-lg">
+            {t.dataThreatSubtitle}
+          </p>
+        </motion.div>
+
+        {/* Collapsible Last Mile Concept */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-8"
+        >
+          <div className="result-card rounded-2xl p-8 border border-surface-elevated">
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="w-full flex items-center justify-between gap-3 cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-xl font-bold">{t.lastMileTitle}</h3>
+              </div>
+              <motion.div
+                animate={{ rotate: expanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-5 h-5 text-foreground-muted" />
+              </motion.div>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {expanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-foreground-muted mb-8 mt-6">{t.lastMileDesc}</p>
+
+                  {/* Visual Flow */}
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                    <div className="bg-brand-accent/10 border border-brand-accent/20 rounded-xl p-5 text-center">
+                      <Cpu className="w-8 h-8 text-brand-accent mx-auto mb-3" />
+                      <div className="font-semibold text-sm">{t.lastMileStep1}</div>
+                      <div className="text-xs text-foreground-muted mt-1">{t.lastMileStep1Desc}</div>
+                    </div>
+
+                    <div className="hidden md:flex flex-col items-center">
+                      <div className="text-xs text-foreground-muted mb-1">{t.lastMileArrow1}</div>
+                      <div className="text-2xl text-risk-high">→</div>
+                    </div>
+
+                    <div className="bg-risk-high/10 border-2 border-risk-high/40 rounded-xl p-5 text-center relative">
+                      <div className="absolute -top-2 -right-2 w-5 h-5 bg-risk-critical rounded-full animate-pulse" />
+                      <Database className="w-8 h-8 text-risk-high mx-auto mb-3" />
+                      <div className="font-semibold text-sm text-risk-high">{t.lastMileStep2}</div>
+                      <div className="text-xs text-foreground-muted mt-1">{t.lastMileStep2Desc}</div>
+                    </div>
+
+                    <div className="hidden md:flex flex-col items-center">
+                      <div className="text-xs text-foreground-muted mb-1">{t.lastMileArrow2}</div>
+                      <div className="text-2xl text-risk-critical">→</div>
+                    </div>
+
+                    <div className="bg-risk-critical/10 border border-risk-critical/30 rounded-xl p-5 text-center">
+                      <Skull className="w-8 h-8 text-risk-critical mx-auto mb-3" />
+                      <div className="font-semibold text-sm text-risk-critical">{t.lastMileStep3}</div>
+                      <div className="text-xs text-foreground-muted mt-1">{t.lastMileStep3Desc}</div>
+                    </div>
+                  </div>
+
+                  {/* Mobile arrows */}
+                  <div className="flex md:hidden flex-col items-center gap-2 my-4">
+                    <div className="text-foreground-muted text-lg">↓</div>
+                  </div>
+
+                  {/* Warning */}
+                  <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-risk-critical/10 to-risk-high/10 border border-risk-critical/20">
+                    <p className="text-sm font-semibold text-center">
+                      <AlertTriangle className="w-4 h-4 inline text-risk-critical mr-2 align-middle" />
+                      {t.lastMileWarning}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        {/* CTA to full data protection page */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <p className="text-foreground-muted mb-4">{t.viewFullDetailsCta}</p>
+          <Link
+            href="/data-protection"
+            className="inline-flex items-center gap-2 bg-risk-critical hover:bg-risk-critical/80 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all card-hover"
+          >
+            <Shield className="w-5 h-5" />
+            {t.viewFullDetails}
+          </Link>
+        </motion.div>
+      </div>
+    </section>
   );
 }
 
@@ -2611,14 +3128,28 @@ function AnalysisLinkSection({ lang, t }: { lang: Language; t: typeof translatio
 
 export default function Home() {
   const [lang, setLang] = useState<Language>('en');
+  const [theme, setTheme] = useState<Theme>('dark');
   const t = translations[lang];
+
+  useEffect(() => {
+    const saved = localStorage.getItem('jobless-theme') as Theme | null;
+    if (saved) {
+      setTheme(saved);
+      document.documentElement.setAttribute('data-theme', saved);
+    } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      setTheme('light');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  }, []);
 
   return (
     <main className="min-h-screen overflow-x-hidden">
       <LanguageButton lang={lang} setLang={setLang} />
+      <ThemeButton theme={theme} setTheme={setTheme} />
       <HeroSection lang={lang} t={t} />
       <SurvivalIndexSection lang={lang} t={t} />
-      <InteractiveTimeline lang={lang} />
+      <DataThreatSection lang={lang} t={t} />
+      <InteractiveTimeline lang={lang} theme={theme} />
       <AnalysisLinkSection lang={lang} t={t} />
       <Footer lang={lang} t={t} />
     </main>
