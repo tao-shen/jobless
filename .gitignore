@@ -41,3 +41,37 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ---------------------------------------------------------------------------
+# Python / analysis (iceberg_exposure)
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.Python
+*.so
+.venv/
+venv/
+*.egg-info/
+*.egg
+
+# Analysis data (raw + interim) — 可从脚本或 DVC 恢复，不纳入版本库
+/analysis/iceberg_exposure/data/
+
+# Script-generated outputs — 由脚本生成，可不提交
+/analysis/iceberg_exposure/output/
+
+# Zapier 抓取/生成的大块数据
+/analysis/iceberg_exposure/zapier_chunks/
+
+# 压缩包与大型二进制（BLS/O*NET 等原始数据包）
+*.zip
+*.tar.gz
+
+# 根目录大 JSON 数据（若由脚本生成可取消注释）
+# gdpval_complete_data.json
+
+# Hugging Face Spaces 不接受二进制，论文图片/PDF 不推送
+/analysis/iceberg_exposure/paper_source/**/*.png
+/analysis/iceberg_exposure/paper_source/**/*.pdf

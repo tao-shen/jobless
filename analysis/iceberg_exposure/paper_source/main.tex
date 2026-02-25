@@ -1,0 +1,215 @@
+% -----------------------------------------------------------------------------
+\documentclass[11pt]{article}
+
+% Core engine‑agnostic setup
+\usepackage[a4paper,margin=1in]{geometry}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+% Typography and graphics
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{svg}          % works with pdflatex via -shell-escape
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage[backref]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{fancyhdr}
+\usepackage{subcaption}
+\usepackage[most]{tcolorbox}
+% \usepackage{tabularx} % in preamble
+\newcommand{\PB}[1]{{\color{red}Prasanna: #1}}
+
+% Math / algorithms
+\usepackage{amsmath,amssymb,mathtools,amsfonts}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{nicefrac}
+
+% -----------------------------------------------------------------------------
+% Quick author comment macros (optional)
+% -----------------------------------------------------------------------------
+% \newcommand{\author}[1]{{\color{blue}Author: {#1}}}
+\newcommand{\reviewer}[1]{{\color{red}Reviewer: {#1}}}
+\newcommand{\note}[1]{{\color{olive}Note: {#1}}}
+\newcommand{\todo}[1]{{\color{magenta}TODO: {#1}}}
+\newcommand{\dd}{\mathrm{d}}
+
+% -----------------------------------------------------------------------------
+% Iceberg Color palette & hyperlinks
+% -----------------------------------------------------------------------------
+\definecolor{IcebergBlue}{HTML}{6B8DB5}      % Darker iceberg blue      % Main iceberg blue
+\definecolor{IcebergLight}{HTML}{C7C9D1}     % Light blue-grey
+\definecolor{IcebergDark}{HTML}{1B5E98}      % Dark blue
+\definecolor{IcebergCyan}{HTML}{89B8C2}      % Cyan accent
+\definecolor{IcebergBg}{HTML}{F8F9FB}        % Very light blue background
+\colorlet{AccentColor}{IcebergDark}
+\definecolor{IcebergVeryLight}{HTML}{E9F2FA} % very light blue
+
+\hypersetup{colorlinks=true,linkcolor=AccentColor,urlcolor=AccentColor,citecolor=AccentColor}
+
+% \usepackage{draftwatermark}
+% \SetWatermarkText{IN PROGRESS}
+% \SetWatermarkScale{0.5}
+% \SetWatermarkColor[gray]{0.88}  % 0.9 = very light gray
+
+% -----------------------------------------------------------------------------
+% Patch \and for horizontal author list
+% -----------------------------------------------------------------------------
+\makeatletter
+\renewcommand{\and}{\hspace{1em}}
+\makeatother
+
+% -----------------------------------------------------------------------------
+% Section headings (colored, sans)
+% -----------------------------------------------------------------------------
+\titleformat{\section}{\Large\sffamily\bfseries\color{AccentColor}}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\sffamily\bfseries\color{IcebergDark}}{\thesubsection}{1em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.6em}
+\titlespacing*{\subsection}{0pt}{0.8em}{0.4em}
+
+% -----------------------------------------------------------------------------
+% Captions and callout boxes
+% -----------------------------------------------------------------------------
+\DeclareCaptionLabelFormat{accent}{\textcolor{AccentColor}{\bfseries #1~#2}}
+\captionsetup{labelformat=accent,labelsep=period}
+\newtcolorbox{callout}{colback=IcebergBg,colframe=AccentColor!80!black,boxrule=0pt,arc=2pt,left=6pt,right=6pt,top=6pt,bottom=6pt}
+
+% -----------------------------------------------------------------------------
+% Horizontal rule macro (used for header & footer)
+%   (localizes accent color so following text returns to black)
+% -----------------------------------------------------------------------------
+\newcommand{\accentrule}{\begingroup\color{AccentColor}\hrule height 0.6pt\endgroup}
+\newcommand{\titleskip}{0.8em} 
+
+% -----------------------------------------------------------------------------
+% Fancyhdr setup — accent rules on header/footer only
+% ---------------------------------------------------------------------- -------
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrule}{\accentrule}
+\renewcommand{\footrule}{\accentrule}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[C]{\textsf{\color{AccentColor}Project Iceberg}}
+\fancyfoot[C]{\color{black}\thepage}
+
+% -----------------------------------------------------------------------------
+% Title block: Project Iceberg branding
+% -----------------------------------------------------------------------------
+\usepackage{tikz}
+
+% Create a simple iceberg icon using TikZ
+% \newcommand{\iceberglogo}{%
+% \begin{tikzpicture}[scale=0.3]
+%   % Underwater part (darker blue)
+%   \fill[IcebergDark!60] (-1,-1.5) -- (1,-1.5) -- (0.5,-0.5) -- (-0.5,-0.5) -- cycle;
+%   % Above water part (lighter blue)
+%   \fill[IcebergBlue!80] (-0.5,-0.5) -- (0.5,-0.5) -- (0.3,0.8) -- (-0.3,0.8) -- cycle;
+%   % Water line
+%   \draw[IcebergCyan, thick] (-1.2,-0.5) -- (1.2,-0.5);
+% \end{tikzpicture}%
+% }
+
+\pretitle{%
+  \vspace*{-15mm}% Slight offset from top
+  {\raggedright\color{AccentColor}\sffamily\textbf{PROJECT ICEBERG}}% Left-aligned logo and text
+  \vspace{0.2em}% tighter gap before rule
+  \accentrule
+  \vspace{1em}% gap before title
+  \begin{center}\Huge\sffamily\bfseries\color{black}% explicit black title 
+}
+
+\posttitle{\par\end{center}}
+\preauthor{\vspace{\titleskip}\begin{center}\large\sffamily}
+\postauthor{\par\end{center}\vspace{\titleskip}}
+\predate{\vspace{0pt}}
+\postdate{\vspace{0pt}}
+
+% -----------------------------------------------------------------------------
+% Metadata - UPDATE THESE FOR YOUR PROJECT
+% -----------------------------------------------------------------------------
+\title{The Iceberg Index: \\ Measuring Skills-centered Exposure in the AI Economy}
+
+\author{Ayush Chopra$^{1,6}$ \and Santanu Bhattacharya$^{1,6}$ \and DeAndrea Salvador$^{3,4,1}$ \and Ayan Paul$^{6}$ \and Teddy Wright$^{5}$ \and Aditi Garg$^{6}$ \and Feroz Ahmad$^{6}$ \and Alice C. Schwarze$^{5}$ \and Ramesh Raskar$^{1,6}$ \and Prasanna Balaprakash$^{2}$ \\
+[0.6em] \small $^{1}$Massachusetts Institute of Technology \qquad $^{2}$Oak Ridge National Laboratory \\ [0.2em] \qquad $^{3}$North Carolina General Assembly \qquad $^{4}$Future Caucus: National Task Force on State AI Policy \\ [0.2em] \qquad $^{5}$Utah Office of AI Policy, Dept of Commerce  \qquad $^{6}$Project Iceberg}
+
+\date{\vspace{0pt}}
+
+% -----------------------------------------------------------------------------
+\begin{document}
+
+% Title page with custom page style (no running title on first page)
+\thispagestyle{empty}
+\maketitle
+
+% Activate running header/footer from second page onward
+\pagestyle{fancy}
+
+% -----------------------------------------------------------------------------
+% Abstract boxed with Iceberg theme
+% -----------------------------------------------------------------------------
+\begin{tcolorbox}[
+  enhanced,                               % enables overlay
+  colback       = IcebergBg,
+  colframe      = AccentColor!80!black,
+  boxrule       = 0pt,
+  arc           = 2pt,
+  before skip   = 0pt,          % kill default 6 pt
+  after skip    = \titleskip,    % match the gap below the box
+  % overlay={%
+  % \node[anchor=south east, inner sep=2pt, xshift=-1mm, yshift=1mm] 
+  %   at (frame.south east)
+  %   {\includegraphics[width=2.8cm]{project_iceberg_icon_blue_transparent.png}};
+  %   }
+]
+\noindent\textbf{Abstract.} 
+Artificial Intelligence is reshaping America's over \$9.4 trillion labor market, with cascading effects that extend far beyond visible technology sectors. When AI automates quality control in automotive plants, consequences spread through logistics networks, supply chains, and local service economies. Yet traditional workforce metrics cannot capture these ripple effects: they measure employment outcomes after disruption occurs, not where AI capabilities overlap with human skills before adoption crystallizes. Project Iceberg addresses this gap using Large Population Models to simulate the human–AI labor market, representing 151 million workers as autonomous agents executing over 32,000 skills across 3,000 counties and interacting with thousands of AI tools. It introduces the Iceberg Index, a skills-centered metric that measures the wage value of skills AI systems can perform within each occupation. The Index captures technical exposure, where AI can perform occupational tasks, not displacement outcomes or adoption timelines. Analysis shows that visible AI adoption concentrated in computing and technology (2.2\% of wage value, approximately \$211 billion) represents only the tip of the iceberg. Technical capability extends far below the surface through cognitive automation spanning administrative, financial, and professional services (11.7\%, approximately \$1.2 trillion). This exposure is fivefold larger and geographically distributed across all states rather than confined to coastal hubs. Traditional indicators such as GDP, income, and unemployment explain less than 5\% of this skills-based variation, underscoring why new indices are needed to capture exposure in the AI economy. By simulating how capabilities may spread under alternative scenarios, Project Iceberg enables policymakers and business leaders to identify exposure hotspots, prioritize training and infrastructure investments, and test interventions before committing billions to implementation. Iceberg is built with the AgentTorch framework.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white,colframe=IcebergDark]
+\centering
+\textbf{The Iceberg Index:} A skills-centered KPI for the AI economy. \\
+It measures the percentage of wage value of skills that AI systems can perform within each occupation, revealing where human and AI capabilities overlap.
+\end{tcolorbox}
+
+% -----------------------------------------------------------------------------
+% Main content sections
+% -----------------------------------------------------------------------------
+
+\input{1_intro}
+\input{2_iceberg}
+\input{iceberg_index}
+\input{Oct5_results}
+\input{4_concl}
+
+% -----------------------------------------------------------------------------
+% Acknowledgments
+% -----------------------------------------------------------------------------
+% \section*{Acknowledgements}
+
+% -----------------------------------------------------------------------------
+% References
+% -----------------------------------------------------------------------------
+\bibliographystyle{abbrvnat}
+\bibliography{main}  % Change to your .bib file name
+
+% -----------------------------------------------------------------------------
+% Appendix (optional)
+% -----------------------------------------------------------------------------
+\clearpage
+\appendix
+\input{sections_us/tech_appendix2}
+
+% \section{Additional Details}
+% \label{app:details}
+
+% Supplementary material and detailed proofs can go here.
+
+\end{document}

@@ -83,7 +83,7 @@ export default async function Image() {
             alignItems: 'center',
           }}
         >
-          {/* MIT stat */}
+          {/* Current stat */}
           <div
             style={{
               display: 'flex',
@@ -96,10 +96,10 @@ export default async function Image() {
             }}
           >
             <div style={{ fontSize: 48, fontWeight: 700, color: '#ff1744', display: 'flex' }}>
-              11.7%
+              21.37%
             </div>
             <div style={{ fontSize: 16, color: '#8a8595', marginTop: 8, display: 'flex' }}>
-              MIT: Replaceable Now
+              Current: Replaceable Now
             </div>
           </div>
 

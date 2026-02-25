@@ -1,0 +1,93 @@
+\section{Project Iceberg: Sandbox for the Human-AI Workforce}
+Project Iceberg simulates the emerging human-AI workforce. It models how 151 million American workers and emerging AI capabilities interact, allowing states to explore policy scenarios and assess potential workforce exposure patterns before committing billions to infrastructure and training programs. Built on MIT’s Large Population Models~\cite{chopra2025lpm} and powered by Oak Ridge National Laboratory’s Frontier supercomputer~\cite{dash2023optimizingdistributedtrainingfrontier}, Iceberg turns trillions of workforce data points into scenario-planning capability.
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.99\linewidth]{sections_us/images_us/iceberg_phases_final.png}
+    \caption{\textbf{Project Iceberg prepares states for the AI economy.} First platform to simulate human-AI workforce interactions at national scale, enabling policymakers to assess technical exposure, test workforce strategies, and target investments before committing billions to implementation.}
+    \label{fig:iceberg_process}
+\end{figure}
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.99\linewidth]{sections_us/images_us/iceberg_figmain.png}
+    \caption{The Iceberg Index reveals workforce exposure five times larger than visible tech adoption. Above the waterline: the Surface Index (2.2\%) tracks current AI adoption in coastal technology hubs. Below the waterline: the Iceberg Index (11.7\%) measures technical capability spanning administrative, financial, and professional services nationwide. This hidden mass represents where workforce preparation strategies based solely on visible tech-sector signals may fall short.}
+    \label{fig:iceberg_overview_us}
+\end{figure}
+
+% \subsection{The Iceberg Simulations} 
+Iceberg represents both sides of the emerging labor market: what human workers currently do, and what AI systems are becoming capable of doing. By mapping these onto a shared skill taxonomy, it simulates how work evolves under different assumptions about policy intervention, adoption behavior, and technology readiness. The process unfolds in three steps (Fig~\ref{fig:iceberg_process}):
+
+\textbf{\textcolor{IcebergDark}{Step 1 - Human Workforce Mapping:}} We construct a digital representation of the workforce: 151 million workers across 923 occupations in 3,000 counties, covering more than 32,000 distinct skills~\cite{onet2025,acs2025}. Each worker is modeled as an agent with attributes such as skills, tasks, and location. This enables analysis of reskilling potential and occupational similarity, which is essential for designing pathways when skills and tasks shift.
+
+\textbf{\textcolor{IcebergDark}{Step 2 – AI Workforce Mapping:}} We catalog over 13,000 AI tools - including copilots and workflow automation systems - using the same skill taxonomy. This allows direct comparison between human and AI capabilities. The alignment reveals where AI augments human work (e.g. automating hospital paperwork so nurses can spend more time with patients) and where it transforms tasks entirely (e.g. accelerating code generation requires engineers to shift towards oversight, testing, and integration skills).
+
+\textbf{\textcolor{IcebergDark}{Step 3 - Human--AI Simulation:}} We combine these two populations in Large Population Models (LPMs), simulating billions of interactions between workers, skills, and AI tools. These simulations incorporate factors such as technology readiness, adoption behavior, and regional variation. Policymakers can use the resulting scenarios to anticipate disruption, test reskilling strategies, and allocate resources where they will have the most impact.
+
+\begin{tcolorbox}[colback=white,colframe=IcebergDark,title={Iceberg Simulations: Scale and Infrastructure}]
+\begin{itemize}
+    \item \textbf{Workforce Scale:} 151 million workers across 923 occupations in 3,000 counties
+    \item \textbf{Skill Coverage:} 32,000+ distinct skills from standardized taxonomies
+    \item \textbf{AI Systems:} 13,000+ tools across software, cognitive, and physical capabilities
+    \item \textbf{Simulation Engine:} Large Population Models used for national security~\cite{chopra2025lpm}.
+    \item \textbf{Computing Platform:} Frontier supercomputer at Oak Ridge National Lab~\cite{frontier2022}.
+\end{itemize}
+\end{tcolorbox}
+
+Once constructed, leaders can adjust inputs—such as training programs, incentive structures, or regulatory choices—and run scenarios under different assumptions of technology maturity and adoption. The simulation then yields three kinds of insight: how occupations and skills evolve over time, where disruption is geographically spread, and how shocks in one sector cascade into others. These outputs allow policymakers to compare strategies side by side and anticipate both direct and indirect consequences.
+
+The framework builds on validated foundations (see Appendix A), ensuring that the simulated dynamics reflect real labor-market structure. Its primary output is the Iceberg Index—a skills-centered measure of workforce transformation introduced in Section~\ref{sec:iceberg_index}.
+
+\begin{tcolorbox}[colback=white,colframe=IcebergDark]
+\centering \textbf{Project Iceberg Goal:} \
+To provide a sandbox for testing workforce strategies before implementation—enabling policymakers to assess technical exposure, evaluate interventions under different scenarios, and target preparation where it matters most.
+\end{tcolorbox}
+
+% \section{The Iceberg Index}
+% \label{sec:iceberg_index}
+% The Iceberg Index is the primary output of Iceberg simulations: a skills-centered measure of workforce transformation. It quantifies how much of the value of each occupation’s tasks can be technically performed by AI, offering a forward-looking yardstick for the AI workforce transition.
+
+% \begin{tcolorbox}[colback=white,colframe=IcebergDark]
+% \centering
+% \textbf{The Iceberg Index:} A skills-centered KPI for the AI economy. \\
+% It measures the wage value of skills that AI systems can perform within each occupation, revealing where human and AI capabilities overlap.
+% \end{tcolorbox}
+
+% The Index evaluates each occupation along three dimensions: the skills required, the automatability of those skills, and the value of the work in wages and employment. Together these factors yield a consistent measure of technical exposure that can be aggregated across occupations, industries, regions, or time. Importantly, the Index does not predict job loss but captures the share of tasks that are technically automatable. For example, financial analysts will not disappear, but AI systems may perform a large share of document-processing work, reshaping how the role is structured and which skills remain in demand.
+
+% The Index can be interpreted in two complementary ways. As a baseline, it measures current technical exposure with occupational tasks AI systems can perform based on available capabilities, regardless of actual adoption. As a simulation input, it enables scenario testing: policymakers can model how exposure translates to workforce impacts under different adoption rates, technology maturity levels, or policy interventions, testing strategies before committing resources. Because it is skill-based, the Index can be consistently compared across geographies, industries, and occupation clusters, making it useful for both national and local decision-making. Building on this flexibility, the Index can serve multiple strategic functions for policymakers. Three examples illustrate its use:
+
+% \begin{itemize}
+%     \item \textbf{\textcolor{IcebergDark}{Status Quo Assessment:}} Establish a baseline of automation potential if no action is taken, helping governments identify where adaptation needs are most concentrated. This makes the risks of inaction visible across industries and regions.
+
+%     \item \textbf{\textcolor{IcebergDark}{Strategic Opportunity Identification:}} Highlights where AI adoption can advance broader goals while strengthening, rather than displacing, the workforce. For example, automating healthcare administration can free nurses for direct patient care, easing shortages while improving quality.
+
+%     \item \textbf{\textcolor{IcebergDark}{Recalibrating Investments:}} Updates traditional job-multiplier assumptions (e.g., one construction job creating 1.8 allied jobs) for the AI economy, showing how ripple effects change when support functions are automated or augmented. This enables more accurate projections of returns on training, infrastructure, and incentive programs. 
+    
+% \end{itemize}
+
+% \begin{figure}[t!]
+%     \centering
+%     \includegraphics[width=0.99\linewidth]{sections_us/images_us/fig2_icebergviz.pdf}
+%     \caption{The Iceberg Index measure the percentage of labor value susceptible to AI Automation. 
+%     It evolves over time - with technology maturing and adoption behavior - to reveal the transformation of the labor market over time. This index can help policymakers track process, anticipate workforce needs and adjust strategies as automation accelerates. \PB{The Iceberg Index illustrates three phases of potential workforce exposure to AI automation. These phases represent scenarios of technical capability and adoption, not deterministic forecasts of job loss.} The Surface Index (2.2\%) captures today's visible disruption in software and technology work. The hidden mass shows cognitive automation expanding to finance and administration (11.7\%), followed by physical automation reaching manufacturing and logistics (23.5\%).}
+%     \label{fig:iceberg_overview_us}
+% \end{figure}
+
+
+% The Iceberg Index thus provides a measurable, repeatable, and actionable framework to evaluate policy choices in real-time. Rather than viewing AI only as disruption, the Index reframes it as a planning tool for guiding strategic workforce investments.
+
+% \subsection{What the Iceberg Index Is and Is Not}
+% The Iceberg Index is designed as a leading indicator of technical exposure in the AI economy. It captures the share of skills within each occupation that AI systems can technically perform, weighted by wage value and employment. This approach provides a forward-looking measure of potential disruption that complements traditional metrics such as GDP, unemployment, and wage growth. Importantly, the Index is not a predictor of job loss. It does not claim that a given percentage of workers will be displaced, nor does it forecast adoption timelines or the net effects of AI on employment. Actual outcomes will depend on complex dynamics including firm adoption strategies, worker adaptation, regulatory choices, and broader economic conditions. Policymakers should therefore interpret the Iceberg Index as a scenario-testing instrument—similar to risk models or epidemiological forecasts—highlighting where risks may concentrate and enabling proactive investment, training, and planning decisions. The Index is most useful for establishing baseline exposure levels, testing intervention strategies through simulation, and identifying which occupations and regions face the greatest transition challenges. For a detailed discussion about validation methodology, data sources, and modeling assumptions, see Section 6.1
+
+% % \PB{
+% % \subsection{What the Iceberg Index Is and Is Not}
+
+% % The Iceberg Index is designed as a leading indicator of exposure in the AI economy. It captures the share of skills within each occupation that can be performed by AI systems, weighted by wage value and adoption likelihood. This approach provides a forward-looking measure of potential disruption that complements traditional metrics such as GDP, unemployment, and wage growth.
+
+% % Importantly, the Index is not a predictor of job loss. It does not claim that a given percentage of workers will be displaced, nor does it forecast adoption timelines or the net effects of AI on employment. Actual outcomes will depend on complex dynamics including firm adoption strategies, worker adaptation, regulatory choices, and broader economic conditions.
+
+% % Policymakers should therefore interpret the Iceberg Index as a scenario-testing instrument—similar to risk models or epidemiological forecasts—highlighting where risks may concentrate and enabling proactive investment, training, and planning decisions.
+
+% % }
+

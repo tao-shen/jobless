@@ -1,0 +1,118 @@
+\section{Interpreting the Index}
+\label{sec:results}
+In the previous section, we defined the Iceberg Index and described how it is constructed. Here we demonstrate how it can be applied to the U.S. workforce. The results quantify technical exposure—the share of occupational tasks that current AI systems can perform as mapped across 151 million workers, 923 occupations, and 3,000+ counties. In this analysis we focus on digital AI tools that can perform technical and cognitive tasks, where technology maturity and deployment patterns are observable. Physical automation through robotics is excluded here but will become increasingly relevant as capabilities mature.
+
+Each subsection illustrates a different way the Index can be interpreted: identifying the visible disruptions that are already occurring, uncovering the larger hidden exposures beneath the surface, detecting blind spots where states risk being caught off guard, and distinguishing between concentrated versus distributed industry patterns. These examples are not forecasts, but demonstrations of how the Iceberg Index can function as a policy laboratory: a tool for exploring alternative futures and guiding investment choices.
+
+\subsection{Validation with Real-world Data}
+\label{sec:validation}
+We validate our methodology through two tests: first, whether skill-based occupational representations capture genuine labor market structure; second, whether exposure predictions align with actual AI adoption.
+
+\noindent \textbf{Skill-Based Validation:} We test whether occupations our framework identifies as similar based on skill profiles exhibit similar characteristics in empirical workforce data. Using skill-based embeddings derived from O*NET occupational profiles, we calculate similarity scores between all occupation pairs and compare these against career transition networks that capture observed worker mobility patterns~\cite{onet2024}. Career transition data reflects which occupations workers commonly move between, providing ground truth for occupational relationships independent of our framework. We identify the top percentile of similar occupation pairs according to our skill embeddings and test whether these correspond to frequent career transitions in the empirical data. Our embeddings achieve 85\% recall in predicting these transition relationships (Figure~\ref{fig:validation_recall_aei}(a)): 85\% of commonly observed career moves involve occupations our framework identifies as highly similar based on skills. This high recall rate confirms that skill-based representations capture genuine labor market structure rather than theoretical constructs, validating our approach to measuring AI-human skill overlap using the same framework. \\
+
+\noindent \textbf{Adoption Validation}: Building on this validated skill framework, we test whether automation exposure predictions align with actual AI usage.  The Anthropic Economic Index (AEI) measures real-world AI usage from millions of Claude users nationwide, with industry analysis showing concentration in computing and technical occupations~\cite{appelmccrorytamkin2025geoapi}. We define a Surface Index that models technical exposure in computing and technology tasks across all 50 states. We rank states by both AEI usage and Surface Index exposure. AEI groups states into four adoption tiers; we consolidate the two middle tiers into a single category, creating three balanced groups (leading, emerging, aspiring) to reduce sensitivity to boundary effects. Agreement is measured by whether states fall into the same category in both rankings. We find 69\% geographic agreement, with strong consensus at extremes: 8 of 13 leading states and 9 of 13 aspiring states match perfectly. For instance, Washington, California, and Colorado consistently appear as leaders in both measures, while Wyoming, Mississippi, and Alaska align as laggards. Discrepancies reveal an interpretable pattern: our Index occasionally (18\%) shows higher exposure than current usage in states like Texas and North Carolina, reflecting workforce structures with high technical vulnerability regardless of current adoption levels. However, the framework rarely underestimates—states (13\%) where high AEI usage shows low Index values. This asymmetry validates the Index as a leading indicator: it identifies structural exposure before widespread adoption occurs.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.75\linewidth]{sections_us/images_us/validation_fig-2.pdf}
+    \caption{Validation of skill-based framework against empirical data. (a) Skill similarity validation: Pie chart shows prediction accuracy when matching occupation pairs by skill similarity to actual career transitions from O*NET data. For pairs our framework identifies as highly similar (>80\% similarity score, dark green), 85\% correspond to observed career transitions, confirming skill embeddings capture genuine labor market structure. Lower similarity thresholds (70-80\%; <70\%) show decreasing alignment with actual transitions. (b) Adoption validation: State-level comparison shows 69\% agreement between Anthropic Economic Index (actual AI usage patterns) and Surface Index (predicted technical exposure). Strong alignment at both extremes: 8 of 13 leading states and 9 of 13 aspiring states match perfectly, confirming the Index identifies structural exposure before widespread adoption.}
+    \label{fig:validation_recall_aei}
+\end{figure}
+
+\begin{tcolorbox}[colback=IcebergVeryLight,colframe=IcebergDark,title=\textbf{Iceberg Insight 1: Iceberg Validated with Real-World Data}]
+Validation against independent data from millions of AI usage interactions shows strong agreement on leading and aspiring states, confirming our approach captures genuine adoption behavior. Skill-based representations predict 85\% of career transitions, and exposure predictions achieve 69\% geographic agreement with actual usage patterns.
+% This ensures Iceberg Index projections reflect plausible workforce patterns rather than theoretical assumptions.
+\end{tcolorbox}
+
+\subsection{Quantifying the Tip of the Iceberg}
+Building on our validated methodology, we now quantify technical exposure within occupations where AI adoption is currently concentrated. In 2025, more than 100,000 job losses were linked to AI restructuring. AI systems now write over a billion lines of code each day, exceeding human developer output. We measure skill overlap within computing and technology occupations—the Surface Index—which aligns with real-world adoption patterns from millions of AI users (Section~\ref{sec:validation}).
+
+Nationally, the Surface Index stands at 2.2\%, representing approximately \$211 billion in wage value across 1.9 million workers in technology occupations (Figure~\ref{fig:surface_index_heatmap}). This includes software engineers, data scientists, analysts, program managers, and related roles where current AI adoption is concentrated. Washington (4.2\%), Virginia (3.6\%), and California (3.0\%) lead in exposure values, yet even in these states, direct technology tasks account for only a small share of employment. The technology sector represents more than 30\% of the S\&P 500's market capitalization but only around 6\% of the workforce, showing that states dominating technology maintain highly diversified labor markets.
+
+States like Mississippi and Wyoming show minimal values on this Surface Index, reflecting their limited technology sector presence and fewer occupations with skill profiles matching current AI adoption patterns. However, this represents only the visible beginning. The full Iceberg Index reveals that these same states show substantial technical exposure in administrative, financial, and professional services—indicating broader potential impact beyond current visible adoption.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.85\linewidth]{sections_us/images_us/fig1.pdf}
+    \caption{Surface Index validation: Current technology-sector exposure across US states. The average surface index of the country is 2.2, maximum is 4.2 (Washington) and minimum is 0.2 (Guam). 18 states (or territories) are above the national average and 36 are below the national average.}
+    \label{fig:surface_index_heatmap}
+\end{figure}
+
+\begin{tcolorbox}[colback=IcebergVeryLight,colframe=IcebergDark,title=\textbf{Iceberg Insight 2: Tech Disruption Is Visible but Small}]
+Headlines focus on tech skills, but these span occupations representing only 2\% of labor market wage value. The hidden mass beyond visible tech sectors is five times larger.
+\end{tcolorbox}
+
+\subsection{The Hidden Mass Beneath the Surface}
+Beyond technology occupations, AI capabilities extend to cognitive and administrative work. Tools developed for coding demonstrate technical capability in document processing, financial analysis, and routine administrative tasks - illustrating how capabilities demonstrated in technology contexts translate to other domains. Some adoption is already occurring:  IBM reduced HR staff through AI automation~\cite{ibmnews}, Salesforce froze hiring for non-technical roles~\cite{salesforce}, and McKinsey projects that 30\% of financial tasks could be automated by 2030~\cite{mckinsey2030}.
+
+We apply the same skill-overlap methodology to administrative, financial, and professional service occupations beyond the technology sector. The Iceberg Index for digital AI shows values averaging 11.7\%—five times larger than the 2.2\% Surface Index. Unlike technology-sector exposure concentrated in coastal hubs, this broader skill overlap is geographically distributed. South Dakota, North Carolina, and Utah show higher Index values than California or Virginia.
+
+Industrial states illustrate this pattern. Tennessee (11.6\%) and Ohio (11.8\%) show substantial Index values driven by administrative and coordination roles within factories and supply chains.
+These white-collar functions show technical exposure that maybe invisible to policymakers while states focus largely on physical automation. These patterns reveal where skill overlap extends beyond current visible adoption, though actual workforce impacts will depend on adoption decisions, quality thresholds, and organizational constraints (Figure~\ref{fig:find2_digitalindex}(a)).
+
+\begin{tcolorbox}[colback=IcebergVeryLight,colframe=IcebergDark,title=\textbf{Iceberg Insight 3: White-Collar Exposure Is Nationwide}]
+Administrative and financial tasks where AI demonstrates capability span five times more wage value than visible tech disruption—and are geographically distributed across all states, not just coastal. States like Delaware and South Dakota show higher Index values than California.
+% Hidden exposure in administrative and financial work is five times larger than visible tech disruption—and it is spread across every state, not just coastal hubs. States like Delaware and South Dakota show higher transformation potential than California, reshaping where workforce preparation is most urgent.
+\end{tcolorbox}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.95\linewidth]{sections_us/images_us/fig2.pdf}
+    \caption{Geographic patterns of hidden automation exposure. (Left) Digital Iceberg Index shows cognitive automation spreads beyond coastal tech hubs, with unexpected leaders like Delaware and South Dakota showing higher exposure than California due to concentrated administrative and financial sectors. (Right) Automation surprise reveals which states face the largest gaps between current visibility and projected transformation. Manufacturing states like Ohio and Michigan show substantial hidden white-collar exposure years before anticipated physical automation, requiring proactive preparation for administrative and coordination role changes.}
+    \label{fig:find2_digitalindex}
+\end{figure}
+
+\subsection{The Blind Spot: Automation Surprise}
+Some states show large differences between Surface Index (technology occupations) and Iceberg Index values (including administrative, financial, and professional service occupations). These gaps indicate substantial skill overlap in cognitive work despite minimal visible technology-sector adoption, potentially creating mismatches between preparation strategies and technical capability patterns.
+
+America's industrial heartland shows the largest gaps. Rust Belt states such as Ohio, Michigan, and Tennessee register modest Surface Index values but substantial Iceberg Index values driven by cognitive work—financial analysis, administrative coordination, and professional services—that supports manufacturing operations. Tennessee illustrates this pattern: Surface Index of 1.3\% but Iceberg Index of 11.6\% indicating that administrative and service functions show up to ten times greater technical exposure than visible technology occupations. South Dakota follows a similar pattern, combining low technology-sector Index values with high administrative-sector overlap. Figure~\ref{fig:find2_digitalindex}(b) maps these gaps across states.
+
+By contrast, technology-intensive states such as California and Washington show high values on both Surface and Iceberg Indices, resulting in smaller gaps. These states may recognize preparation needs earlier because skill overlap is already visible in their dominant technology sectors. The gaps emerge because current workforce planning often focuses on visible technology-sector adoption, while cognitive and administrative work has received less attention in preparation strategies. As a result, states with small technology sectors underestimate the scale of their exposure, leaving them vulnerable when adoption accelerates in white-collar work.
+
+% The gaps emerge because technology occupations are concentrated geographically while administrative and coordination functions are distributed across all industries. States with limited technology sectors may underestimate the scale of their exposure if planning focuses primarily on visible technology-sector signals., leaving them vulnerable when adoption accelerates in white-collar work.
+
+% By contrast, tech-heavy states such as California and Washington show both high visible and high hidden exposure but a smaller gap. These states are more likely to prepare early, since disruption is already evident in their technology sectors. The gaps emerge because technology work is already undergoing rapid restructuring, while cognitive and administrative functions remain less visibly affected despite being highly automatable. As a result, states with small technology sectors underestimate the scale of their exposure, leaving them vulnerable when adoption accelerates in white-collar work.
+
+\begin{tcolorbox}[colback=IcebergVeryLight,colframe=IcebergDark,title=\textbf{Iceberg Insight 4: Manufacturing States Face Hidden White-Collar Surprise}]
+Midwest states like Ohio and Michigan face double-digit technical exposure in white-collar work while states may focus on physical automation. Cognitive and administrative exposure from validated AI capabilities measures upto ten times higher than technology-sector exposure.
+\end{tcolorbox}
+
+\subsection{Industry Patterns: Concentrated vs. Distributed Impact}
+States with similar Iceberg Index values face very different challenges depending on how that exposure is distributed across industries. In some cases, exposure is tightly concentrated in just a few dominant sectors. In others, the same level of exposure is spread broadly across many parts of the economy. This structure matters because it determines how states must respond: distributed risk demands broad, multi-sector coordination, while concentrated risk allows for targeted, sector-specific action.
+
+To distinguish between these patterns, we calculate each industry's contribution to a state's total Iceberg Index value and compute the Herfindahl-Hirschman Index (HHI) of this distribution. The HHI quantifies whether Index values concentrate in a few industries or spread broadly across sectors and is a standard measure adapted from labor economics~\cite{Azar2020LaborMarketConcentration, RevisitedHHI2023}. We rank all states by their HHI values and divide them into thirds based on the observed distribution: the bottom third (HHI $\leq$ 1580) represents the most distributed patterns, the middle third (1581–1737) shows moderate concentration, and the top third ($\geq$ 1738) represents the most concentrated patterns. These categories are descriptive classifications based on relative position in the data, not normative thresholds. Details appear in Appendix B and Figure~\ref{fig:industry_geoplot} visualizes these patterns geographically.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.67\linewidth]{sections_us/images_us/fig_concindustry.pdf}
+    \caption{Geographic distribution of automation exposure concentration. States are grouped into three tiers based on their Herfindahl–Hirschman Index (HHI) computed from how Iceberg Index values distribute across industries within each state. The national HHI range spans from 1422 (most distributed) to 1895 (most concentrated). We divide states into thirds by HHI ranking: Most Distributed ($\leq$ 1580, light green), Moderate (1581–1737, medium green), and Most Concentrated ($\geq$ 1738, dark green). This classification reveals regional contrasts, with distributed patterns across the Manufacturing Belt and concentrated patterns along the Northeast corridor.}
+    \label{fig:industry_geoplot}
+\end{figure}
+
+The analysis reveals clear regional contrasts. Northeastern belt tend to show concentrated exposure, especially in finance and technology. In contrast, states across the Manufacturing Belt display more distributed patterns, with exposure spread across logistics, production, administration, and services. These structural differences influence how disruption might propagate — whether driven by a few sectors or ripple broadly across the economy.
+
+Even when overall Index values appear similar, underlying structures can vary significantly. For example, Iowa (12.22\%) and Ohio (11.34\%) both show broadly distributed patterns, while Virginia (12.48\%) channels a comparable level of exposure dominated by just two sectors: finance and technology. The same Iceberg Index can imply very different workforce vulnerabilities depending on how it is composed.
+
+\begin{tcolorbox}[colback=IcebergVeryLight,colframe=IcebergDark,title=\textbf{Iceberg Insight 5: Structure of Exposure Determines Strategy}]
+The same level of technical exposure can require entirely different responses. Concentrated patterns enables sector-specific action, while distributed patterns demands multi-sector coordination
+\end{tcolorbox}
+
+\subsection{Why Traditional Metrics Miss the Iceberg}
+\label{sec:why_iceberg}
+Traditional economic metrics—GDP, per-capita income, and unemployment—are widely used to benchmark state performance. We test how these measures align with workforce exposure as captured by the Iceberg Index. Using Q2 2025 data, we rank all 50 states by GDP, income, and unemployment, and then compare these with state rankings from the Index: first for the Surface Index (today’s visible disruptions concentrated in technology and software tasks) and then for the Iceberg Index (a forward-looking measure of the projected spread to cognitive and administrative tasks).
+
+\begin{figure}[t!]
+    \centering
+    \includegraphics[width=0.70\linewidth]{sections_us/images_us/correlation_scatterplots.pdf}
+    \caption{Correlations of traditional economic metrics with the Iceberg Index. Each panel shows the relationship between a conventional signal (unemployment, per-capita income, or GDP) and state-level automation exposure. The top row reports the \textbf{Surface Index}, reflecting today’s visible adoption concentrated in technology. The bottom row reports the \textbf{Iceberg Index}, projecting systemic exposure across finance, administration, and professional services. Regression lines and $R^{2}$ values quantify explanatory power. Traditional metrics correlate with the Surface Index but fail to explain the Iceberg Index, highlighting why policymakers relying on unemployment 
+    or GDP will misjudge hidden exposure.}
+    \label{fig:correlation_scatterplots}
+\end{figure}
+
+The results show clear differences. Traditional metrics exhibit moderate alignment with the Surface Index: states with higher GDP or lower unemployment often have larger technology sectors and therefore higher visible exposure today. By contrast, their relationship with the Iceberg Index is negligible, with GDP, income, and unemployment each explaining less than five percent of the variation in systemic  exposure; in some cases, the correlations are weakly negative (Figure~\ref{fig:correlation_scatterplots}). For example, Delaware and Utah exhibit higher Iceberg exposure than California, despite much smaller economies, because their concentrated finance and administrative sectors present sharper automation targets than California’s diversified workforce. This reflects a broader pattern: technology automation is clustered in coastal hubs, while cognitive automation spans administrative, financial, and professional roles present in every state.
+
+These findings underscore the need for a complementary benchmark. GDP, income, and unemployment remain essential for assessing economic performance, but they were not designed to capture how skills and tasks itself is changing in the human–AI economy. The Iceberg Index fills that gap by providing a forward-looking KPI that measures skills-centered exposure directly. By using both traditional metrics and the Iceberg Index, policymakers gain a more complete picture of today’s economy and tomorrow’s transitions, enabling better alignment of training, infrastructure, and investment strategies with the realities of AI adoption.
+
+\begin{tcolorbox}[colback=IcebergVeryLight,colframe=IcebergDark,title=\textbf{Iceberg Insight 6: Traditional Metrics Miss the Hidden Risk}]
+GDP and unemployment track today’s visible tech disruption, but they fail to capture the nationwide spread of white-collar automation revealed by the Iceberg Index.
+\end{tcolorbox}

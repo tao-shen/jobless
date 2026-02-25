@@ -137,8 +137,8 @@ const MILESTONES: Milestone[] = [
         zh: 'GPT-3.5的聊天界面让每个人都能使用AI。无需编程。'
       },
       significance: { en: 'The fastest technology adoption in human history.', zh: '人类历史上最快的技术采用速度。' },
-      jobsAffected: { en: '11.7% of work currently replaceable (MIT)', zh: '目前11.7%的工作可被替代(MIT)' },
-      sources: ['MIT CSAIL, "Beyond AI Exposure" (2024)', 'OpenAI Usage Statistics', 'Goldman Sachs Economic Research (2023)']
+      jobsAffected: { en: '21.37% of work currently replaceable (task-aligned estimate)', zh: '目前21.37%的工作可被替代（任务对齐估计）' },
+      sources: ['Task-aligned GDPval × O*NET pipeline (2026)', 'OpenAI Usage Statistics', 'Goldman Sachs Economic Research (2023)']
     },
     inventions: [
       { year: 2022, name: { en: 'ChatGPT Launch', zh: 'ChatGPT发布' }, impact: { en: '100M users in 2 months', zh: '2个月1亿用户' } },

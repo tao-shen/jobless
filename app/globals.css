@@ -23,22 +23,22 @@
   --risk-low: #00e676;      /* Neon Green */
   --risk-safe: #69f0ae;     /* Bright Mint */
 
-  /* Brand Colors - Electric Palette */
-  --brand-primary: #d500f9;   /* Electric Purple - AI/Tech */
-  --brand-secondary: #ff4081; /* Vivid Pink - Human/Impact */
-  --brand-accent: #00e5ff;    /* Cyan - Data/Insight */
+  /* Brand Colors - Warm Singular Accent */
+  --brand-primary: #ff6b35;   /* Warm Orange - Primary Accent */
+  --brand-secondary: #ff8f5e; /* Soft Coral - Secondary */
+  --brand-accent: #00b8d4;    /* Teal - Data/Insight */
 
-  /* Semantic Colors - High Voltage */
-  --data-blue: #651fff;
+  /* Semantic Colors */
+  --data-blue: #4a90d9;
   --data-cyan: #00b8d4;
-  --accent-purple: #aa00ff;
+  --accent-purple: #bf5af2;
   --accent-coral: #ff6e40;
   --accent-teal: #1de9b6;
 
   /* Glow & Effects */
-  --glow-primary: rgba(213, 0, 249, 0.4);
-  --glow-secondary: rgba(255, 64, 129, 0.3);
-  --glow-accent: rgba(0, 229, 255, 0.3);
+  --glow-primary: rgba(255, 107, 53, 0.3);
+  --glow-secondary: rgba(255, 143, 94, 0.2);
+  --glow-accent: rgba(0, 184, 212, 0.2);
 
   /* Timeline section colors */
   --timeline-bg-from: #020617;
@@ -104,22 +104,22 @@
   --risk-low: #2e7d32;
   --risk-safe: #388e3c;
 
-  /* Brand Colors - Slightly deeper for contrast */
-  --brand-primary: #9c27b0;
-  --brand-secondary: #e91e63;
-  --brand-accent: #0097a7;
+  /* Brand Colors - Warm Singular Accent */
+  --brand-primary: #e65100;
+  --brand-secondary: #f4511e;
+  --brand-accent: #00838f;
 
   /* Semantic Colors */
-  --data-blue: #5c6bc0;
+  --data-blue: #3f6cb0;
   --data-cyan: #00838f;
-  --accent-purple: #7b1fa2;
+  --accent-purple: #9c27b0;
   --accent-coral: #e64a19;
   --accent-teal: #00897b;
 
   /* Glow & Effects - Subtle for light mode */
-  --glow-primary: rgba(156, 39, 176, 0.15);
-  --glow-secondary: rgba(233, 30, 99, 0.1);
-  --glow-accent: rgba(0, 151, 167, 0.1);
+  --glow-primary: rgba(230, 81, 0, 0.12);
+  --glow-secondary: rgba(244, 81, 30, 0.08);
+  --glow-accent: rgba(0, 131, 143, 0.08);
 
   /* Timeline section colors - light */
   --timeline-bg-from: #f1f5f9;
@@ -201,7 +201,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Dramatic Background with Mesh Gradient */
+/* Subtle Background Gradient */
 body::before {
   content: '';
   position: fixed;
@@ -210,18 +210,14 @@ body::before {
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(101, 31, 255, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(255, 64, 129, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 30% at 60% 80%, rgba(0, 229, 255, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 60% at 30% 20%, rgba(255, 107, 53, 0.04) 0%, transparent 60%);
   pointer-events: none;
   z-index: 0;
 }
 
 [data-theme="light"] body::before {
   background:
-    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(156, 39, 176, 0.04) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(233, 30, 99, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 30% at 60% 80%, rgba(0, 151, 167, 0.03) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 60% at 30% 20%, rgba(230, 81, 0, 0.02) 0%, transparent 60%);
 }
 
 /* Noise Texture Overlay */
@@ -323,6 +319,24 @@ body::after {
   }
 }
 
+@keyframes shimmerLTR {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes marchRight {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 0;
+  }
+}
+
 @keyframes borderPulse {
   0%, 100% {
     border-color: rgba(213, 0, 249, 0.3);
@@ -381,6 +395,28 @@ body::after {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+}
+
+.bar-march-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(255,255,255,0.08) 8px,
+    rgba(255,255,255,0.08) 9px
+  );
+  background-size: 40px 40px;
+  animation: marchRight 1.5s linear infinite;
+}
+
+[data-theme="light"] .bar-march-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 8px,
+    rgba(0,0,0,0.06) 8px,
+    rgba(0,0,0,0.06) 9px
+  );
 }
 
 .animate-reveal {
@@ -970,7 +1006,7 @@ body::after {
   transform: translate(-50%, -50%);
   width: 80%;
   height: 80%;
-  background: radial-gradient(ellipse at center, rgba(213, 0, 249, 0.1) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(255, 107, 53, 0.04) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -984,22 +1020,13 @@ body::after {
   mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
 }
 
-/* Scanline Effect */
+/* Scanline Effect — disabled per taste-skill */
 .scanline {
   position: relative;
-  overflow: hidden;
 }
 
 .scanline::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--brand-accent), transparent);
-  animation: scanline 8s linear infinite;
-  opacity: 0.3;
+  display: none;
 }
 
 /* Data Display Enhancement */
@@ -1021,7 +1048,7 @@ body::after {
 
 /* Light mode: soften glow effects */
 [data-theme="light"] .hero-glow::before {
-  background: radial-gradient(ellipse at center, rgba(156, 39, 176, 0.04) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(230, 81, 0, 0.02) 0%, transparent 70%);
 }
 
 [data-theme="light"] .glow-text {

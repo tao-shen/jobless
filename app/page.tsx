@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Area, AreaChart } from 'recharts';
 import { AlertTriangle, TrendingUp, Users, Clock, Search, Shield, Zap, Target, Skull, Flame, Building2, Calendar, AlertCircle, Languages, Cpu, Sparkles, Bot, ClipboardCheck, Database, FileText, Workflow, Activity, Eye, ChevronRight, ChevronDown, CheckCircle2, BarChart3, Brain, ArrowUpRight, History, RefreshCw, TrendingDown, Info, BookOpen, Lock, Share2, Download, Copy, ExternalLink, Sun, Moon } from 'lucide-react';
@@ -21,16 +21,22 @@ const translations = {
     heroSubtitlePre: '',
     heroSubtitlePost: 'The AI Kill Line is approaching.',
     heroSubtitleEnd: '',
-    mitStat: 'AI can already replace 11.7%',
+    mitStat: 'AI can already replace 21.37%',
     mckinseyStat: '57% of work hours',
 
     // 进度条
-    progressTitle: "AI Replacement Progress: Where are we?",
-    currentReality: 'Current Reality',
-    currentRealityDesc: 'MIT: AI can replace 11.7% of workforce',
-    technicalCeiling: 'AI Kill Line (Technical Ceiling)',
-    technicalCeilingDesc: 'McKinsey: 57% of work hours automatable',
-    icebergWarning: 'What you see is just the 11.7% tip of the iceberg. The AI Kill Line is approaching.',
+    progressTitle: "Industry-Wide AI Progress: Where are we?",
+    killLineLabel: 'All-Industry AI Replacement Rate',
+    killLineSpeed: '+1.8%/mo',
+    killLineHow: 'How we calculate',
+    killLineFormula: 'Replacement Rate = Exposure × AI Proficiency',
+    killLineExposure: 'Exposure',
+    killLineExposureDesc: 'Proportion of job tasks that AI can technically perform',
+    killLineProbability: 'AI Proficiency',
+    killLineProbabilityDesc: 'Proportion of cases where AI outperforms humans at those tasks',
+    killLineExample: 'e.g. Customer Service: 85% exposure × 80% proficiency = 68% replacement rate',
+    killLineSource: 'All-industry weighted average by employment share → 21.37%',
+    icebergWarning: 'What you see is already 21.37%. The AI Kill Line is approaching.',
 
     // 统计数据
     replaceableNow: 'Replaceable Now',
@@ -45,7 +51,7 @@ const translations = {
     pilot: 'Pilot',
     pilotDesc: '"Quiet replacements begin"',
     youAreHere: 'YOU ARE HERE',
-    hereDesc: 'MIT: 11.7% replaceable',
+    hereDesc: 'Current estimate: 21.37% replaceable',
     acceleration: 'Acceleration',
     accelerationDesc: 'WEF: 30% jobs automated by 2030',
     restructuring: 'Restructuring',
@@ -81,8 +87,8 @@ const translations = {
     event2025: 'AI Skills & Tool Use',
     event2025Impact: 'AI uses tools, completes tasks',
     event2025Highlight: 'Reasoning AI',
-    eventMit: 'MIT Iceberg Index',
-    eventMitImpact: '11.7% replaceable, $1.2T exposed',
+    eventMit: 'Current Task-Aligned Estimate',
+    eventMitImpact: '21.37% replaceable (task-aligned, win-only)',
     eventMitHighlight: 'Scientific Validation',
     eventMcKinsey: 'McKinsey: 57% automatable',
     eventMcKinseyImpact: '57% of hours technically automatable',
@@ -429,16 +435,22 @@ const translations = {
     heroSubtitlePre: '',
     heroSubtitlePost: 'AI 斩杀线正在逼近。',
     heroSubtitleEnd: '',
-    mitStat: 'AI 已可替代 11.7%',
+    mitStat: 'AI 已可替代 21.37%',
     mckinseyStat: '57% 工作时长',
 
     // 进度条
-    progressTitle: 'AI 替代进度：我们走到哪一步了？',
-    currentReality: '现实进度',
-    currentRealityDesc: 'MIT：AI 可替代 11.7% 劳动力',
-    technicalCeiling: 'AI 斩杀线（技术天花板）',
-    technicalCeilingDesc: '麦肯锡：57% 工作时长可自动化',
-    icebergWarning: '你看到的只是冰山露出的那 11.7%。AI 斩杀线正在逼近。',
+    progressTitle: '全行业 AI 替代进度：我们走到哪了？',
+    killLineLabel: '全行业 AI 替代率',
+    killLineSpeed: '+1.8%/月',
+    killLineHow: '计算方式',
+    killLineFormula: '替代率 = 曝光度 × AI 胜任度',
+    killLineExposure: '曝光度',
+    killLineExposureDesc: 'AI 在技术上能执行的工作任务占比',
+    killLineProbability: 'AI 胜任度',
+    killLineProbabilityDesc: 'AI 在这些任务上胜出人类的比例',
+    killLineExample: '例：客服岗位 85% 曝光度 × 80% 胜任度 = 68% 替代率',
+    killLineSource: '全行业按就业人数加权平均 → 21.37%',
+    icebergWarning: '你现在看到的已经是 21.37%。AI 斩杀线正在逼近。',
 
     // 统计数据
     replaceableNow: '现已可替代',
@@ -453,7 +465,7 @@ const translations = {
     pilot: '试点期',
     pilotDesc: '"悄悄替换开始"',
     youAreHere: '你在这里',
-    hereDesc: 'MIT：11.7% 可被替代',
+    hereDesc: '当前估计：21.37% 可被替代',
     acceleration: '加速期',
     accelerationDesc: 'WEF：2030年30%岗位可自动化',
     restructuring: '重构期',
@@ -489,8 +501,8 @@ const translations = {
     event2025: 'AI 技能与工具使用',
     event2025Impact: 'AI 使用工具、完成任务',
     event2025Highlight: '推理 AI',
-    eventMit: 'MIT 冰山指数发布',
-    eventMitImpact: '11.7% 可被替代，涉及 1.2 万亿美元工资',
+    eventMit: '当前任务对齐估计',
+    eventMitImpact: '21.37% 可被替代（任务对齐，仅win）',
     eventMitHighlight: '科学验证',
     eventMcKinsey: '麦肯锡：57% 可自动化',
     eventMcKinseyImpact: '57% 工作时长理论上可自动化',
@@ -833,8 +845,7 @@ const translations = {
 };
 
 // 核心数据
-const MIT_REPLACEMENT_RATE = 11.7;
-const MCKINSEY_AUTOMATION_POTENTIAL = 57;
+const CURRENT_REPLACEMENT_RATE = 21.37;
 
 // 企业裁员案例
 const layoffCases = [
@@ -848,7 +859,7 @@ const layoffCases = [
 // 高风险职业 - 包含替代/增强模式
 const highRiskJobs = [
   { industry: { en: 'Customer Service', zh: '客服/呼叫中心' }, risk: 95, mode: 'high-replacement', jobs: { en: 'Phone support, Online chat', zh: '电话客服、在线客服' }, reason: { en: 'AI handles 80% of standard queries by 2025', zh: '2025年AI可处理80%标准问答' } },
-  { industry: { en: 'Admin / Support', zh: '行政/文秘' }, risk: 90, mode: 'high-replacement', jobs: { en: 'Assistants, Data entry', zh: '助理、数据录入' }, reason: { en: 'Part of MIT\'s 11.7%', zh: 'MIT 11.7% 的重要组成部分' } },
+  { industry: { en: 'Admin / Support', zh: '行政/文秘' }, risk: 90, mode: 'high-replacement', jobs: { en: 'Assistants, Data entry', zh: '助理、数据录入' }, reason: { en: 'Part of current 21.37% replacement exposure', zh: '属于当前 21.37% 替代暴露的重要部分' } },
   { industry: { en: 'Software Development', zh: '软件开发' }, risk: 45, mode: 'mixed', jobs: { en: 'Junior developers', zh: '初级开发者' }, reason: { en: 'Young devs -20%, but overall +17.9% growth', zh: '年轻开发者-20%，但整体增长+17.9%' } },
   { industry: { en: 'Finance / Accounting', zh: '金融/会计' }, risk: 65, mode: 'mixed', jobs: { en: 'Junior analysts', zh: '初级分析师' }, reason: { en: 'Entry-level at risk, high-level enhanced', zh: '入门级有风险，高级岗位增强' } },
   { industry: { en: 'Manufacturing', zh: '制造业' }, risk: 55, mode: 'collaboration', jobs: { en: 'Quality inspection, Monitoring', zh: '质检、监控' }, reason: { en: 'Human-machine collaboration, no mass layoffs', zh: '人机协作，无大规模裁员' } },
@@ -1014,9 +1025,9 @@ const timelineData = [
     period: '2025',
     title: { en: 'WE ARE HERE', zh: '动手裁人期' },
     subtitle: { en: 'AI written into layoff announcements', zh: 'AI已写进裁员公告' },
-    progress: MIT_REPLACEMENT_RATE,
+    progress: CURRENT_REPLACEMENT_RATE,
     events: [
-      { year: '2025.11', event: { en: 'MIT Iceberg Index', zh: 'MIT 冰山指数' }, impact: { en: '11.7% replaceable, $1.2T exposed', zh: '11.7% 可被替代，涉及 1.2 万亿美元工资' }, highlight: { en: 'Scientific Validation', zh: '科学验证' }, tech: '' },
+      { year: '2026.02', event: { en: 'Task-Aligned National Estimate', zh: '任务对齐全国估计' }, impact: { en: '21.37% replaceable (win-only)', zh: '21.37% 可被替代（仅win）' }, highlight: { en: 'Latest Estimate', zh: '最新估计' }, tech: '' },
       { year: '2025.11', event: { en: 'McKinsey: 57% automatable', zh: '麦肯锡：57% 可自动化' }, impact: { en: '57% of hours technically automatable', zh: '57% 工作时长理论上可自动化' }, highlight: { en: 'Automation Potential', zh: '自动化潜力' }, tech: '' },
       { year: '2025', event: { en: 'AI Skills & Tool Use', zh: 'AI 技能与工具使用' }, impact: { en: 'AI uses tools, completes tasks', zh: 'AI 使用工具、完成任务' }, highlight: { en: 'Reasoning AI', zh: '推理 AI' }, tech: 'Skills' },
       { year: '2025', event: { en: '89% HR leaders admit impact', zh: '89% HR 高层承认影响' }, impact: { en: '67% say AI already affecting jobs', zh: '67% 说 AI 已在影响工作' }, highlight: { en: 'Executive Awareness', zh: '高管意识觉醒' }, tech: '' },
@@ -1047,13 +1058,13 @@ const timelineData = [
   },
 ];
 
-// 进度阶段
-const progressStages = [
-  { label: { en: 'Experimental', zh: '试验期' }, range: '0-10%', description: { en: '"AI is fun"', zh: '"AI很好玩"' } },
-  { label: { en: 'Pilot', zh: '试点期' }, range: '10-20%', description: { en: '"Quiet replacements"', zh: '"悄悄替换"' } },
-  { label: { en: 'YOU ARE HERE', zh: '你在这里' }, range: '20-30%', description: { en: 'MIT: 11.7%', zh: 'MIT: 11.7%' } },
-  { label: { en: 'Acceleration', zh: '加速期' }, range: '30-60%', description: { en: 'WEF: 30% by 2030', zh: 'WEF: 2030年30%' } },
-  { label: { en: 'Restructuring', zh: '重构期' }, range: '60-80%', description: { en: '50-60% transformed', zh: '50-60% 被重塑' } },
+// 五阶段模型（按暴露度分档：<20%, 20-40%, 40-60%, 60-80%, ≥80%）
+const KILL_LINE_STAGES = [
+  { id: 1, start: 0,  end: 20, label: { en: 'AI Assist', zh: 'AI 助手' }, desc: { en: 'Tool automation', zh: '工具型自动化' }, nature: { en: 'You lead, AI executes', zh: '你主导，AI 执行' }, color: 'var(--risk-low)' },
+  { id: 2, start: 20, end: 40, label: { en: 'AI Augment', zh: 'AI 增强' }, desc: { en: 'Cognitive augmentation', zh: '认知增强' }, nature: { en: 'You lead, AI thinks with you', zh: '你主导，AI 辅助思考' }, color: 'var(--risk-medium)' },
+  { id: 3, start: 40, end: 60, label: { en: 'AI Agent', zh: 'AI 代理' }, desc: { en: 'Execution delegation', zh: '执行权转移' }, nature: { en: 'You direct, AI executes', zh: '人定方向，AI 执行' }, color: 'var(--risk-high)' },
+  { id: 4, start: 60, end: 80, label: { en: 'AI Lead', zh: 'AI 主导' }, desc: { en: 'Decision authority transfer', zh: '决策权转移' }, nature: { en: 'AI decides, you support', zh: 'AI 主导，人类配合' }, color: 'var(--risk-critical)' },
+  { id: 5, start: 80, end: 100, label: { en: 'Kill Line', zh: '斩杀线' }, desc: { en: 'Structural replacement', zh: '结构性替代' }, nature: { en: 'AI fully autonomous', zh: 'AI 完全自主运行' }, color: 'var(--accent-purple)' },
 ];
 
 function Counter({ end, suffix = '', duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
@@ -1077,6 +1088,305 @@ function Counter({ end, suffix = '', duration = 2000 }: { end: number; suffix?: 
   }, [end, duration]);
 
   return <span className="font-mono font-bold">{count.toLocaleString()}{suffix}</span>;
+}
+
+// AI 斩杀线进度条
+function AIKillLineBar({ lang, t }: { lang: Language; t: typeof translations.en }) {
+  const maxPct = 100;
+  const basePct = CURRENT_REPLACEMENT_RATE;
+  const [displayPct, setDisplayPct] = useState(0);
+  const [ready, setReady] = useState(false);
+  const [showCalc, setShowCalc] = useState(false);
+  const calcRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showCalc) return;
+    const handler = (e: MouseEvent) => {
+      if (calcRef.current && !calcRef.current.contains(e.target as Node)) setShowCalc(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showCalc]);
+
+  useEffect(() => {
+    const duration = 2000;
+    const fps = 60;
+    const total = (duration / 1000) * fps;
+    let f = 0;
+    const id = setInterval(() => {
+      f++;
+      setDisplayPct((1 - Math.pow(1 - f / total, 3)) * basePct);
+      if (f >= total) { clearInterval(id); setDisplayPct(basePct); setReady(true); }
+    }, 1000 / fps);
+    return () => clearInterval(id);
+  }, [basePct]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const id = setInterval(() => setDisplayPct(p => p + 0.005), 2500);
+    return () => clearInterval(id);
+  }, [ready]);
+
+  const w = (displayPct / maxPct) * 100;
+  const activeStage = KILL_LINE_STAGES.find(s => displayPct >= s.start && displayPct < s.end) || KILL_LINE_STAGES[KILL_LINE_STAGES.length - 1];
+
+  return (
+    <div className="mb-8">
+      {/* Header row */}
+      <div className="flex justify-between items-end mb-4">
+        <div ref={calcRef} className="flex items-center gap-2.5 relative">
+          <span className="text-sm font-medium text-foreground-muted">{t.killLineLabel}</span>
+          <button
+            onClick={() => setShowCalc(!showCalc)}
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-foreground-dim hover:text-foreground-muted transition-colors cursor-pointer"
+            style={{ border: '1px solid var(--foreground-dim)', opacity: 0.5 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.9'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.5'; }}
+          >
+            <Info className="w-3 h-3" />
+            <span className="hidden sm:inline">{t.killLineHow}</span>
+          </button>
+
+          {/* Calculation popup */}
+          <AnimatePresence>
+            {showCalc && (
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-full left-0 mt-3 z-50 w-[320px] sm:w-[380px] rounded-xl border border-surface-elevated/50 p-5"
+                style={{
+                  background: 'var(--surface-card)',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)',
+                  backdropFilter: 'blur(16px)',
+                }}
+              >
+                {/* Formula */}
+                <div className="text-center mb-4 py-3 rounded-lg" style={{ background: 'var(--surface-elevated)' }}>
+                  <span className="mono text-sm font-bold text-foreground">{t.killLineFormula}</span>
+                </div>
+
+                {/* Explanation */}
+                <div className="space-y-3 mb-4">
+                  <div className="flex gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center bg-risk-medium/20 text-risk-medium text-xs font-bold mt-0.5">E</div>
+                    <div>
+                      <div className="text-xs font-semibold text-foreground">{t.killLineExposure}</div>
+                      <div className="text-[11px] text-foreground-muted leading-relaxed">{t.killLineExposureDesc}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center bg-risk-high/20 text-risk-high text-xs font-bold mt-0.5">P</div>
+                    <div>
+                      <div className="text-xs font-semibold text-foreground">{t.killLineProbability}</div>
+                      <div className="text-[11px] text-foreground-muted leading-relaxed">{t.killLineProbabilityDesc}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Example */}
+                <div className="text-[11px] text-foreground-dim leading-relaxed p-2.5 rounded-lg mb-2" style={{ background: 'var(--surface-elevated)', borderLeft: '2px solid var(--risk-high)' }}>
+                  {t.killLineExample}
+                </div>
+
+                {/* Source */}
+                <div className="text-[10px] text-foreground-dim text-center">
+                  {t.killLineSource}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <div
+          className="text-3xl sm:text-4xl md:text-5xl font-bold mono text-risk-high"
+          style={{ fontVariantNumeric: 'tabular-nums' }}
+        >
+          <Counter end={CURRENT_REPLACEMENT_RATE} suffix="%" />
+        </div>
+      </div>
+
+      {/* Segmented Bar */}
+      <div className="relative h-10 sm:h-12 rounded-xl overflow-hidden bg-surface-elevated" style={{ boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' }}>
+        {/* Stage background segments */}
+        {KILL_LINE_STAGES.map((stage) => {
+          const left = (stage.start / maxPct) * 100;
+          const width = ((stage.end - stage.start) / maxPct) * 100;
+          const isPast = displayPct >= stage.end;
+          const isCurrent = displayPct >= stage.start && displayPct < stage.end;
+          return (
+            <div
+              key={stage.id}
+              className="absolute top-0 bottom-0"
+              style={{
+                left: `${left}%`,
+                width: `${width}%`,
+                borderRight: stage.id < 5 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+              }}
+            >
+              {/* Stage number / Kill Line watermark */}
+              <div
+                className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+                style={{
+                  fontSize: stage.id === 5 ? '11px' : '28px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 800,
+                  letterSpacing: stage.id === 5 ? '2px' : undefined,
+                  textTransform: stage.id === 5 ? 'uppercase' as const : undefined,
+                  color: stage.id === 5 ? 'var(--accent-purple)' : 'var(--foreground-dim)',
+                  opacity: stage.id === 5 ? 0.18 : (isPast ? 0.06 : isCurrent ? 0.08 : 0.04),
+                }}
+              >
+                {stage.id === 5 ? (lang === 'zh' ? 'AI 斩杀线' : 'AI KILL LINE') : stage.id}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Kill Line boundary marker at 80% */}
+        <div
+          className="absolute top-0 bottom-0 z-[5] pointer-events-none"
+          style={{ left: '80%' }}
+        >
+          <div className="absolute inset-y-0 w-[2px] -ml-[1px]" style={{
+            background: 'var(--accent-purple)',
+            opacity: 0.5,
+            boxShadow: '0 0 8px 1px var(--accent-purple)',
+          }} />
+        </div>
+
+        {/* Unfilled area — marching stripes */}
+        <div className="absolute inset-0 rounded-xl bar-march-stripes" />
+
+        {/* Filled area */}
+        <div className="absolute inset-y-0 left-0 rounded-l-xl overflow-hidden" style={{ width: `${w}%` }}>
+          {/* Per-stage color fill */}
+          {KILL_LINE_STAGES.map((stage) => {
+            if (stage.start >= displayPct) return null;
+            const fillEnd = Math.min(stage.end, displayPct);
+            const segLeft = (stage.start / displayPct) * 100;
+            const segWidth = ((fillEnd - stage.start) / displayPct) * 100;
+            return (
+              <div
+                key={stage.id}
+                className="absolute top-0 bottom-0"
+                style={{
+                  left: `${segLeft}%`,
+                  width: `${segWidth}%`,
+                  background: stage.color,
+                  opacity: 0.75,
+                }}
+              />
+            );
+          })}
+          {/* Top highlight */}
+          <div className="absolute inset-x-0 top-0 h-[38%]" style={{
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%)',
+          }} />
+          {/* Shimmer LTR */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute inset-0" style={{
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
+              animation: 'shimmerLTR 2.5s ease-in-out infinite',
+            }} />
+          </div>
+        </div>
+
+        {/* Leading edge — breathing glow */}
+        {w > 1 && (
+          <motion.div
+            className="absolute top-0 bottom-0 z-10"
+            style={{
+              left: `${w}%`,
+              width: '3px',
+              marginLeft: '-2px',
+              background: activeStage.color,
+            }}
+            animate={ready ? {
+              boxShadow: [
+                '0 0 12px 3px rgba(255,87,34,0.7), 0 0 25px 6px rgba(255,87,34,0.25)',
+                '0 0 22px 7px rgba(255,87,34,0.9), 0 0 45px 12px rgba(255,87,34,0.4)',
+                '0 0 12px 3px rgba(255,87,34,0.7), 0 0 25px 6px rgba(255,87,34,0.25)',
+              ],
+            } : undefined}
+            transition={ready ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : undefined}
+          />
+        )}
+
+        {/* Speed tag ON the bar */}
+        <motion.div
+          className="absolute top-1/2 -translate-y-1/2 z-20"
+          style={{ left: `${Math.min(w + 1.5, 82)}%` }}
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: ready ? 1 : 0, x: ready ? 0 : -8 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-risk-high/10 border border-risk-high/20">
+            <TrendingUp className="w-3 h-3 text-risk-high" />
+            <span className="text-[10px] mono font-semibold text-risk-high whitespace-nowrap">
+              {t.killLineSpeed}
+            </span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Stage labels below bar */}
+      <div className="relative flex mt-2">
+        {KILL_LINE_STAGES.map((stage) => {
+          const width = ((stage.end - stage.start) / maxPct) * 100;
+          const isKillLine = stage.id === 5;
+          return (
+            <div
+              key={stage.id}
+              className="flex flex-col items-center text-center px-0.5"
+              style={{ width: `${width}%` }}
+            >
+              {/* Tick */}
+              <div style={{
+                width: isKillLine ? '2px' : '1px',
+                height: isKillLine ? '10px' : '8px',
+                marginBottom: '4px',
+                background: stage.color,
+                opacity: isKillLine ? 1 : 0.9,
+                boxShadow: isKillLine ? `0 0 6px ${stage.color}` : 'none',
+              }} />
+              {/* Stage name */}
+              <span
+                className={`leading-tight truncate w-full ${isKillLine ? 'text-[10px] sm:text-[13px] font-black tracking-wide' : 'text-[9px] sm:text-[11px] font-bold'}`}
+                style={{
+                  color: stage.color,
+                  textShadow: isKillLine ? `0 0 12px var(--accent-purple)` : 'none',
+                }}
+              >
+                {isKillLine ? (lang === 'zh' ? 'AI 斩杀线' : 'AI Kill Line') : stage.label[lang]}
+              </span>
+              {/* Range */}
+              <span
+                className={`mono mt-0.5 font-semibold ${isKillLine ? 'text-[9px] sm:text-[11px]' : 'text-[8px] sm:text-[10px]'}`}
+                style={{
+                  fontVariantNumeric: 'tabular-nums',
+                  color: stage.color,
+                  opacity: isKillLine ? 0.9 : 0.85,
+                }}
+              >
+                {stage.start}–{stage.end}%
+              </span>
+              {/* Nature / core description */}
+              <span
+                className="text-[8px] sm:text-[9px] mt-0.5 leading-tight hidden md:block"
+                style={{
+                  color: stage.color,
+                  opacity: isKillLine ? 0.85 : 0.75,
+                }}
+              >
+                {stage.desc[lang]}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 // 技术标签组件
@@ -1136,25 +1446,18 @@ function ThemeButton({ theme, setTheme }: { theme: Theme; setTheme: (theme: Them
   );
 }
 
-// 研究报告按钮
 // 首屏
 function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
-      {/* Enhanced Dynamic Background */}
+    <section className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden py-20">
+      {/* Background */}
       <div className="absolute inset-0">
-        {/* Animated mesh gradient overlay */}
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-1/4 left-1/4 w-[250px] h-[250px] md:w-[500px] md:h-[500px] bg-risk-high/40 rounded-full blur-[80px] md:blur-[120px] animate-pulse"></div>
           <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] md:w-[400px] md:h-[400px] bg-brand-primary/30 rounded-full blur-[60px] md:blur-[100px] animate-pulse" style={{ animationDelay: '1.5s' }}></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-brand-accent/20 rounded-full blur-[80px] md:blur-[150px] animate-pulse" style={{ animationDelay: '2s' }}></div>
         </div>
-
-        {/* Grid pattern overlay */}
         <div className="absolute inset-0 grid-bg opacity-40"></div>
-
-        {/* Animated scanline */}
-        <div className="absolute inset-0 scanline"></div>
       </div>
 
       <div className="relative z-10 text-center px-6 max-w-6xl mx-auto hero-glow">
@@ -1163,15 +1466,15 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          {/* Enhanced alert badge */}
-          <div className="inline-flex items-center gap-2 bg-risk-critical/20 text-risk-critical px-5 py-2.5 rounded-full text-sm font-medium mb-8 animate-border-pulse backdrop-blur-sm border border-risk-critical/30">
-            <AlertCircle className="w-4 h-4 animate-glow-pulse" />
+          {/* Alert badge */}
+          <div className="inline-flex items-center gap-2 bg-risk-critical/10 text-risk-critical px-5 py-2.5 rounded-full text-sm font-medium mb-8 border border-risk-critical/20">
+            <AlertCircle className="w-4 h-4" />
             <span className="tracking-wide">{t.alertBadge}</span>
           </div>
 
-          {/* Enhanced hero title */}
+          {/* Hero title — big and eye-catching */}
           <h1 className="text-3xl sm:text-5xl md:text-8xl font-bold mb-8 leading-tight text-foreground">
-            <span className="inline-block animate-fade-in">{t.heroTitle}</span>
+            {t.heroTitle}
           </h1>
 
           <p className="text-xl md:text-2xl text-foreground-muted mb-10 max-w-3xl mx-auto leading-relaxed">
@@ -1179,89 +1482,28 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
           </p>
         </motion.div>
 
+        {/* Progress bar section */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="card-elevated rounded-3xl p-8 md:p-12 border border-surface-elevated/50 mb-8 backdrop-blur-xl"
+          className="pt-10 border-t border-foreground-dim/10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 bg-gradient-to-r from-foreground to-foreground-muted bg-clip-text text-transparent">{t.progressTitle}</h2>
+          <h2 className="text-xl md:text-2xl font-bold mb-8 text-foreground text-left">{t.progressTitle}</h2>
 
-          <div className="mb-10">
-            <div className="flex justify-between items-center mb-3">
-              <div className="text-left">
-                <div className="text-sm text-foreground-muted">{t.currentReality}</div>
-                <div className="text-xs text-foreground-dim">{t.currentRealityDesc}</div>
-              </div>
-              <div className="text-2xl sm:text-4xl md:text-5xl font-bold mono text-risk-critical data-highlight"><Counter end={MIT_REPLACEMENT_RATE} suffix="%" /></div>
-            </div>
-            <div className="h-8 bg-surface-elevated rounded-full overflow-hidden relative shadow-inner">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${(MIT_REPLACEMENT_RATE / 60) * 100}%` }}
-                transition={{ duration: 2, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-risk-critical via-risk-high to-risk-medium rounded-full relative overflow-hidden"
-              >
-                <div className="absolute inset-0 animate-shimmer"></div>
-              </motion.div>
-            </div>
-          </div>
-
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-3">
-              <div className="text-left">
-                <div className="text-sm text-foreground-muted">{t.technicalCeiling}</div>
-                <div className="text-xs text-foreground-dim">{t.technicalCeilingDesc}</div>
-              </div>
-              <div className="text-2xl sm:text-4xl md:text-5xl font-bold mono text-brand-accent data-highlight"><Counter end={MCKINSEY_AUTOMATION_POTENTIAL} suffix="%" /></div>
-            </div>
-            <div className="h-8 bg-surface-elevated rounded-full overflow-hidden relative shadow-inner">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${(MCKINSEY_AUTOMATION_POTENTIAL / 100) * 100}%` }}
-                transition={{ duration: 2.5, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-brand-accent via-brand-primary to-brand-secondary rounded-full relative overflow-hidden"
-              >
-                <div className="absolute inset-0 animate-shimmer"></div>
-              </motion.div>
-            </div>
-          </div>
+          <AIKillLineBar lang={lang} t={t} />
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
-            className="card-risk rounded-xl p-5 text-center"
+            transition={{ delay: 1.8 }}
+            className="mt-6 py-4 px-5 rounded-lg bg-risk-critical/5 border-l-2 border-risk-critical text-left"
           >
-            <p className="text-risk-critical font-semibold text-lg">
-              <Skull className="w-5 h-5 inline mr-2 animate-glow-pulse" />
+            <p className="text-risk-critical font-medium text-sm">
+              <Skull className="w-4 h-4 inline mr-2" />
               {t.icebergWarning}
             </p>
           </motion.div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-children"
-        >
-          <div className="glass-card rounded-xl p-5 border border-surface-elevated/50 card-hover">
-            <div className="text-2xl md:text-3xl font-bold text-risk-critical mono data-highlight"><Counter end={11.7} suffix="%" /></div>
-            <div className="text-xs text-foreground-muted mt-2 font-medium">{t.replaceableNow}</div>
-          </div>
-          <div className="glass-card rounded-xl p-5 border border-surface-elevated/50 card-hover">
-            <div className="text-2xl md:text-3xl font-bold text-brand-accent mono data-highlight"><Counter end={57} suffix="%" /></div>
-            <div className="text-xs text-foreground-muted mt-2 font-medium">{t.technicallyPossible}</div>
-          </div>
-          <div className="bg-surface rounded-xl p-4 border border-surface-elevated">
-            <div className="text-2xl md:text-3xl font-bold text-data-blue mono"><Counter end={89} suffix="%" /></div>
-            <div className="text-xs text-foreground-muted mt-1">{t.hrImpact}</div>
-          </div>
-          <div className="bg-surface rounded-xl p-4 border border-surface-elevated">
-            <div className="text-2xl md:text-3xl font-bold text-risk-low mono">92M</div>
-            <div className="text-xs text-foreground-muted mt-1">{t.jobsBy2030}</div>
-          </div>
         </motion.div>
       </div>
     </section>
@@ -1286,27 +1528,27 @@ function ProgressStages({ lang, t }: { lang: Language; t: typeof translations.en
           <div className="hidden md:block absolute top-8 left-0 right-0 h-1 bg-gradient-to-r from-risk-low via-risk-medium to-risk-high rounded-full"></div>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4 relative">
-            {progressStages.map((stage, index) => (
-              <motion.div
-                key={stage.label.en}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className={`text-center relative ${
-                  stage.label.en === 'YOU ARE HERE' ? 'col-span-2 md:col-span-1' : ''
-                }`}
-              >
-                <div className={`w-4 h-4 rounded-full mx-auto mb-4 border-4 border-background z-10 ${
-                  stage.label.en === 'YOU ARE HERE' ? 'bg-risk-high scale-150 animate-pulse-glow' : 'bg-surface-elevated'
-                }`}></div>
-                <div className="text-xs text-foreground-muted mb-1 mono">{stage.range}</div>
-                <div className={`font-semibold text-sm mb-2 ${
-                  stage.label.en === 'YOU ARE HERE' ? 'text-risk-high' : ''
-                }`}>{stage.label[lang]}</div>
-                <div className="text-xs text-foreground-muted">{stage.description[lang]}</div>
-              </motion.div>
-            ))}
+            {KILL_LINE_STAGES.map((stage, index) => {
+              const isCurrent = CURRENT_REPLACEMENT_RATE >= stage.start && CURRENT_REPLACEMENT_RATE < stage.end;
+              return (
+                <motion.div
+                  key={stage.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`text-center relative ${isCurrent ? 'col-span-2 md:col-span-1' : ''}`}
+                >
+                  <div className={`w-4 h-4 rounded-full mx-auto mb-4 border-4 border-background z-10 ${
+                    isCurrent ? 'bg-risk-high scale-150 animate-pulse-glow' : 'bg-surface-elevated'
+                  }`}></div>
+                  <div className="text-xs text-foreground-muted mb-1 mono">{stage.start}–{stage.end}%</div>
+                  <div className={`font-semibold text-sm mb-1 ${isCurrent ? 'text-risk-high' : ''}`}>{stage.label[lang]}</div>
+                  <div className="text-xs text-foreground-muted mb-1">{stage.desc[lang]}</div>
+                  <div className="text-[11px] text-foreground-dim">{stage.nature[lang]}</div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -1404,7 +1646,7 @@ function TimelineSection({ lang, t }: { lang: Language; t: typeof translations.e
               className={`relative rounded-2xl p-8 border-2 ${
                 period.isCurrent
                   ? 'bg-risk-high/20 border-risk-high glow-box'
-                  : period.progress <= MIT_REPLACEMENT_RATE
+                  : period.progress <= CURRENT_REPLACEMENT_RATE
                   ? 'bg-surface border-risk-high/50'
                   : 'bg-surface border-surface-elevated opacity-60'
               }`}

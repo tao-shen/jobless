@@ -1,0 +1,56 @@
+\section{The Iceberg Index}
+\label{sec:iceberg_index}
+The Iceberg Index is a skills-centered measure of workforce exposure in the AI economy. It quantifies the wage value of occupational tasks that AI systems can technically perform, revealing where human work and AI capabilities overlap. This provides forward-looking intelligence to complement traditional workforce metrics, which measure employment outcomes after disruption occurs rather than technical capability before adoption crystallizes.
+% This provides an early-warning system for policymakers: a way to see potential workforce change before it crystallizes in traditional economic data.
+
+\begin{tcolorbox}[colback=white,colframe=IcebergDark]
+\centering
+\textbf{The Iceberg Index:} A skills-centered KPI for the AI economy. \\
+It measures the wage value of skills that AI systems can perform within each occupation, revealing where human and AI capabilities overlap.
+\end{tcolorbox}
+
+\subsection{How the Index Works}
+The Index evaluates each occupation along three dimensions: the skills required, the automatability of those skills, and the value of the work in wages and employment. Together these factors yield a consistent measure of technical exposure that can be aggregated across occupations, industries, and regions. Formally, the Index for a given occupation weights each skill by its relative importance, automatability score, and prevalence, producing a single exposure value between 0 and 100\%.
+
+The Index captures the share of tasks that are \textit{technically automatable} based on demonstrated AI capabilities. A skill is considered automatable if tools exist that language models can use to perform relevant tasks. This approach captures automation potential through tool availability and language model tool-use capability. Because the Index is skill-based rather than job-based, it can be consistently compared across geographies, industries, and occupation clusters, making it useful for both national and local decision-making.
+
+% A skill is considered automatable if production-ready tools can perform relevant tasks or if general language models demonstrate consistent capability.
+% It assumes skills demonstrated in one occupational context transfer perfectly to others, establishing an upper bound on potential exposure. This assumption is deliberate: it reveals the maximum scope of overlap, providing the foundation for scenario analysis where transferability and adoption can be tested under different assumptions. Because the Index is skill-based rather than job-based, it can be consistently compared across geographies, industries, and occupation clusters, making it useful for both national and local decision-making.
+
+\subsection{What the Index Measures}
+The Index measures \textit{technical exposure}—where AI capabilities and human skills overlap—not displacement outcomes. For example, financial analysts will not disappear, but AI systems may demonstrate capability across significant portions of document-processing and routine analysis work. This reshapes how roles are structured and which skills remain in demand, without necessarily reducing headcount.
+
+\textbf{Systemic exposure, not task capability}. The Index measures how AI tool availability transforms workforce skills at scale, across million of workers. This differs from capability benchmarks like GDPval~\cite{openai2025gdpval} and APEX~\cite{vidgen2025apex}, which test base language model performance on isolated professional tasks. Both perspectives inform workforce planning: benchmarks establish what models can do, while the Index measures how tool ecosystems enable automation in practice. Future work can incorporate capability benchmark data to strengthen assessments of language model performance.
+
+The Index does not predict job losses, adoption timelines, or net employment effects. Actual workforce impacts depend on firm adoption strategies, worker adaptation, regulatory choices, societal acceptance and broader economic conditions. Policymakers should interpret the Index as a capability map—similar to how earthquake risk zones identify exposure without predicting when events occur—that enables scenario testing and proactive planning.
+
+% \subsection{What the Index Reveals and Does Not}
+% The Index shows where technical capability overlaps with human skills without predicting whether displacement will occur. For example, financial analysts will not disappear, but AI systems demonstrate capability across significant portions of document processing and routine analysis—reshaping role structure and skill demand without necessarily reducing headcount. Because the Index is skill-based rather than job-based, it enables consistent comparison across geographies and industries, making it useful for both national strategy and local planning.
+
+% The Index does not imply job elimination. For example, financial analysts will not disappear, but AI systems may demonstrate capability across significant portions of document-processing and routine analysis work. This reshapes how roles are structured and which skills remain in demand, without necessarily reducing headcount. Because the Index is skill-based, it can be consistently compared across geographies, industries, and occupation clusters, making it useful for both national and local decision-making.
+
+% Formally, the Index for a given occupation weights each skill by its relative importance, automatability score, and prevalence, producing a single exposure value between 0 and 100\%.
+
+% \noindent \textbf{What the Index does not predict:} The Index does not predict job losses, displacement rates, adoption timelines, or whether AI systems meet domain-specific quality thresholds. It does not forecast net employment effects or whether workforce impacts manifest as augmentation, automation, or transformation. Actual outcomes will depend on firm adoption strategies, worker adaptation, regulatory choices, and broader economic conditions. The Index functions as a risk surface map showing where human work and AI capabilities overlap, not a forecast of what will happen at those intersections.
+
+% \noindent \textbf{How to interpret the Index:} Policymakers should use the Iceberg Index as a scenario-testing instrument—similar to risk models or epidemiological forecasts—that highlights where exposure may concentrate and enables proactive planning. The Index is most useful for establishing baseline exposure levels, testing intervention strategies through simulation, and identifying which occupations and regions face the greatest transition challenges.
+
+\subsection{Two Ways to Use the Index}
+The Iceberg Index serves two complementary purposes. This paper focuses on establishing the baseline Index, while simulation results exploring adoption dynamics will be presented in future work.
+
+\noindent \textbf{Baseline assessment.} The Index measures maximum technical exposure—the share of occupational skills where AI has demonstrated capability in at least one context. This establishes problem scope without making adoption assumptions. It identifies where skill overlap is concentrated, enables geographic and industry comparisons, reveals structural vulnerabilities in workforce composition, and provides a metric for tracking how capability overlap evolves over time. \textit{Key question: Where might AI capabilities reach if adoption follows patterns observed in technology sectors?}
+
+\noindent \textbf{Simulation input.} The baseline Index feeds into scenario modeling that explores how technical capability might translate to workforce impact. Future work will test adoption assumptions (speed, sector patterns), model skill transferability across occupational contexts, evaluate policy interventions, and compare alternative futures under different technology maturity assumptions. Simulations explore: \textit{Key question: Under specific adoption scenarios, how might baseline exposure materialize into workforce change?}
+
+\subsection{Applications for Policymakers}
+The Index enables three complementary strategic functions:
+
+\begin{itemize}
+    \item \textbf{Status Quo Assessment:} Establish a baseline of automation potential if no action is taken, helping governments identify where adaptation needs are most concentrated. This makes the risks of inaction visible across industries and regions.
+    
+    \item \textbf{Strategic Opportunity Identification:} Highlight where AI adoption can advance broader goals while strengthening, rather than displacing, the workforce. For example, automating healthcare administration can free nurses for direct patient care, easing shortages while improving quality.
+    
+    \item \textbf{Recalibrating Investments:} Update traditional job-multiplier assumptions (e.g., one construction job creating 1.8 allied jobs) for the AI economy, showing how ripple effects change when support functions are automated or augmented. This enables more accurate projections of returns on training, infrastructure, and incentive programs.
+\end{itemize}
+
+The Index provides a measurable framework for evaluating policy choices, reframing AI as a planning tool for strategic workforce investments. This enables states to prepare for workforce change before it appears in unemployment data or GDP figures. For detailed validation methodology, see Section~\ref{sec:validation} and Appendix A.
