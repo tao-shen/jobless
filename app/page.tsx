@@ -1060,11 +1060,102 @@ const timelineData = [
 
 // 五阶段模型（按暴露度分档：<20%, 20-40%, 40-60%, 60-80%, ≥80%）
 const KILL_LINE_STAGES = [
-  { id: 1, start: 0,  end: 20, label: { en: 'AI Assist', zh: 'AI 助手' }, desc: { en: 'Tool automation', zh: '工具型自动化' }, nature: { en: 'You lead, AI executes', zh: '你主导，AI 执行' }, color: 'var(--risk-low)' },
-  { id: 2, start: 20, end: 40, label: { en: 'AI Augment', zh: 'AI 增强' }, desc: { en: 'Cognitive augmentation', zh: '认知增强' }, nature: { en: 'You lead, AI thinks with you', zh: '你主导，AI 辅助思考' }, color: 'var(--risk-medium)' },
-  { id: 3, start: 40, end: 60, label: { en: 'AI Agent', zh: 'AI 代理' }, desc: { en: 'Execution delegation', zh: '执行权转移' }, nature: { en: 'You direct, AI executes', zh: '人定方向，AI 执行' }, color: 'var(--risk-high)' },
-  { id: 4, start: 60, end: 80, label: { en: 'AI Lead', zh: 'AI 主导' }, desc: { en: 'Decision authority transfer', zh: '决策权转移' }, nature: { en: 'AI decides, you support', zh: 'AI 主导，人类配合' }, color: 'var(--risk-critical)' },
-  { id: 5, start: 80, end: 100, label: { en: 'Kill Line', zh: '斩杀线' }, desc: { en: 'Structural replacement', zh: '结构性替代' }, nature: { en: 'AI fully autonomous', zh: 'AI 完全自主运行' }, color: 'var(--risk-critical)', isKillLine: true },
+  {
+    id: 1, start: 0, end: 20,
+    label: { en: 'AI Assist', zh: 'AI 助手' },
+    desc: { en: 'Tool automation', zh: '工具型自动化' },
+    nature: { en: 'You lead, AI executes', zh: '你主导，AI 执行' },
+    color: 'var(--risk-low)',
+    tooltip: {
+      en: {
+        definition: 'AI acts as an assistant. It handles repetitive, low-value, or tedious tasks you prefer not to do.',
+        control: 'You decide everything. AI only executes instructions.',
+        coreNature: 'Tool automation',
+      },
+      zh: {
+        definition: 'AI作为助手存在，帮助你处理重复性、低价值或耗时的杂活。',
+        control: '你完全主导，AI只是执行工具。',
+        coreNature: '工具型自动化',
+      },
+    },
+  },
+  {
+    id: 2, start: 20, end: 40,
+    label: { en: 'AI Augment', zh: 'AI 增强' },
+    desc: { en: 'Cognitive augmentation', zh: '认知增强' },
+    nature: { en: 'You lead, AI thinks with you', zh: '你主导，AI 辅助思考' },
+    color: 'var(--risk-medium)',
+    tooltip: {
+      en: {
+        definition: 'AI enhances your thinking. It organizes ideas, answers questions, analyzes problems, and provides suggestions — but you remain the decision-maker.',
+        control: 'You lead. AI supports your cognition.',
+        coreNature: 'Cognitive augmentation',
+      },
+      zh: {
+        definition: 'AI增强你的认知能力，帮你整理思路、回答问题、分析问题、提供建议，但决策权仍然在你手中。',
+        control: '你主导，AI辅助思考。',
+        coreNature: '认知增强',
+      },
+    },
+  },
+  {
+    id: 3, start: 40, end: 60,
+    label: { en: 'AI Agent', zh: 'AI 代理' },
+    desc: { en: 'Execution delegation', zh: '执行权转移' },
+    nature: { en: 'You direct, AI executes', zh: '人定方向，AI 执行' },
+    color: 'var(--risk-high)',
+    tooltip: {
+      en: {
+        definition: 'AI executes substantial tasks independently under your direction. You define goals and approve outcomes, but AI carries out the process.',
+        control: 'You set direction. AI executes. You supervise and approve.',
+        coreNature: 'Execution delegation',
+      },
+      zh: {
+        definition: '在你设定目标的前提下，AI可以独立完成较完整的任务流程。你负责目标设定与最终审批，AI负责执行过程。',
+        control: '人定方向，AI执行，人审核。',
+        coreNature: '执行权转移',
+      },
+    },
+  },
+  {
+    id: 4, start: 60, end: 80,
+    label: { en: 'AI Lead', zh: 'AI 主导' },
+    desc: { en: 'Decision authority transfer', zh: '决策权转移' },
+    nature: { en: 'AI decides, you support', zh: 'AI 主导，人类配合' },
+    color: 'var(--risk-critical)',
+    tooltip: {
+      en: {
+        definition: 'AI leads execution and decision flow. It determines strategy, sets sub-goals, and drives outcomes. You provide permissions, resources, or constraints when required.',
+        control: 'AI makes most decisions. Humans approve permissions when required. Humans act as support, not leaders.',
+        coreNature: 'Decision authority transfer',
+      },
+      zh: {
+        definition: 'AI开始主导执行方向和决策流程。它可以制定策略、拆分目标、推动结果达成。你更多是提供权限、资源或制度边界。',
+        control: 'AI主导，人类配合。决策权开始转移，人类不再是核心决策者。',
+        coreNature: '决策权转移',
+      },
+    },
+  },
+  {
+    id: 5, start: 80, end: 100,
+    label: { en: 'Kill Line', zh: '斩杀线' },
+    desc: { en: 'Structural replacement', zh: '结构性替代' },
+    nature: { en: 'AI fully autonomous', zh: 'AI 完全自主运行' },
+    color: 'var(--risk-critical)',
+    isKillLine: true,
+    tooltip: {
+      en: {
+        definition: 'AI fully replaces the human role in that position. No supervision, no approval, no dependency on human input. Humans are no longer structurally required.',
+        control: 'AI operates independently. Human involvement becomes optional or nonexistent.',
+        coreNature: 'Structural replacement',
+      },
+      zh: {
+        definition: 'AI在该岗位上实现完全替代。不再需要监督、审批或依赖人类输入。人类在结构上不再是必要角色。',
+        control: 'AI完全自主运行，人类参与变为可选或不存在。',
+        coreNature: '结构性替代',
+      },
+    },
+  },
 ];
 
 function Counter({ end, suffix = '', duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
@@ -1097,16 +1188,19 @@ function AIKillLineBar({ lang, t }: { lang: Language; t: typeof translations.en 
   const [displayPct, setDisplayPct] = useState(0);
   const [ready, setReady] = useState(false);
   const [showCalc, setShowCalc] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
   const calcRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!showCalc) return;
+    if (!showCalc && activeTooltip === null) return;
     const handler = (e: MouseEvent) => {
-      if (calcRef.current && !calcRef.current.contains(e.target as Node)) setShowCalc(false);
+      if (showCalc && calcRef.current && !calcRef.current.contains(e.target as Node)) setShowCalc(false);
+      if (activeTooltip !== null && tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) setActiveTooltip(null);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [showCalc]);
+  }, [showCalc, activeTooltip]);
 
   useEffect(() => {
     const duration = 2000;
@@ -1138,13 +1232,12 @@ function AIKillLineBar({ lang, t }: { lang: Language; t: typeof translations.en 
           <span className="text-sm font-medium text-foreground-muted">{t.killLineLabel}</span>
           <button
             onClick={() => setShowCalc(!showCalc)}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-foreground-dim hover:text-foreground-muted transition-colors cursor-pointer"
-            style={{ border: '1px solid var(--foreground-dim)', opacity: 0.5 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.9'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.5'; }}
+            className="inline-flex items-center justify-center cursor-pointer transition-opacity text-foreground-muted hover:text-foreground"
+            style={{ opacity: 0.6 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.6'; }}
           >
-            <Info className="w-3 h-3" />
-            <span className="hidden sm:inline">{t.killLineHow}</span>
+            <Info className="w-3.5 h-3.5" />
           </button>
 
           {/* Calculation popup */}
@@ -1199,7 +1292,7 @@ function AIKillLineBar({ lang, t }: { lang: Language; t: typeof translations.en 
           </AnimatePresence>
         </div>
         <div
-          className="text-3xl sm:text-4xl md:text-5xl font-bold mono text-risk-high"
+          className="text-3xl sm:text-4xl md:text-5xl font-bold mono text-risk-critical"
           style={{ fontVariantNumeric: 'tabular-nums' }}
         >
           <Counter end={CURRENT_REPLACEMENT_RATE} suffix="%" />
@@ -1360,12 +1453,25 @@ function AIKillLineBar({ lang, t }: { lang: Language; t: typeof translations.en 
           return (
             <div
               key={stage.id}
-              className="flex flex-col items-center text-center px-0.5"
+              className="flex flex-col items-center text-center px-0.5 relative"
               style={{ width: `${width}%` }}
             >
               <div style={{ width: '1px', height: '8px', marginBottom: '4px', background: stage.color, opacity: 0.9 }} />
-              <span className="text-[9px] sm:text-[11px] font-bold leading-tight truncate w-full" style={{ color: stage.color }}>
+              {/* Label + info icon on same row */}
+              <span className="inline-flex items-center justify-center gap-0.5 text-[9px] sm:text-[11px] font-bold leading-tight" style={{ color: stage.color }}>
                 {stage.label[lang]}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setActiveTooltip(activeTooltip === stage.id ? null : stage.id); }}
+                  className="inline-flex items-center justify-center cursor-pointer transition-opacity flex-shrink-0"
+                  style={{ opacity: activeTooltip === stage.id ? 1 : 0.55 }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                  onMouseLeave={e => { if (activeTooltip !== stage.id) (e.currentTarget as HTMLElement).style.opacity = '0.55'; }}
+                >
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" viewBox="0 0 16 16" fill="none" style={{ color: stage.color }}>
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M8 4.5v0.5M8 7v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
               </span>
               <span className="text-[8px] sm:text-[10px] mono mt-0.5 font-semibold" style={{ fontVariantNumeric: 'tabular-nums', color: stage.color, opacity: 0.85 }}>
                 {stage.start}–{stage.end}%
@@ -1373,18 +1479,78 @@ function AIKillLineBar({ lang, t }: { lang: Language; t: typeof translations.en 
               <span className="text-[8px] sm:text-[9px] mt-0.5 leading-tight hidden md:block" style={{ color: stage.color, opacity: 0.75 }}>
                 {stage.desc[lang]}
               </span>
+              {/* Stage tooltip popup — rich design */}
+              <AnimatePresence>
+                {activeTooltip === stage.id && (
+                  <motion.div
+                    ref={tooltipRef}
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full mt-2 z-50 w-[270px] sm:w-[320px] rounded-xl overflow-hidden text-left"
+                    style={{
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: 'var(--surface-card)',
+                      boxShadow: `0 20px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), 0 0 30px ${stage.color}18`,
+                      backdropFilter: 'blur(20px)',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Colored header band */}
+                    <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: `linear-gradient(135deg, ${stage.color}22, ${stage.color}08)`, borderBottom: `1px solid ${stage.color}25` }}>
+                      <div className="w-2 h-2 rounded-full" style={{ background: stage.color, boxShadow: `0 0 6px ${stage.color}80` }} />
+                      <span className="text-xs font-bold" style={{ color: stage.color }}>{stage.label[lang]}</span>
+                      <span className="text-[10px] mono font-semibold text-foreground-dim ml-auto">{stage.start}–{stage.end}%</span>
+                    </div>
+                    {/* Content */}
+                    <div className="p-4 space-y-3">
+                      {/* Definition */}
+                      <div className="text-[11px] text-foreground-muted leading-relaxed">
+                        {stage.tooltip[lang].definition}
+                      </div>
+                      {/* Control structure */}
+                      <div className="flex gap-2.5">
+                        <div className="w-0.5 rounded-full flex-shrink-0" style={{ background: stage.color, opacity: 0.6 }} />
+                        <div>
+                          <div className="text-[10px] font-semibold text-foreground mb-0.5">{lang === 'zh' ? '控制结构' : 'Control Structure'}</div>
+                          <div className="text-[11px] text-foreground-muted leading-relaxed">{stage.tooltip[lang].control}</div>
+                        </div>
+                      </div>
+                      {/* Core nature tag */}
+                      <div className="flex items-center gap-1.5 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <span className="text-[9px] uppercase tracking-wider text-foreground-dim font-medium">{lang === 'zh' ? '本质' : 'Nature'}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md" style={{ background: `${stage.color}18`, color: stage.color }}>{stage.tooltip[lang].coreNature}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}
 
-        {/* Stage 5: KILL LINE — same layout as 1–4 but wrapped in red badge */}
-        <div className="flex flex-col items-center text-center px-0.5" style={{ width: '20%' }}>
+        {/* Stage 5: KILL LINE */}
+        <div className="flex flex-col items-center text-center px-0.5 relative" style={{ width: '20%' }}>
           <div style={{ width: '1px', height: '8px', marginBottom: '4px', background: 'var(--risk-critical)', opacity: 0.9 }} />
           <div className="kill-zone-badge">
             <div className="flex flex-col items-center text-center gap-0.5">
               <span className="text-[9px] sm:text-[11px] font-bold leading-tight inline-flex items-center gap-0.5">
                 <Skull className="w-3 h-3 sm:w-3.5 sm:h-3.5 inline-block" />
                 {lang === 'zh' ? 'AI 斩杀线' : 'AI Kill Line'}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setActiveTooltip(activeTooltip === 5 ? null : 5); }}
+                  className="inline-flex items-center justify-center cursor-pointer transition-opacity flex-shrink-0"
+                  style={{ opacity: activeTooltip === 5 ? 1 : 0.55 }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                  onMouseLeave={e => { if (activeTooltip !== 5) (e.currentTarget as HTMLElement).style.opacity = '0.55'; }}
+                >
+                  <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-risk-critical" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M8 4.5v0.5M8 7v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </button>
               </span>
               <span className="text-[8px] sm:text-[10px] mono font-semibold opacity-80" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 80–100%
@@ -1394,8 +1560,53 @@ function AIKillLineBar({ lang, t }: { lang: Language; t: typeof translations.en 
               </span>
             </div>
           </div>
+          {/* Kill Line tooltip popup — rich design */}
+          <AnimatePresence>
+            {activeTooltip === 5 && (
+              <motion.div
+                ref={tooltipRef}
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-full mt-2 z-50 w-[270px] sm:w-[320px] rounded-xl overflow-hidden text-left"
+                style={{
+                  right: 0,
+                  background: 'var(--surface-card)',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06), 0 0 30px rgba(255,23,68,0.1)',
+                  backdropFilter: 'blur(20px)',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Colored header band */}
+                <div className="px-4 py-2.5 flex items-center gap-2" style={{ background: 'linear-gradient(135deg, rgba(255,23,68,0.15), rgba(255,23,68,0.04))', borderBottom: '1px solid rgba(255,23,68,0.15)' }}>
+                  <Skull className="w-3.5 h-3.5 text-risk-critical" />
+                  <span className="text-xs font-bold text-risk-critical">{lang === 'zh' ? 'AI 斩杀线' : 'AI Kill Line'}</span>
+                  <span className="text-[10px] mono font-semibold text-foreground-dim ml-auto">80–100%</span>
+                </div>
+                {/* Content */}
+                <div className="p-4 space-y-3">
+                  <div className="text-[11px] text-foreground-muted leading-relaxed">
+                    {KILL_LINE_STAGES[4].tooltip[lang].definition}
+                  </div>
+                  <div className="flex gap-2.5">
+                    <div className="w-0.5 rounded-full flex-shrink-0 bg-risk-critical" style={{ opacity: 0.6 }} />
+                    <div>
+                      <div className="text-[10px] font-semibold text-foreground mb-0.5">{lang === 'zh' ? '控制结构' : 'Control Structure'}</div>
+                      <div className="text-[11px] text-foreground-muted leading-relaxed">{KILL_LINE_STAGES[4].tooltip[lang].control}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 pt-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="text-[9px] uppercase tracking-wider text-foreground-dim font-medium">{lang === 'zh' ? '本质' : 'Nature'}</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-risk-critical/15 text-risk-critical">{KILL_LINE_STAGES[4].tooltip[lang].coreNature}</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+
     </div>
   );
 }
