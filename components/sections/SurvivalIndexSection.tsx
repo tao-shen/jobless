@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Target, Zap, Eye, Shield, Lock, Share2, Download, Copy, ExternalLink,
@@ -97,6 +97,7 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
 
 const PROFESSION_PRESETS: Record<string, {
   name: { en: string; zh: string };
+  shortName?: { en: string; zh: string };
   industry: string;
   dimensions: {
     dataOpenness: number;
@@ -115,6 +116,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 客服/行政类（参考：行业暴露 43.84%，有效Win 49.92%，风险 21.89%）
   'customer-service': {
     name: { en: 'Customer Service / Admin', zh: '客服/行政' },
+    shortName: { en: 'Customer Support', zh: '客服支持' },
     industry: 'customerService',
     dimensions: {
       dataOpenness: 60,
@@ -132,6 +134,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 技术/开发类（参考：PSTS 行业暴露 48.78%，有效Win 47.30%；软件开发职业Win样本偏高）
   'tech': {
     name: { en: 'Developer / Tech', zh: '程序员/技术' },
+    shortName: { en: 'Developer', zh: '开发' },
     industry: 'tech',
     dimensions: {
       dataOpenness: 72,
@@ -149,6 +152,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 创意/设计类（参考：Information 行业暴露 48.99%，有效Win 53.34%）
   'creative': {
     name: { en: 'Creative / Designer', zh: '创意/设计' },
+    shortName: { en: 'Creative Designer', zh: '创意设计' },
     industry: 'marketing',
     dimensions: {
       dataOpenness: 68,
@@ -166,6 +170,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 金融/分析类（参考：行业暴露 54.71%，有效Win 50.92%，风险 27.86%）
   'finance': {
     name: { en: 'Finance / Analyst', zh: '金融/分析' },
+    shortName: { en: 'Finance Analyst', zh: '金融分析' },
     industry: 'finance',
     dimensions: {
       dataOpenness: 71,
@@ -183,6 +188,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 销售/管理类（参考：Retail/Wholesale 合并口径，风险区间约 23%-27%）
   'sales': {
     name: { en: 'Sales / Management', zh: '销售/管理' },
+    shortName: { en: 'Sales Lead', zh: '销售管理' },
     industry: 'sales',
     dimensions: {
       dataOpenness: 56,
@@ -200,6 +206,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 医疗/教育类（参考：Healthcare 风险 15.88%，Education 风险 16.55%）
   'healthcare-edu': {
     name: { en: 'Healthcare / Education', zh: '医疗/教育' },
+    shortName: { en: 'Healthcare / Edu', zh: '医教行业' },
     industry: 'healthcare',
     dimensions: {
       dataOpenness: 40,
@@ -217,6 +224,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 体力/手工类（参考：Manufacturing 风险 17.75%，但物理操作保护强）
   'manual': {
     name: { en: 'Manual / Skilled Trade', zh: '体力/技术工种' },
+    shortName: { en: 'Skilled Trade', zh: '技术工种' },
     industry: 'manufacturing',
     dimensions: {
       dataOpenness: 28,
@@ -234,6 +242,7 @@ const PROFESSION_PRESETS: Record<string, {
   // 内容/写作类（参考：Information 行业 + Editors/Journalists 职业样本）
   'writer': {
     name: { en: 'Writer / Content', zh: '写作/内容' },
+    shortName: { en: 'Content Writer', zh: '内容写作' },
     industry: 'marketing',
     dimensions: {
       dataOpenness: 74,
@@ -409,6 +418,8 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   // 职业选择状态
   const [selectedProfession, setSelectedProfession] = useState<string | null>(null);
   const [selectedIndustry, setSelectedIndustry] = useState<string>('other');
+  const professionGridRef = useRef<HTMLDivElement>(null);
+  const [professionDensity, setProfessionDensity] = useState<'regular' | 'compact' | 'tight'>('regular');
 
   const updateDimension = (key: string, value: number) => {
     setDimensions(prev => ({ ...prev, [key]: value }));
@@ -434,6 +445,66 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       setSelectedProfession(null);
     }
   };
+
+  const syncProfessionDensity = useCallback(() => {
+    const grid = professionGridRef.current;
+    if (!grid) return;
+    const labels = Array.from(grid.querySelectorAll<HTMLElement>('.profession-btn-label'));
+    if (!labels.length) return;
+
+    let maxLines = 1;
+    let minButtonWidth = Number.POSITIVE_INFINITY;
+    labels.forEach((label) => {
+      const computed = window.getComputedStyle(label);
+      const lineHeight = Number.parseFloat(computed.lineHeight || '0') || 16;
+      const lines = label.getBoundingClientRect().height / lineHeight;
+      maxLines = Math.max(maxLines, lines);
+      const button = label.closest('.profession-btn');
+      if (button instanceof HTMLElement) minButtonWidth = Math.min(minButtonWidth, button.clientWidth);
+    });
+
+    setProfessionDensity((prev) => {
+      if (prev === 'regular') {
+        if (maxLines > 1.56 || minButtonWidth < 140) return 'compact';
+        return prev;
+      }
+      if (prev === 'compact') {
+        if (maxLines > 1.96 || minButtonWidth < 122) return 'tight';
+        if (maxLines < 1.18 && minButtonWidth > 160) return 'regular';
+        return prev;
+      }
+      if (maxLines < 1.62 && minButtonWidth > 132) return 'compact';
+      return prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    let frame: number | null = null;
+    const schedule = () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        syncProfessionDensity();
+      });
+    };
+
+    schedule();
+    const settleTimer = window.setTimeout(schedule, 280);
+    window.addEventListener('resize', schedule);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && professionGridRef.current) {
+      observer = new ResizeObserver(schedule);
+      observer.observe(professionGridRef.current);
+    }
+
+    return () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      window.clearTimeout(settleTimer);
+      window.removeEventListener('resize', schedule);
+      observer?.disconnect();
+    };
+  }, [syncProfessionDensity, lang]);
 
   // Restore last input state from localStorage on mount (but not result,
   // so user always sees the input form first with presets visible)
@@ -487,7 +558,12 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   };
 
   return (
-    <section id="risk-calculator" data-mobile-section="risk" className="py-12 sm:py-24 px-4 md:px-6 relative z-30 overflow-hidden scroll-mt-8">
+    <section
+      id="risk-calculator"
+      data-mobile-section="risk"
+      data-lang={lang}
+      className="py-12 sm:py-24 px-4 md:px-6 relative z-30 overflow-hidden scroll-mt-8 responsive-copy-scope"
+    >
 
       <div className="max-w-5xl mx-auto relative z-10">
         {/* Title with distinctive styling */}
@@ -533,9 +609,16 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                 </div>
 
                 {/* 职业按钮网格 - with risk badge */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 mb-4">
+                <div
+                  ref={professionGridRef}
+                  data-density={professionDensity}
+                  className="profession-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 mb-4"
+                >
                   {Object.entries(PROFESSION_PRESETS).map(([profKey, prof], index) => {
                     const isSelected = selectedProfession === profKey;
+                    const displayName = professionDensity === 'regular'
+                      ? prof.name[lang]
+                      : (prof.shortName?.[lang] ?? prof.name[lang]);
                     const previewResult = calculateAIRisk({
                       jobTitle: '', industry: prof.industry, yearsOfExperience: 5,
                       ...prof.dimensions, ...prof.protections,
@@ -554,9 +637,9 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                             : 'bg-surface-card border-white/8'
                         }`}
                       >
-                        <span className="relative z-10 flex items-center justify-center gap-2">
-                          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: badgeColor }} />
-                          {prof.name[lang]}
+                        <span className="profession-btn-content relative z-10">
+                          <span className="profession-btn-dot w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: badgeColor }} />
+                          <span className="profession-btn-label">{displayName}</span>
                         </span>
                       </motion.button>
                     );
@@ -572,14 +655,14 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                   >
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-brand-primary/10 to-brand-secondary/10 border border-brand-primary/20">
                       <CheckCircle2 className="w-5 h-5 text-brand-primary flex-shrink-0" />
-                      <span className="text-sm">
-                        <span className="text-foreground-muted">
+                      <span className="profession-summary-copy text-sm">
+                        <span className="text-foreground-muted shrink-0">
                           {lang === 'en' ? 'Preset: ' : '预设：'}
                         </span>
-                        <span className="font-semibold text-white ml-1">
+                        <span className="font-semibold text-white">
                           {PROFESSION_PRESETS[selectedProfession].name[lang]}
                         </span>
-                        <span className="text-foreground-muted ml-1">
+                        <span className="text-foreground-muted">
                           {lang === 'en' ? '— adjust below' : '— 可在下方微调'}
                         </span>
                       </span>

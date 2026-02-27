@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
+import { Target } from 'lucide-react';
 import { Language, Theme, MobileSection, MOBILE_SECTION_TARGETS, translations } from '@/lib/translations';
 import HeroSection from '@/components/sections/HeroSection';
 import SurvivalIndexSection from '@/components/sections/SurvivalIndexSection';
@@ -47,6 +48,11 @@ export default function Home() {
       document.documentElement.setAttribute('data-theme', 'dark');
     }
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.documentElement.setAttribute('data-ui-lang', lang);
+  }, [lang]);
 
   useEffect(() => {
     const sections = Object.entries(MOBILE_SECTION_TARGETS) as Array<[MobileSection, string]>;
@@ -108,7 +114,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen overflow-x-hidden mobile-shell">
+    <main className="min-h-screen overflow-x-hidden mobile-shell" data-ui-lang={lang}>
       <div
         className="mobile-top-controls fixed z-[96] flex flex-col gap-2"
         style={{ top: 'calc(var(--safe-top) + 1rem)', right: 'calc(var(--safe-right) + 1rem)' }}
@@ -135,16 +141,27 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25, duration: 0.28 }}
         onClick={() => scrollToSection('risk')}
-        className="mobile-risk-fab sm:hidden fixed right-3 z-[96] min-h-[44px] rounded-full px-4 text-xs font-bold text-white shadow-lg"
+        className="mobile-risk-fab fixed right-3 sm:right-5 bottom-[calc(var(--safe-bottom)+5.1rem)] sm:bottom-[calc(var(--safe-bottom)+1.25rem)] z-[96] w-12 h-12 rounded-full border flex items-center justify-center"
         style={{
-          bottom: 'calc(var(--safe-bottom) + 5.1rem)',
-          background: 'linear-gradient(135deg, var(--risk-high), var(--risk-critical))',
-          boxShadow: '0 12px 24px rgba(255,23,68,0.3)',
+          background: 'color-mix(in srgb, var(--surface) 88%, transparent)',
+          borderColor: 'rgba(255,255,255,0.14)',
+          boxShadow: '0 12px 24px rgba(255,23,68,0.22)',
         }}
-        whileTap={{ scale: 0.96 }}
+        whileTap={{ scale: 0.94 }}
+        whileHover={{ scale: 1.04 }}
         aria-label="Check my risk"
+        title="Check my risk"
       >
-        Check My Risk
+        <Target className="w-5 h-5" style={{ stroke: 'url(#mobile-risk-fab-gradient)' }} />
+        <svg width="0" height="0" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="mobile-risk-fab-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#38bdf8" />
+              <stop offset="50%" stopColor="#a78bfa" />
+              <stop offset="100%" stopColor="#fb7185" />
+            </linearGradient>
+          </defs>
+        </svg>
       </motion.button>
 
       <MobileBottomNav

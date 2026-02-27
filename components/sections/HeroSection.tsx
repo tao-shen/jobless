@@ -15,9 +15,9 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-[250px] h-[250px] md:w-[500px] md:h-[500px] bg-risk-high/40 rounded-full blur-[80px] md:blur-[120px] animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] md:w-[400px] md:h-[400px] bg-brand-primary/30 rounded-full blur-[60px] md:blur-[100px] animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-brand-accent/20 rounded-full blur-[80px] md:blur-[150px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/4 left-1/4 w-[250px] h-[250px] md:w-[500px] md:h-[500px] bg-risk-high/40 rounded-full blur-[80px] md:blur-[120px] hero-bg-pulse-once"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] md:w-[400px] md:h-[400px] bg-brand-primary/30 rounded-full blur-[60px] md:blur-[100px] hero-bg-pulse-once" style={{ animationDelay: '1.5s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-brand-accent/20 rounded-full blur-[80px] md:blur-[150px] hero-bg-pulse-once" style={{ animationDelay: '2s' }}></div>
         </div>
       </div>
 
@@ -117,17 +117,17 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
                   </div>
 
                   {/* Desktop: 3-column grid */}
-                  <div className="hidden sm:grid grid-cols-3 gap-3 mt-4">
+                  <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
                     {stats.map((stat, i) => {
                       const Icon = stat.icon;
                       return (
                         <div key={i} className="group relative rounded-xl p-4 bg-surface border border-surface-elevated">
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
                               <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `color-mix(in srgb, ${stat.color} 15%, transparent)` }}>
                                 <Icon className="w-4 h-4" style={{ color: stat.color }} />
                               </div>
-                              <span className="text-sm text-foreground-muted font-medium truncate">{stat.label}</span>
+                              <span className="hero-stat-label text-sm text-foreground-muted font-medium">{stat.label}</span>
                             </div>
                             <span
                               className="inline-flex items-center rounded-md px-2 py-0.5 text-base mono font-semibold leading-none flex-shrink-0"

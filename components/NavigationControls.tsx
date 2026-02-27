@@ -55,7 +55,7 @@ export function MobileBottomNav({
   }> = [
     { id: 'overview', label: lang === 'zh' ? '概览' : 'Overview', icon: Activity },
     { id: 'risk', label: lang === 'zh' ? '评估' : 'Risk', icon: Target },
-    { id: 'threat', label: lang === 'zh' ? '数据威胁' : 'Data Threat', icon: Shield },
+    { id: 'threat', label: lang === 'zh' ? '数据威胁' : 'Threat', icon: Shield },
     { id: 'timeline', label: lang === 'zh' ? '时间线' : 'Timeline', icon: Clock },
   ];
 
@@ -130,7 +130,7 @@ export function MobileBottomNav({
                 aria-current={active ? 'page' : undefined}
               >
                 <Icon className="w-4 h-4" />
-                <span className="leading-none">{item.label}</span>
+                <span className="leading-none whitespace-nowrap">{item.label}</span>
               </motion.button>
             );
           })}

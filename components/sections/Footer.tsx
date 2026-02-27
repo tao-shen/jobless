@@ -16,7 +16,7 @@ function Footer({ lang, t }: { lang: Language; t: typeof translations.en }) {
             <p>{t.sources2}</p>
           </div>
         </div>
-        <div className="text-center text-xs text-foreground-muted border-t border-surface-elevated pt-6">
+        <div className="text-center text-xs text-foreground-muted pt-6">
           <p>⚠️ {t.disclaimer}</p>
           <p className="mt-1">{t.disclaimer2}</p>
         </div>

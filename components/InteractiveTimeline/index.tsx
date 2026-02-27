@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { X, Zap, Brain, Cpu, Sparkles, ChevronRight, ChevronDown, Flame, Settings } from 'lucide-react';
 
 // ============================================
@@ -244,7 +244,7 @@ const MILESTONES: Milestone[] = [
 // POSITION HELPER — interpolates for any year
 // ============================================
 const KNOWN_POSITIONS: [number, number][] = [
-  [1769, 3], [1879, 13], [2012, 28],
+  [1769, 3], [1879, 16], [2012, 28],
   [2022, 46], [2025, 62], [2026, 76], [2030, 93],
 ];
 
@@ -263,6 +263,8 @@ function getPosition(year: number): number {
   return 50;
 }
 
+const MOBILE_INLINE_DETAIL_TRANSITION = { duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
@@ -275,17 +277,21 @@ export default function ModernTimeline({ lang, theme = 'dark' }: { lang: Languag
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 768px)');
-    const syncIsDesktop = () => setIsDesktop(mediaQuery.matches);
-    syncIsDesktop();
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    const syncViewport = () => setIsDesktop(desktopQuery.matches);
+    syncViewport();
 
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', syncIsDesktop);
-      return () => mediaQuery.removeEventListener('change', syncIsDesktop);
+    if (typeof desktopQuery.addEventListener === 'function') {
+      desktopQuery.addEventListener('change', syncViewport);
+      return () => {
+        desktopQuery.removeEventListener('change', syncViewport);
+      };
     }
 
-    mediaQuery.addListener(syncIsDesktop);
-    return () => mediaQuery.removeListener(syncIsDesktop);
+    desktopQuery.addListener(syncViewport);
+    return () => {
+      desktopQuery.removeListener(syncViewport);
+    };
   }, []);
 
   useEffect(() => {
@@ -325,7 +331,7 @@ export default function ModernTimeline({ lang, theme = 'dark' }: { lang: Languag
   };
 
   return (
-    <section className="relative min-h-screen overflow-hidden" aria-label={t.title}
+    <section className="no-contain relative min-h-screen overflow-hidden" aria-label={t.title}
       onClick={(e) => {
         if (!isDesktop) return;
         if ((e.target as HTMLElement).closest('[data-milestone], [data-detail-panel]') === null) setSelectedMilestone(null);
@@ -375,21 +381,27 @@ export default function ModernTimeline({ lang, theme = 'dark' }: { lang: Languag
 // BACKGROUND
 // ============================================
 function TimelineBackground() {
+  return null;
+}
+
+function MobileInlineDetail({ open, children }: { open: boolean; children: React.ReactNode }) {
   return (
-    <>
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 -left-16 md:-left-32 w-48 h-48 md:w-96 md:h-96 bg-amber-500/20 rounded-full blur-3xl" />
-        <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute top-1/2 -right-16 md:-right-32 w-48 h-48 md:w-96 md:h-96 bg-emerald-500/20 rounded-full blur-3xl" />
-        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-1/4 left-1/2 w-48 h-48 md:w-96 md:h-96 bg-red-500/20 rounded-full blur-3xl" />
-      </div>
-      {/* Grid and noise removed — global body background provides the unified grid pattern */}
-    </>
+    <AnimatePresence initial={false}>
+      {open && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={MOBILE_INLINE_DETAIL_TRANSITION}
+          className="overflow-hidden [contain:layout_paint]"
+          style={{ willChange: 'height, opacity', overflowAnchor: 'none' }}
+        >
+          <div data-detail-panel className="pt-2 pb-3">
+            {children}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -407,16 +419,130 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
 }) {
   const currentYear = new Date().getFullYear();
   const currentPos = getPosition(currentYear);
+  const desktopTrackRef = useRef<HTMLDivElement>(null);
+  const labelSlotRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [desktopLabelLayout, setDesktopLabelLayout] = useState<{
+    compact: boolean;
+    stagger: boolean;
+    rows: Record<string, 0 | 1>;
+  }>({ compact: false, stagger: false, rows: {} });
 
   const timelineGradient = (() => {
     const stops = milestones.map((m) => ({ pos: getPosition(m.year), color: m.color })).sort((a, b) => a.pos - b.pos);
     return `linear-gradient(90deg, ${stops.map((s) => `${s.color} ${s.pos}%`).join(', ')})`;
   })();
 
+  const recomputeDesktopLabelLayout = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    if (window.innerWidth < 768) {
+      setDesktopLabelLayout((prev) => (prev.compact || prev.stagger || Object.keys(prev.rows).length
+        ? { compact: false, stagger: false, rows: {} }
+        : prev));
+      return;
+    }
+
+    const cards = milestones
+      .map((milestone) => {
+        const slot = labelSlotRefs.current[milestone.id];
+        if (!slot) return null;
+        const rect = slot.getBoundingClientRect();
+        return {
+          id: milestone.id,
+          center: (rect.left + rect.right) / 2,
+          bubbleWidth: rect.width,
+        };
+      })
+      .filter((card): card is { id: string; center: number; bubbleWidth: number } => card !== null)
+      .sort((a, b) => a.center - b.center);
+
+    if (cards.length < 2) return;
+
+    const getMinGap = (input: { center: number; bubbleWidth: number }[]) => {
+      let minGap = Number.POSITIVE_INFINITY;
+      for (let i = 0; i < input.length - 1; i += 1) {
+        const current = input[i];
+        const next = input[i + 1];
+        const currentRight = current.center + current.bubbleWidth / 2;
+        const nextLeft = next.center - next.bubbleWidth / 2;
+        minGap = Math.min(minGap, nextLeft - currentRight);
+      }
+      return Number.isFinite(minGap) ? minGap : 999;
+    };
+
+    setDesktopLabelLayout((prev) => {
+      const minGapNatural = getMinGap(cards);
+      const compact = prev.compact ? minGapNatural < 26 : minGapNatural < 16;
+      const layoutCards = compact
+        ? cards.map((card) => ({ ...card, bubbleWidth: Math.min(card.bubbleWidth, 112) }))
+        : cards;
+      const minGapEffective = getMinGap(layoutCards);
+      const stagger = prev.stagger ? minGapEffective < 6 : minGapEffective < 0;
+
+      const rows: Record<string, 0 | 1> = {};
+      if (stagger) {
+        const rowRight: [number, number] = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
+        for (const card of layoutCards) {
+          const left = card.center - card.bubbleWidth / 2;
+          const right = card.center + card.bubbleWidth / 2;
+          const minRowGap = 6;
+          const canUseRow0 = left - rowRight[0] >= minRowGap;
+          const canUseRow1 = left - rowRight[1] >= minRowGap;
+          const row: 0 | 1 = canUseRow0 ? 0 : canUseRow1 ? 1 : (rowRight[0] <= rowRight[1] ? 0 : 1);
+          rows[card.id] = row;
+          rowRight[row] = right;
+        }
+      }
+
+      const sameRows = (() => {
+        const prevKeys = Object.keys(prev.rows);
+        const nextKeys = Object.keys(rows);
+        if (prevKeys.length !== nextKeys.length) return false;
+        return nextKeys.every((key) => prev.rows[key] === rows[key]);
+      })();
+
+      if (prev.compact === compact && prev.stagger === stagger && sameRows) return prev;
+      return { compact: compact || stagger, stagger, rows };
+    });
+  }, [milestones]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let frame: number | null = null;
+    const schedule = () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        recomputeDesktopLabelLayout();
+      });
+    };
+
+    schedule();
+    const settleTimer = window.setTimeout(schedule, 250);
+    window.addEventListener('resize', schedule);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && desktopTrackRef.current) {
+      observer = new ResizeObserver(schedule);
+      observer.observe(desktopTrackRef.current);
+    }
+
+    return () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      window.clearTimeout(settleTimer);
+      window.removeEventListener('resize', schedule);
+      observer?.disconnect();
+    };
+  }, [recomputeDesktopLabelLayout, lang]);
+
+  const isCompactDesktop = desktopLabelLayout.compact;
+  const isStaggerDesktop = desktopLabelLayout.stagger;
+
   return (
     <>
       {/* ====== Desktop: Horizontal (md+) ====== */}
-      <div className="relative py-20 hidden md:block">
+      <div ref={desktopTrackRef} className={`relative hidden md:block ${isStaggerDesktop ? 'py-24' : 'py-20'}`}>
         {/* Track */}
         <div className="absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2">
           <div className="absolute inset-0 timeline-track rounded-full" />
@@ -501,6 +627,8 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
           const position = getPosition(milestone.year);
           const isSelected = selectedMilestone?.id === milestone.id;
           const Icon = milestone.icon;
+          const labelRow = isStaggerDesktop ? (desktopLabelLayout.rows[milestone.id] ?? 0) : 0;
+          const labelTop = labelRow === 0 ? 40 : 76;
           return (
             <motion.div key={milestone.id} data-milestone
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -543,29 +671,38 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
               </motion.div>
 
               {/* Name card */}
-              <div className="absolute top-10 left-1/2 -translate-x-1/2 whitespace-nowrap">
+              <div
+                ref={(el) => { labelSlotRefs.current[milestone.id] = el; }}
+                className="absolute left-1/2 -translate-x-1/2"
+                style={{ top: `${labelTop}px` }}
+              >
                 <motion.div animate={{ y: isSelected ? -3 : 0, scale: isSelected ? 1.05 : 1 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   className="px-3 py-1.5 rounded-xl backdrop-blur-md border transition-all"
                   style={{
                     background: isSelected ? `${milestone.color}20` : 'var(--timeline-card-bg)',
                     borderColor: isSelected ? milestone.color : 'var(--timeline-card-border)',
-                    boxShadow: isSelected ? `0 0 30px ${milestone.color}30` : '0 4px 20px rgba(0,0,0,0.3)'
+                    boxShadow: isSelected ? `0 0 30px ${milestone.color}30` : '0 4px 20px rgba(0,0,0,0.3)',
+                    whiteSpace: isCompactDesktop ? 'normal' : 'nowrap',
+                    maxWidth: isCompactDesktop ? '112px' : undefined,
+                    textAlign: 'center',
                   }}>
                   <div className="text-xs font-semibold" style={{ color: 'var(--timeline-text)' }}>{milestone.name[lang]}</div>
                 </motion.div>
               </div>
 
               {/* Hover hint */}
-              <div className="absolute top-24 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                <span className="text-[10px]" style={{ color: 'var(--timeline-text-dim)' }}>{t.clickToExplore}</span>
-              </div>
+              {!isCompactDesktop && (
+                <div className="absolute top-24 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                  <span className="text-[10px]" style={{ color: 'var(--timeline-text-dim)' }}>{t.clickToExplore}</span>
+                </div>
+              )}
             </motion.div>
           );
         })}
 
         {/* Era labels — same row at bottom */}
-        <div className="absolute -bottom-8 left-0 right-0 px-4">
+        <div className="absolute left-0 right-0 px-4" style={{ bottom: isStaggerDesktop ? '-3rem' : '-2rem' }}>
           <span className="text-xs font-mono text-[--timeline-text-dim]">{lang === 'en' ? 'Industrial Age' : '工业时代'}</span>
           <span className="absolute text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded whitespace-nowrap -translate-x-1/2"
             style={{ left: `${getPosition(2012)}%`, color: 'rgba(139, 92, 246, 0.7)', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
@@ -575,7 +712,7 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
       </div>
 
       {/* ====== Mobile: Vertical (<md) ====== */}
-      <div className="md:hidden relative pl-12">
+      <div className="md:hidden relative pl-12" style={{ overflowAnchor: 'none' }}>
         <p className="text-[11px] mb-4 text-[--timeline-text-dim]">{t.mobileHint}</p>
 
         {/* Vertical track line */}
@@ -588,10 +725,10 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
           const isCurrent = milestone.year <= currentYear && (idx === milestones.length - 1 || milestones[idx + 1].year > currentYear);
           const Icon = milestone.icon;
           return (
-            <div key={milestone.id}>
+            <div key={milestone.id} className="pb-2 last:pb-0">
               <motion.div data-milestone initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }} transition={{ delay: idx * 0.1, duration: 0.5 }}
-                className="relative mb-6 last:mb-0 cursor-pointer"
+                className="relative cursor-pointer"
                 onClick={() => onSelectMilestone(milestone)}
                 role="button" tabIndex={0}
                 aria-label={`${milestone.year} - ${milestone.name[lang]}`}
@@ -600,10 +737,10 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
                 {/* Node */}
                 <div className="absolute -left-12 top-3 flex items-center justify-center">
                   {isSelected && (
-                    <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    <div
                       className="absolute rounded-full"
-                      style={{ width: 24, height: 24, background: milestone.color, filter: 'blur(6px)' }} />
+                      style={{ width: 24, height: 24, background: milestone.color, opacity: 0.22 }}
+                    />
                   )}
                   <div className="relative w-[30px] h-[30px] rounded-full border-2 flex items-center justify-center"
                     style={{
@@ -617,7 +754,7 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
                 </div>
 
                 {/* Card */}
-                <div className="rounded-xl p-4 border transition-all"
+                <div className="rounded-xl p-4 border transition-colors duration-200"
                   style={{
                     background: isSelected ? `${milestone.color}10` : 'var(--timeline-card-bg)',
                     borderColor: isSelected ? `${milestone.color}60` : 'var(--timeline-panel-detail-border)',
@@ -646,33 +783,21 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
                 </div>
               </motion.div>
 
-              <AnimatePresence initial={false}>
-                {isSelected && !isDesktop && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                    className="overflow-hidden"
-                  >
-                    <div data-detail-panel className="mt-3 mb-6">
-                      <DetailPanel
-                        milestone={milestone}
-                        onClose={() => onSelectMilestone(milestone)}
-                        lang={lang}
-                        t={t}
-                        className="mt-0 mb-0"
-                        variant="mobileInline"
-                      />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <MobileInlineDetail open={isSelected && !isDesktop}>
+                <DetailPanel
+                  milestone={milestone}
+                  onClose={() => onSelectMilestone(milestone)}
+                  lang={lang}
+                  t={t}
+                  className="mt-0 mb-0"
+                  variant="mobileInline"
+                />
+              </MobileInlineDetail>
 
               {/* "We Are Here" — between current and next milestone, clickable */}
               {isCurrent && (
                 <>
-                  <motion.div data-milestone className="relative my-4 cursor-pointer"
+                  <motion.div data-milestone className="relative my-2 cursor-pointer"
                     onClick={() => onSelectMilestone(WE_ARE_HERE_MILESTONE)}
                     role="button" tabIndex={0}
                     aria-label={t.weAreHere}
@@ -680,15 +805,15 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
                   >
                     <div className="absolute -left-12 top-1/2 -translate-y-1/2 flex items-center justify-center">
                       <div className="w-[30px] flex justify-center">
-                        {(selectedMilestone === null || selectedMilestone?.id === 'we-are-here') ? (
-                          <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}
-                            className="w-3 h-3 rounded-full bg-red-500" style={{ boxShadow: '0 0 12px rgba(239, 68, 68, 0.6)' }} />
-                        ) : (
-                          <div className="w-3 h-3 rounded-full bg-red-500" />
-                        )}
+                        <div
+                          className="w-3 h-3 rounded-full bg-red-500"
+                          style={(selectedMilestone === null || selectedMilestone?.id === 'we-are-here')
+                            ? { boxShadow: '0 0 12px rgba(239, 68, 68, 0.45)' }
+                            : undefined}
+                        />
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/30 transition-all"
+                    <div className="flex items-center gap-2 py-2 px-3 rounded-lg bg-red-500/10 border border-red-500/30 transition-colors duration-200"
                       style={{
                         background: selectedMilestone?.id === 'we-are-here' ? 'rgba(239, 68, 68, 0.2)' : undefined,
                         borderColor: selectedMilestone?.id === 'we-are-here' ? 'rgba(239, 68, 68, 0.6)' : undefined,
@@ -705,28 +830,16 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
                     </div>
                   </motion.div>
 
-                  <AnimatePresence initial={false}>
-                    {selectedMilestone?.id === WE_ARE_HERE_MILESTONE.id && !isDesktop && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
-                      >
-                        <div data-detail-panel className="mt-3 mb-6">
-                          <DetailPanel
-                            milestone={WE_ARE_HERE_MILESTONE}
-                            onClose={() => onSelectMilestone(WE_ARE_HERE_MILESTONE)}
-                            lang={lang}
-                            t={t}
-                            className="mt-0 mb-0"
-                            variant="mobileInline"
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <MobileInlineDetail open={selectedMilestone?.id === WE_ARE_HERE_MILESTONE.id && !isDesktop}>
+                    <DetailPanel
+                      milestone={WE_ARE_HERE_MILESTONE}
+                      onClose={() => onSelectMilestone(WE_ARE_HERE_MILESTONE)}
+                      lang={lang}
+                      t={t}
+                      className="mt-0 mb-0"
+                      variant="mobileInline"
+                    />
+                  </MobileInlineDetail>
                 </>
               )}
             </div>
@@ -1073,13 +1186,14 @@ function DetailPanel({ milestone, onClose, lang, t, className, variant = 'defaul
   const isMobileSheet = variant === 'mobileSheet';
   const isMobileInline = variant === 'mobileInline';
   const compactMode = isMobileSheet || isMobileInline;
+  const disableNestedMotion = isMobileInline;
 
   const panelMotion = isMobileInline
     ? {
-      initial: { opacity: 0, y: 8, scale: 1 },
+      initial: { opacity: 1, y: 0, scale: 1 },
       animate: { opacity: 1, y: 0, scale: 1 },
-      exit: { opacity: 0, y: 8, scale: 1 },
-      transition: { duration: 0.18, ease: 'easeOut' as const },
+      exit: { opacity: 1, y: 0, scale: 1 },
+      transition: { duration: 0.01 },
     }
     : {
       initial: { opacity: 0, y: 40, scale: 0.95 },
@@ -1094,114 +1208,178 @@ function DetailPanel({ milestone, onClose, lang, t, className, variant = 'defaul
       animate={panelMotion.animate}
       exit={panelMotion.exit}
       transition={panelMotion.transition}
-      className={`relative ${className ?? 'mt-8 md:mt-16'}`} role="dialog" aria-label={`${milestone.name[lang]} — ${milestone.year}`}>
-      {!compactMode && <div className="absolute inset-0 rounded-3xl blur-3xl opacity-30" style={{ background: milestone.color }} />}
-      <div className={`relative overflow-hidden border ${compactMode ? 'rounded-2xl' : 'rounded-3xl'}`}
-        style={{
-          background: 'var(--timeline-panel-bg)', borderColor: `${milestone.color}40`,
-          borderStyle: milestone.isProjected ? 'dashed' : 'solid',
-          boxShadow: compactMode
-            ? `0 10px 30px ${milestone.color}16, inset 0 1px 0 rgba(255,255,255,0.08)`
-            : `0 0 60px ${milestone.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
-        }}>
-        <div className="absolute top-0 left-0 right-0 h-1"
-          style={{ background: `linear-gradient(90deg, ${milestone.color}, ${milestone.color}80, ${milestone.color})` }} />
-        <button onClick={onClose} aria-label={t.close}
-          className="absolute top-4 right-4 w-11 h-11 rounded-full flex items-center justify-center transition-colors border border-[--timeline-card-border] timeline-close-btn"
-          style={{ background: 'var(--timeline-close-bg)' }}>
-          <X className="w-5 h-5" style={{ color: 'var(--timeline-text-muted)' }} />
-        </button>
+      className={`relative ${className ?? 'mt-6 md:mt-10'}`} role="dialog" aria-label={`${milestone.name[lang]} — ${milestone.year}`}>
+      {!compactMode && <div className="absolute inset-0 rounded-2xl blur-2xl opacity-15" style={{ background: milestone.color }} />}
+      <MotionConfig reducedMotion={disableNestedMotion ? 'always' : 'never'}>
+        <div className={`relative overflow-hidden border ${compactMode ? 'rounded-2xl' : 'rounded-2xl'}`}
+          style={{
+            background: 'var(--timeline-panel-bg)', borderColor: `${milestone.color}30`,
+            borderStyle: milestone.isProjected ? 'dashed' : 'solid',
+            boxShadow: isMobileInline
+              ? `0 4px 16px ${milestone.color}12, inset 0 1px 0 rgba(255,255,255,0.06)`
+              : compactMode
+              ? `0 10px 30px ${milestone.color}16, inset 0 1px 0 rgba(255,255,255,0.08)`
+              : `0 0 40px ${milestone.color}12, inset 0 1px 0 rgba(255,255,255,0.06)`,
+            maxWidth: compactMode ? undefined : '56rem',
+            margin: compactMode ? undefined : '0 auto',
+          }}>
+          <div className="absolute top-0 left-0 right-0 h-px"
+            style={{ background: `linear-gradient(90deg, transparent, ${milestone.color}80, transparent)` }} />
+          <button onClick={onClose} aria-label={t.close}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-colors border border-[--timeline-card-border] timeline-close-btn"
+            style={{ background: 'var(--timeline-close-bg)' }}>
+            <X className="w-4 h-4" style={{ color: 'var(--timeline-text-muted)' }} />
+          </button>
 
-        <div className={compactMode ? 'p-5 pt-6' : 'p-6 md:p-8'}>
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0"
-              style={{ background: `linear-gradient(135deg, ${milestone.color}30, ${milestone.color}10)`, border: `1px ${milestone.isProjected ? 'dashed' : 'solid'} ${milestone.color}40` }}>
-              <Icon className="w-8 h-8" style={{ color: milestone.color }} />
+          <div className={compactMode ? 'p-5 pt-6' : 'p-5 md:p-6'}>
+          {/* Header row */}
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: `linear-gradient(135deg, ${milestone.color}25, ${milestone.color}08)`, border: `1px ${milestone.isProjected ? 'dashed' : 'solid'} ${milestone.color}30` }}>
+              <Icon className="w-5 h-5" style={{ color: milestone.color }} />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-2xl md:text-3xl font-bold tabular-nums" style={{ color: milestone.color }}>{milestone.year}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-lg font-bold tabular-nums" style={{ color: milestone.color }}>{milestone.year}</span>
                 {milestone.isProjected && (
-                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded"
-                    style={{ color: milestone.color, border: `1px dashed ${milestone.color}60` }}>{t.projected}</span>
+                  <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
+                    style={{ color: milestone.color, border: `1px dashed ${milestone.color}50` }}>{t.projected}</span>
                 )}
               </div>
-              <h3 className="text-xl md:text-2xl font-bold mb-1" style={{ color: 'var(--timeline-text)' }}>{milestone.name[lang]}</h3>
-              <p className="text-sm text-[--timeline-text-muted]">{milestone.impact[lang]}</p>
+              <h3 className="text-base font-bold leading-snug" style={{ color: 'var(--timeline-text)' }}>{milestone.name[lang]}</h3>
+              <p className="text-xs text-[--timeline-text-muted] mt-0.5">{milestone.impact[lang]}</p>
             </div>
           </div>
 
-          <p className="text-[--timeline-panel-text] leading-relaxed mb-6">{milestone.details.description[lang]}</p>
+          {/* Description */}
+          <p className="text-sm text-[--timeline-panel-text] leading-relaxed mb-4">{milestone.details.description[lang]}</p>
 
-          <div className="p-4 rounded-xl mb-6" style={{ background: `${milestone.color}10`, border: `1px solid ${milestone.color}30` }}>
-            <div className="text-xs font-semibold text-[--timeline-text-muted] mb-2 uppercase tracking-wider">{t.significance}</div>
-            <p className="font-medium" style={{ color: 'var(--timeline-text)' }}>{milestone.details.significance[lang]}</p>
+          {/* Significance callout */}
+          <div className="px-3 py-2.5 rounded-lg mb-4" style={{ background: `${milestone.color}08`, border: `1px solid ${milestone.color}20` }}>
+            <div className="text-[10px] font-semibold text-[--timeline-text-muted] mb-1 uppercase tracking-wider">{t.significance}</div>
+            <p className="text-sm font-medium" style={{ color: 'var(--timeline-text)' }}>{milestone.details.significance[lang]}</p>
           </div>
 
-          {milestone.inventions && milestone.inventions.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-[--timeline-text-muted] mb-3 uppercase tracking-wider">
-                {lang === 'en' ? 'Key Inventions' : '关键发明'}
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {milestone.inventions.map((inv, idx) => (
-                  <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                    className="p-3 rounded-lg border"
-                    style={{ background: 'var(--timeline-panel-detail-bg)', borderColor: 'var(--timeline-panel-detail-border)' }}>
-                    <div className="text-xs text-[--timeline-text-dim] mb-1 font-mono">{inv.year}</div>
-                    <div className="text-sm font-medium text-[--timeline-text]">{inv.name[lang]}</div>
-                    <div className="text-xs text-[--timeline-text-dim] mt-1">{inv.impact[lang]}</div>
-                  </motion.div>
-                ))}
-              </div>
+          {/* Two-column grid for inventions + jobs on desktop */}
+          {!compactMode && (milestone.inventions?.length || milestone.jobDisplacement?.length) ? (
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {milestone.inventions && milestone.inventions.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold text-[--timeline-text-muted] mb-2 uppercase tracking-wider">
+                    {lang === 'en' ? 'Key Inventions' : '关键发明'}
+                  </h4>
+                  <div className="space-y-2">
+                    {milestone.inventions.map((inv, idx) => (
+                      <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.06 }}
+                        className="p-2.5 rounded-lg border"
+                        style={{ background: 'var(--timeline-panel-detail-bg)', borderColor: 'var(--timeline-panel-detail-border)' }}>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-[10px] text-[--timeline-text-dim] font-mono shrink-0">{inv.year}</span>
+                          <span className="text-xs font-medium text-[--timeline-text]">{inv.name[lang]}</span>
+                        </div>
+                        <div className="text-[11px] text-[--timeline-text-dim] mt-0.5">{inv.impact[lang]}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {milestone.jobDisplacement && milestone.jobDisplacement.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-semibold text-[--timeline-text-muted] mb-2 uppercase tracking-wider">{t.jobsAffected}</h4>
+                  <div className="space-y-2">
+                    {milestone.jobDisplacement.map((job, idx) => (
+                      <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.06 + 0.15 }}
+                        className="p-2.5 rounded-lg"
+                        style={{ background: 'var(--timeline-panel-detail-bg)', border: `1px solid var(--timeline-panel-detail-border)` }}>
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-xs font-medium text-[--timeline-text]">{job.category[lang]}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                            style={{ background: job.rate >= 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', color: job.rate >= 70 ? '#f87171' : '#34d399' }}>
+                            {job.rate}%
+                          </span>
+                        </div>
+                        <div className="w-full rounded-full h-1 mb-1.5 overflow-hidden" style={{ background: 'var(--timeline-track-bg)' }}>
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${job.rate}%` }}
+                            transition={{ duration: 0.8, delay: 0.4 }} className="h-full rounded-full"
+                            style={{ background: milestone.color }} />
+                        </div>
+                        <div className="text-[11px] text-[--timeline-text-dim]">→ {job.newJobs[lang]}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          ) : (
+            <>
+              {milestone.inventions && milestone.inventions.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-xs font-semibold text-[--timeline-text-muted] mb-2 uppercase tracking-wider">
+                    {lang === 'en' ? 'Key Inventions' : '关键发明'}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {milestone.inventions.map((inv, idx) => (
+                      <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.06 }}
+                        className="p-2.5 rounded-lg border"
+                        style={{ background: 'var(--timeline-panel-detail-bg)', borderColor: 'var(--timeline-panel-detail-border)' }}>
+                        <div className="text-[10px] text-[--timeline-text-dim] mb-0.5 font-mono">{inv.year}</div>
+                        <div className="text-xs font-medium text-[--timeline-text]">{inv.name[lang]}</div>
+                        <div className="text-[11px] text-[--timeline-text-dim] mt-0.5">{inv.impact[lang]}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {milestone.jobDisplacement && milestone.jobDisplacement.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-[--timeline-text-muted] mb-3 uppercase tracking-wider">{t.jobsAffected}</h4>
-              <div className="space-y-3">
-                {milestone.jobDisplacement.map((job, idx) => (
-                  <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 + 0.2 }}
-                    className="p-3 rounded-lg"
-                    style={{ background: 'var(--timeline-panel-detail-bg)', border: `1px solid var(--timeline-panel-detail-border)` }}>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-[--timeline-text]">{job.category[lang]}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-                        style={{ background: job.rate >= 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', color: job.rate >= 70 ? '#f87171' : '#34d399' }}>
-                        {job.rate}%
-                      </span>
-                    </div>
-                    <div className="w-full rounded-full h-1.5 mb-2 overflow-hidden" style={{ background: 'var(--timeline-track-bg)' }}>
-                      <motion.div initial={{ width: 0 }} animate={{ width: `${job.rate}%` }}
-                        transition={{ duration: 0.8, delay: 0.5 }} className="h-full rounded-full"
-                        style={{ background: milestone.color }} />
-                    </div>
-                    <div className="text-xs text-[--timeline-text-dim]">→ {job.newJobs[lang]}</div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+              {milestone.jobDisplacement && milestone.jobDisplacement.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-xs font-semibold text-[--timeline-text-muted] mb-2 uppercase tracking-wider">{t.jobsAffected}</h4>
+                  <div className="space-y-2">
+                    {milestone.jobDisplacement.map((job, idx) => (
+                      <motion.div key={idx} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.06 + 0.15 }}
+                        className="p-2.5 rounded-lg"
+                        style={{ background: 'var(--timeline-panel-detail-bg)', border: `1px solid var(--timeline-panel-detail-border)` }}>
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="text-xs font-medium text-[--timeline-text]">{job.category[lang]}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                            style={{ background: job.rate >= 70 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)', color: job.rate >= 70 ? '#f87171' : '#34d399' }}>
+                            {job.rate}%
+                          </span>
+                        </div>
+                        <div className="w-full rounded-full h-1 mb-1.5 overflow-hidden" style={{ background: 'var(--timeline-track-bg)' }}>
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${job.rate}%` }}
+                            transition={{ duration: 0.8, delay: 0.4 }} className="h-full rounded-full"
+                            style={{ background: milestone.color }} />
+                        </div>
+                        <div className="text-[11px] text-[--timeline-text-dim]">→ {job.newJobs[lang]}</div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {milestone.socialImpact && (
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-[--timeline-text-muted] mb-3 uppercase tracking-wider">
+            <div className="mb-4">
+              <h4 className="text-xs font-semibold text-[--timeline-text-muted] mb-2 uppercase tracking-wider">
                 {lang === 'en' ? 'Social Impact' : '社会影响'}
               </h4>
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
                 {milestone.socialImpact.gdp && (
-                  <div className="px-4 py-2 rounded-lg" style={{ background: 'var(--timeline-panel-detail-bg)' }}>
-                    <div className="text-xs text-[--timeline-text-dim]">GDP</div>
-                    <div className="font-bold text-green-400">{milestone.socialImpact.gdp}</div>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ background: 'var(--timeline-panel-detail-bg)' }}>
+                    <div className="text-[10px] text-[--timeline-text-dim]">GDP</div>
+                    <div className="text-sm font-bold text-green-400">{milestone.socialImpact.gdp}</div>
                   </div>
                 )}
                 {milestone.socialImpact.productivity && (
-                  <div className="px-4 py-2 rounded-lg" style={{ background: 'var(--timeline-panel-detail-bg)' }}>
-                    <div className="text-xs text-[--timeline-text-dim]">{lang === 'en' ? 'Productivity' : '生产力'}</div>
-                    <div className="font-bold text-blue-400">{milestone.socialImpact.productivity}</div>
+                  <div className="px-3 py-1.5 rounded-lg" style={{ background: 'var(--timeline-panel-detail-bg)' }}>
+                    <div className="text-[10px] text-[--timeline-text-dim]">{lang === 'en' ? 'Productivity' : '生产力'}</div>
+                    <div className="text-sm font-bold text-blue-400">{milestone.socialImpact.productivity}</div>
                   </div>
                 )}
               </div>
@@ -1209,12 +1387,12 @@ function DetailPanel({ milestone, onClose, lang, t, className, variant = 'defaul
           )}
 
           {milestone.details.sources && milestone.details.sources.length > 0 && (
-            <div className="mb-6">
-              <h4 className="text-sm font-semibold text-[--timeline-text-muted] mb-2 uppercase tracking-wider">{t.sources}</h4>
-              <div className="text-xs text-[--timeline-text-dim] space-y-1">
+            <div className="mb-4">
+              <h4 className="text-[10px] font-semibold text-[--timeline-text-muted] mb-1.5 uppercase tracking-wider">{t.sources}</h4>
+              <div className="text-[11px] text-[--timeline-text-dim] space-y-0.5">
                 {milestone.details.sources.map((source, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <span className="mt-0.5 opacity-50">*</span><span>{source}</span>
+                  <div key={idx} className="flex items-start gap-1.5">
+                    <span className="mt-0.5 opacity-40">*</span><span>{source}</span>
                   </div>
                 ))}
               </div>
@@ -1222,18 +1400,17 @@ function DetailPanel({ milestone, onClose, lang, t, className, variant = 'defaul
           )}
         </div>
 
-        <div className={compactMode ? 'px-5 pb-5' : 'px-6 pb-6'}>
-          <button onClick={onClose}
-            className={compactMode
-              ? 'w-full flex items-center justify-center gap-2 text-sm rounded-lg border min-h-[44px]'
-              : 'flex items-center gap-2 text-sm transition-colors min-h-[44px] min-w-[44px]'}
-            style={compactMode
-              ? { color: 'var(--timeline-text)', borderColor: 'var(--timeline-panel-detail-border)', background: 'var(--timeline-panel-detail-bg)' }
-              : { color: 'var(--timeline-text-muted)' }}>
-            <X className="w-4 h-4" /><span>{t.close}</span>
-          </button>
+          {!compactMode && (
+            <div className="px-5 pb-4">
+              <button onClick={onClose}
+                className="flex items-center gap-1.5 text-xs transition-colors min-h-[36px] min-w-[36px]"
+                style={{ color: 'var(--timeline-text-muted)' }}>
+                <X className="w-3.5 h-3.5" /><span>{t.close}</span>
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      </MotionConfig>
     </motion.div>
   );
 }

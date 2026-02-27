@@ -881,6 +881,88 @@ body::after {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.profession-btn-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.profession-btn-label {
+  min-width: 0;
+  line-height: 1.2;
+  text-align: left;
+  text-wrap: balance;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.profession-grid {
+  container-type: inline-size;
+}
+
+.profession-grid[data-density="compact"] .profession-btn {
+  padding: 0.6rem 0.65rem;
+}
+
+.profession-grid[data-density="compact"] .profession-btn-content {
+  gap: 0.42rem;
+}
+
+.profession-grid[data-density="compact"] .profession-btn-label {
+  font-size: 0.8125rem;
+}
+
+.profession-grid[data-density="tight"] .profession-btn {
+  padding: 0.5rem 0.56rem;
+  min-height: 42px;
+}
+
+.profession-grid[data-density="tight"] .profession-btn-content {
+  gap: 0.34rem;
+}
+
+.profession-grid[data-density="tight"] .profession-btn-dot {
+  width: 0.36rem;
+  height: 0.36rem;
+}
+
+.profession-grid[data-density="tight"] .profession-btn-label {
+  font-size: 0.75rem;
+}
+
+[data-ui-lang="en"] .profession-btn-label {
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+[data-ui-lang="zh"] .profession-btn-label {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.profession-summary-copy {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.25rem;
+  row-gap: 0.15rem;
+  line-height: 1.35;
+}
+
+.hero-stat-label {
+  min-width: 0;
+  line-height: 1.25;
+  text-wrap: pretty;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .profession-btn::before {
   content: '';
   position: absolute;
@@ -918,6 +1000,16 @@ body::after {
 
 [data-theme="light"] .profession-btn.selected {
   color: white;
+}
+
+@media (max-width: 639px) {
+  .profession-btn-label {
+    font-size: 0.8125rem;
+  }
+
+  .profession-summary-copy {
+    font-size: 0.8125rem;
+  }
 }
 
 /* Custom Slider - Refined & Touch-Friendly */
@@ -1262,6 +1354,20 @@ body::after {
     opacity: 1;
     transform: scaleX(1);
   }
+}
+
+/* Hero background blobs: play on load, then stay still */
+@keyframes heroBgBootPulse {
+  0%, 100% {
+    opacity: 0.56;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+.hero-bg-pulse-once {
+  animation: heroBgBootPulse 2.4s ease-in-out 2 both;
 }
 
 /* Hero Section Styles */
