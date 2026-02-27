@@ -955,12 +955,10 @@ body::after {
 
 .hero-stat-label {
   min-width: 0;
-  line-height: 1.25;
-  text-wrap: pretty;
+  line-height: 1.2;
+  white-space: nowrap;
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
 }
 
 .profession-btn::before {

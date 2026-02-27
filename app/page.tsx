@@ -19,9 +19,11 @@ export default function Home() {
   const [lang, setLang] = useState<Language>('en');
   const [theme, setTheme] = useState<Theme>('dark');
   const [activeMobileSection, setActiveMobileSection] = useState<MobileSection>('overview');
+  const [shouldMountTimeline, setShouldMountTimeline] = useState(false);
   const navLockRef = useRef(false);
   const navLockTargetRef = useRef<MobileSection | null>(null);
   const navLockTimerRef = useRef<number | null>(null);
+  const timelineAnchorRef = useRef<HTMLDivElement>(null);
   const t = translations[lang];
 
   const scrollToSection = (section: MobileSection) => {
@@ -56,15 +58,39 @@ export default function Home() {
 
   useEffect(() => {
     const sections = Object.entries(MOBILE_SECTION_TARGETS) as Array<[MobileSection, string]>;
+    const trackedSections = sections
+      .map(([section, id]) => {
+        const node = document.getElementById(id);
+        return node ? { section, node } : null;
+      })
+      .filter((item): item is { section: MobileSection; node: HTMLElement } => item !== null);
 
-    const syncActiveSection = () => {
+    const unlockNavIfReached = (nextSection: MobileSection) => {
+      if (!navLockRef.current) return true;
+      const target = navLockTargetRef.current;
+      if (target && nextSection === target) {
+        navLockRef.current = false;
+        navLockTargetRef.current = null;
+        if (navLockTimerRef.current !== null) {
+          window.clearTimeout(navLockTimerRef.current);
+          navLockTimerRef.current = null;
+        }
+        return true;
+      }
+      return false;
+    };
+
+    const applyActiveSection = (nextSection: MobileSection) => {
+      if (!unlockNavIfReached(nextSection)) return;
+      setActiveMobileSection((prev) => (prev === nextSection ? prev : nextSection));
+    };
+
+    const syncByDistance = () => {
       const anchorY = Math.min(window.innerHeight * 0.36, 280);
       let nextSection: MobileSection = 'overview';
       let minDistance = Number.POSITIVE_INFINITY;
 
-      sections.forEach(([section, id]) => {
-        const node = document.getElementById(id);
-        if (!node) return;
+      trackedSections.forEach(({ section, node }) => {
         const distance = Math.abs(node.getBoundingClientRect().top - anchorY);
         if (distance < minDistance) {
           minDistance = distance;
@@ -72,34 +98,63 @@ export default function Home() {
         }
       });
 
-      if (navLockRef.current) {
-        const target = navLockTargetRef.current;
-        if (target && nextSection === target) {
-          navLockRef.current = false;
-          navLockTargetRef.current = null;
-          if (navLockTimerRef.current !== null) {
-            window.clearTimeout(navLockTimerRef.current);
-            navLockTimerRef.current = null;
-          }
-        } else {
-          return;
-        }
-      }
-
-      setActiveMobileSection((prev) => (prev === nextSection ? prev : nextSection));
+      applyActiveSection(nextSection);
     };
+
+    if (typeof IntersectionObserver !== 'undefined' && trackedSections.length > 0) {
+      const visibility = new Map<MobileSection, number>(sections.map(([section]) => [section, 0]));
+      const sectionByNode = new Map<HTMLElement, MobileSection>(
+        trackedSections.map(({ section, node }) => [node, section]),
+      );
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const section = sectionByNode.get(entry.target as HTMLElement);
+            if (!section) return;
+            visibility.set(section, entry.isIntersecting ? entry.intersectionRect.height : 0);
+          });
+
+          let nextSection: MobileSection = sections[0][0];
+          let bestScore = Number.NEGATIVE_INFINITY;
+          sections.forEach(([section]) => {
+            const score = visibility.get(section) ?? 0;
+            if (score > bestScore) {
+              bestScore = score;
+              nextSection = section;
+            }
+          });
+
+          if (bestScore <= 0) return;
+          applyActiveSection(nextSection);
+        },
+        {
+          rootMargin: '-28% 0px -52% 0px',
+          threshold: [0, 0.1, 0.25, 0.45, 0.65, 0.85, 1],
+        },
+      );
+
+      trackedSections.forEach(({ node }) => observer.observe(node));
+
+      return () => {
+        observer.disconnect();
+        if (navLockTimerRef.current !== null) {
+          window.clearTimeout(navLockTimerRef.current);
+          navLockTimerRef.current = null;
+        }
+      };
+    }
 
     let ticking = false;
     const onScroll = () => {
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(() => {
-        syncActiveSection();
+        syncByDistance();
         ticking = false;
       });
     };
 
-    syncActiveSection();
+    syncByDistance();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
 
@@ -111,6 +166,28 @@ export default function Home() {
         navLockTimerRef.current = null;
       }
     };
+  }, []);
+
+  useEffect(() => {
+    const anchor = timelineAnchorRef.current;
+    if (!anchor) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      const frameId = window.requestAnimationFrame(() => setShouldMountTimeline(true));
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setShouldMountTimeline(true);
+        observer.disconnect();
+      },
+      { rootMargin: '500px 0px' },
+    );
+
+    observer.observe(anchor);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -130,8 +207,26 @@ export default function Home() {
       <div id="data-threat-anchor" data-mobile-section="threat" className="scroll-mt-28 sm:scroll-mt-0">
         <DataThreatSection lang={lang} t={t} />
       </div>
-      <div id="timeline-anchor" data-mobile-section="timeline" className="scroll-mt-28 sm:scroll-mt-0">
-        <InteractiveTimeline lang={lang} theme={theme} />
+      <div
+        id="timeline-anchor"
+        ref={timelineAnchorRef}
+        data-mobile-section="timeline"
+        className="scroll-mt-28 sm:scroll-mt-0"
+      >
+        {shouldMountTimeline ? (
+          <InteractiveTimeline lang={lang} theme={theme} />
+        ) : (
+          <div className="min-h-[420px] sm:min-h-[560px] flex items-center justify-center px-6 py-12">
+            <div className="w-full max-w-2xl rounded-2xl border border-surface-elevated bg-surface/70 p-6 text-center">
+              <div className="text-sm sm:text-base font-semibold text-foreground">
+                {lang === 'zh' ? '时间线内容即将加载' : 'Timeline is loading'}
+              </div>
+              <p className="mt-2 text-xs sm:text-sm text-foreground-muted">
+                {lang === 'zh' ? '滚动到此区域后再加载，减少首次打开卡顿与发热。' : 'It mounts only when this section is near viewport to reduce initial CPU/GPU load.'}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
       <AnalysisLinkSection lang={lang} t={t} />
       <Footer lang={lang} t={t} />

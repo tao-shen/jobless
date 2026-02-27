@@ -6,20 +6,24 @@ function Counter({ end, suffix = '', duration = 2000 }: { end: number; suffix?: 
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const steps = 60;
-    const stepValue = end / steps;
-    const stepDuration = duration / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += stepValue;
-      if (current >= end) {
+    let frameId = 0;
+    let startTime: number | null = null;
+
+    const animate = (now: number) => {
+      if (startTime === null) startTime = now;
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const nextValue = end * eased;
+      if (progress >= 1) {
         setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current * 10) / 10);
+        return;
       }
-    }, stepDuration);
-    return () => clearInterval(timer);
+      setCount(Math.floor(nextValue * 10) / 10);
+      frameId = window.requestAnimationFrame(animate);
+    };
+
+    frameId = window.requestAnimationFrame(animate);
+    return () => window.cancelAnimationFrame(frameId);
   }, [end, duration]);
 
   return <span className="font-mono font-bold">{count.toLocaleString()}{suffix}</span>;

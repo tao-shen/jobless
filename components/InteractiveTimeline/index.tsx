@@ -589,9 +589,12 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
           <motion.div className="relative -translate-x-1/2" whileHover={{ scale: 1.2 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
             {(selectedMilestone === null || selectedMilestone?.id === 'we-are-here') && (
-              <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute inset-0 rounded-full bg-red-500" style={{ filter: 'blur(8px)' }} />
+              <motion.div
+                animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-0 rounded-full bg-red-500"
+                style={{ filter: 'blur(8px)' }}
+              />
             )}
             <div className="relative w-8 h-8 rounded-full border-3 border-red-500 flex items-center justify-center"
               style={{
@@ -654,9 +657,10 @@ function TimelineTrack({ milestones, selectedMilestone, onSelectMilestone, mount
               <motion.div className="relative -translate-x-1/2" whileHover={{ scale: 1.2 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 20 }}>
                 {isSelected && (
-                  <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0.7, 0.4] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-0 rounded-full" style={{ background: milestone.color, filter: 'blur(6px)' }} />
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: milestone.color, filter: 'blur(6px)', opacity: 0.42, transform: 'scale(1.16)' }}
+                  />
                 )}
                 <div className="relative w-6 h-6 rounded-full border-2 flex items-center justify-center"
                   style={{

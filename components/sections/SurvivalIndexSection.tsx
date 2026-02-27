@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Target, Zap, Eye, Shield, Lock, Share2, Download, Copy, ExternalLink,
@@ -258,6 +258,9 @@ const PROFESSION_PRESETS: Record<string, {
   },
 };
 
+type DimensionKey = 'dataOpenness' | 'workDataDigitalization' | 'processStandardization' | 'currentAIAdoption';
+type ProtectionKey = 'creativeRequirement' | 'humanInteraction' | 'physicalOperation';
+
 // 生存指数测试 V2
 function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translations.en }) {
   const [showOptional, setShowOptional] = useState(false);
@@ -421,13 +424,46 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   const professionGridRef = useRef<HTMLDivElement>(null);
   const [professionDensity, setProfessionDensity] = useState<'regular' | 'compact' | 'tight'>('regular');
 
-  const updateDimension = (key: string, value: number) => {
+  const updateDimension = useCallback((key: DimensionKey, value: number) => {
     setDimensions(prev => ({ ...prev, [key]: value }));
-  };
+  }, []);
 
-  const updateProtection = (key: string, value: number) => {
+  const updateProtection = useCallback((key: ProtectionKey, value: number) => {
     setProtections(prev => ({ ...prev, [key]: value }));
-  };
+  }, []);
+
+  const dimensionHandlers = useMemo(
+    () => ({
+      dataOpenness: (value: number) => updateDimension('dataOpenness', value),
+      workDataDigitalization: (value: number) => updateDimension('workDataDigitalization', value),
+      processStandardization: (value: number) => updateDimension('processStandardization', value),
+      currentAIAdoption: (value: number) => updateDimension('currentAIAdoption', value),
+    }),
+    [updateDimension],
+  );
+
+  const protectionHandlers = useMemo(
+    () => ({
+      creativeRequirement: (value: number) => updateProtection('creativeRequirement', value),
+      humanInteraction: (value: number) => updateProtection('humanInteraction', value),
+      physicalOperation: (value: number) => updateProtection('physicalOperation', value),
+    }),
+    [updateProtection],
+  );
+
+  const professionPreviewBadgeColors = useMemo(() => {
+    const entries = Object.entries(PROFESSION_PRESETS).map(([profKey, prof]) => {
+      const previewResult = calculateAIRisk({
+        jobTitle: '',
+        industry: prof.industry,
+        yearsOfExperience: 5,
+        ...prof.dimensions,
+        ...prof.protections,
+      }, lang);
+      return [profKey, RISK_LEVEL_INFO[previewResult.riskLevel].color] as const;
+    });
+    return Object.fromEntries(entries) as Record<string, string>;
+  }, [lang]);
 
   // 应用职业预设
   const applyProfessionPreset = (professionKey: string | null) => {
@@ -619,11 +655,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     const displayName = professionDensity === 'regular'
                       ? prof.name[lang]
                       : (prof.shortName?.[lang] ?? prof.name[lang]);
-                    const previewResult = calculateAIRisk({
-                      jobTitle: '', industry: prof.industry, yearsOfExperience: 5,
-                      ...prof.dimensions, ...prof.protections,
-                    }, lang);
-                    const badgeColor = RISK_LEVEL_INFO[previewResult.riskLevel].color;
+                    const badgeColor = professionPreviewBadgeColors[profKey];
                     return (
                       <motion.button
                         key={profKey}
@@ -685,7 +717,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     desc={t.dim1Desc}
                     detail={t.dim1Detail}
                     value={dimensions.dataOpenness}
-                    onChange={(v) => updateDimension('dataOpenness', v)}
+                    onChange={dimensionHandlers.dataOpenness}
                     lowLabel={t.dim1Low}
                     highLabel={t.dim1High}
                     icon={Database}
@@ -696,7 +728,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     desc={t.dim2Desc}
                     detail={t.dim2Detail}
                     value={dimensions.workDataDigitalization}
-                    onChange={(v) => updateDimension('workDataDigitalization', v)}
+                    onChange={dimensionHandlers.workDataDigitalization}
                     lowLabel={t.dim2Low}
                     highLabel={t.dim2High}
                     icon={FileText}
@@ -707,7 +739,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     desc={t.dim3Desc}
                     detail={t.dim3Detail}
                     value={dimensions.processStandardization}
-                    onChange={(v) => updateDimension('processStandardization', v)}
+                    onChange={dimensionHandlers.processStandardization}
                     lowLabel={t.dim3Low}
                     highLabel={t.dim3High}
                     icon={Workflow}
@@ -718,7 +750,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     desc={t.dim4Desc}
                     detail={t.dim4Detail}
                     value={dimensions.currentAIAdoption}
-                    onChange={(v) => updateDimension('currentAIAdoption', v)}
+                    onChange={dimensionHandlers.currentAIAdoption}
                     lowLabel={t.dim4Low}
                     highLabel={t.dim4High}
                     icon={Bot}
@@ -760,7 +792,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                           min="0"
                           max="100"
                           value={protections.creativeRequirement}
-                          onChange={(e) => updateProtection('creativeRequirement', parseFloat(e.target.value))}
+                          onChange={(e) => protectionHandlers.creativeRequirement(parseFloat(e.target.value))}
                           className="calc-slider"
                           style={{
                             background: `linear-gradient(to right, var(--risk-safe) 0%, var(--risk-safe) ${protections.creativeRequirement}%, var(--surface-elevated) ${protections.creativeRequirement}%, var(--surface-elevated) 100%)`
@@ -777,7 +809,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                           min="0"
                           max="100"
                           value={protections.humanInteraction}
-                          onChange={(e) => updateProtection('humanInteraction', parseFloat(e.target.value))}
+                          onChange={(e) => protectionHandlers.humanInteraction(parseFloat(e.target.value))}
                           className="calc-slider"
                           style={{
                             background: `linear-gradient(to right, var(--risk-safe) 0%, var(--risk-safe) ${protections.humanInteraction}%, var(--surface-elevated) ${protections.humanInteraction}%, var(--surface-elevated) 100%)`
@@ -794,7 +826,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                           min="0"
                           max="100"
                           value={protections.physicalOperation}
-                          onChange={(e) => updateProtection('physicalOperation', parseFloat(e.target.value))}
+                          onChange={(e) => protectionHandlers.physicalOperation(parseFloat(e.target.value))}
                           className="calc-slider"
                           style={{
                             background: `linear-gradient(to right, var(--risk-safe) 0%, var(--risk-safe) ${protections.physicalOperation}%, var(--surface-elevated) ${protections.physicalOperation}%, var(--surface-elevated) 100%)`

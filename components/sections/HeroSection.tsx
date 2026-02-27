@@ -117,11 +117,11 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
                   </div>
 
                   {/* Desktop: 3-column grid */}
-                  <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+                  <div className="hidden sm:grid grid-cols-3 gap-2 md:gap-3 mt-4 overflow-visible">
                     {stats.map((stat, i) => {
                       const Icon = stat.icon;
                       return (
-                        <div key={i} className="group relative rounded-xl p-4 bg-surface border border-surface-elevated">
+                        <div key={i} className="group relative z-20 hover:z-[220] rounded-xl p-3 md:p-4 bg-surface border border-surface-elevated overflow-visible">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
                               <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `color-mix(in srgb, ${stat.color} 15%, transparent)` }}>
@@ -142,7 +142,7 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
                             </span>
                           </div>
                           {/* Desktop: hover tooltip */}
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 pb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-30 w-max max-w-[260px]">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 pb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-[240] w-max max-w-[260px]">
                             <div className="px-3 py-3 rounded-xl"
                               style={{ background: 'var(--surface-card)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 12px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)', backdropFilter: 'blur(12px)' }}
                             >
@@ -176,7 +176,7 @@ function HeroSection({ lang, t }: { lang: Language; t: typeof translations.en })
           >
             <motion.div
               animate={{ y: [0, 3, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: 1.2, repeat: 2, repeatType: 'loop', ease: 'easeInOut' }}
             >
               <ChevronDown className="w-4 h-4 text-foreground-muted" />
             </motion.div>
