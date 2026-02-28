@@ -7,6 +7,7 @@ import {
   CheckCircle2, ChevronDown, ChevronRight, TrendingUp, AlertTriangle, Brain, Activity, Send,
   Database, FileText, Workflow, Bot, BarChart3, Flame, RefreshCw,
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import { Language, translations } from '@/lib/translations';
 import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
@@ -271,6 +272,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   const [wechatCopied, setWechatCopied] = useState(false);
   const [sharePanelOpen, setSharePanelOpen] = useState(false);
   const [telegramShareState, setTelegramShareState] = useState<'idle' | 'sending' | 'sent' | 'fallback'>('idle');
+  const shareCaptureRef = useRef<HTMLDivElement>(null);
 
   // 分享功能
   const getShareText = () => {
@@ -386,158 +388,234 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       ctx.roundRect(x, y, width, height, radius);
     };
 
-    // Background
-    const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
-    grad.addColorStop(0, '#05070d');
-    grad.addColorStop(0.45, '#0f0f16');
-    grad.addColorStop(1, '#17121d');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1080, 1920);
-
-    const glow1 = ctx.createRadialGradient(170, 170, 0, 170, 170, 420);
-    glow1.addColorStop(0, 'rgba(0,229,255,0.2)');
-    glow1.addColorStop(1, 'transparent');
-    ctx.fillStyle = glow1;
-    ctx.fillRect(0, 0, 620, 620);
-
-    const glow2 = ctx.createRadialGradient(880, 1550, 0, 880, 1550, 520);
-    glow2.addColorStop(0, 'rgba(255,23,68,0.2)');
-    glow2.addColorStop(1, 'transparent');
-    ctx.fillStyle = glow2;
-    ctx.fillRect(520, 1120, 560, 780);
-
     const riskColor = RISK_LEVEL_INFO[result.riskLevel].color;
 
-    // Header
-    ctx.fillStyle = '#8a8595';
-    ctx.font = '600 30px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('JOBLESS · AI Risk Poster', 68, 100);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(lang === 'en' ? '2026 Personal Assessment' : '2026 个人评估', 68, 142);
+    const drawBackground = () => {
+      const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
+      grad.addColorStop(0, '#05070d');
+      grad.addColorStop(0.45, '#0f0f16');
+      grad.addColorStop(1, '#17121d');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1920);
 
-    // Risk label
-    ctx.fillStyle = riskColor;
-    ctx.font = '800 116px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(
-      result.riskLevel === 'very-low' ? (lang === 'en' ? 'VERY LOW' : '极低风险') :
-      result.riskLevel === 'low' ? (lang === 'en' ? 'LOW RISK' : '低风险') :
-      result.riskLevel === 'medium' ? (lang === 'en' ? 'MEDIUM' : '中等风险') :
-      result.riskLevel === 'high' ? (lang === 'en' ? 'HIGH RISK' : '高风险') :
-      (lang === 'en' ? 'CRITICAL' : '极高风险'),
-      68,
-      320,
-    );
+      const glow1 = ctx.createRadialGradient(190, 220, 0, 190, 220, 460);
+      glow1.addColorStop(0, 'rgba(0,229,255,0.16)');
+      glow1.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow1;
+      ctx.fillRect(0, 0, 660, 660);
 
-    // Summary sentence
-    ctx.fillStyle = '#dbd9e3';
-    ctx.font = '500 30px sans-serif';
-    ctx.fillText(
-      lang === 'en'
-        ? `AI Replacement Probability ${result.replacementProbability}%`
-        : `AI 替代概率 ${result.replacementProbability}%`,
-      68,
-      382,
-    );
+      const glow2 = ctx.createRadialGradient(900, 1580, 0, 900, 1580, 560);
+      glow2.addColorStop(0, 'rgba(255,23,68,0.16)');
+      glow2.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow2;
+      ctx.fillRect(500, 1120, 580, 800);
 
-    // Metrics boxes
-    const metrics = [
-      { value: `${result.replacementProbability}%`, label: lang === 'en' ? 'Replacement Probability' : '替代概率', color: '#ff1744' },
-      { value: `${result.predictedReplacementYear}`, label: lang === 'en' ? 'AI Kill Line Year' : 'AI 斩杀线年份', color: '#ff8f00' },
-      { value: `${result.currentReplacementDegree}%`, label: lang === 'en' ? 'Current Degree' : '当前程度', color: '#4dd0e1' },
-    ];
+      const barGrad = ctx.createLinearGradient(0, 0, 1080, 0);
+      barGrad.addColorStop(0, '#00e5ff');
+      barGrad.addColorStop(0.55, riskColor);
+      barGrad.addColorStop(1, '#ff4081');
+      ctx.fillStyle = barGrad;
+      ctx.fillRect(0, 0, 1080, 8);
+    };
 
-    metrics.forEach((m, i) => {
-      const x = 68;
-      const y = 470 + i * 228;
-      roundedRect(x, y, 944, 184, 28);
-      ctx.fillStyle = 'rgba(255,255,255,0.055)';
+    const truncateText = (text: string, maxWidth: number) => {
+      if (ctx.measureText(text).width <= maxWidth) return text;
+      let trimmed = text;
+      while (trimmed.length > 0 && ctx.measureText(`${trimmed}...`).width > maxWidth) {
+        trimmed = trimmed.slice(0, -1);
+      }
+      return `${trimmed}...`;
+    };
+
+    const drawFallbackResult = () => {
+      const levelText = result.riskLevel === 'very-low' ? (lang === 'en' ? 'VERY LOW' : '极低风险') :
+        result.riskLevel === 'low' ? (lang === 'en' ? 'LOW RISK' : '低风险') :
+        result.riskLevel === 'medium' ? (lang === 'en' ? 'MEDIUM RISK' : '中等风险') :
+        result.riskLevel === 'high' ? (lang === 'en' ? 'HIGH RISK' : '高风险') :
+        (lang === 'en' ? 'CRITICAL RISK' : '极高风险');
+
+      roundedRect(52, 54, 976, 1410, 30);
+      ctx.fillStyle = 'rgba(8,11,19,0.8)';
       ctx.fill();
-      ctx.strokeStyle = m.color + '40';
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
       ctx.lineWidth = 2;
-      roundedRect(x, y, 944, 184, 28);
+      roundedRect(52, 54, 976, 1410, 30);
       ctx.stroke();
 
-      ctx.fillStyle = m.color;
-      ctx.font = '800 76px sans-serif';
+      ctx.fillStyle = 'rgba(255,255,255,0.72)';
+      ctx.font = '600 28px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(m.value, x + 42, y + 112);
-      ctx.fillStyle = '#9f9aac';
-      ctx.font = '500 28px sans-serif';
-      ctx.fillText(m.label, x + 44, y + 152);
-    });
+      ctx.fillText(lang === 'en' ? 'AI Replacement Risk Result' : 'AI 替代风险结果', 96, 118);
 
-    // Confidence interval block
-    roundedRect(68, 1170, 944, 150, 24);
-    ctx.fillStyle = 'rgba(255,255,255,0.05)';
-    ctx.fill();
-    ctx.fillStyle = '#fafafa';
-    ctx.font = '600 34px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(
-      `${lang === 'en' ? 'Range' : '预测范围'}: ${result.confidenceInterval.earliest} — ${result.confidenceInterval.latest}`,
-      112,
-      1260,
-    );
+      ctx.fillStyle = riskColor;
+      ctx.font = '800 96px sans-serif';
+      ctx.fillText(levelText, 96, 252);
 
-    // Footer zone
-    roundedRect(68, 1370, 944, 460, 34);
-    const footerGrad = ctx.createLinearGradient(68, 1370, 1012, 1830);
-    footerGrad.addColorStop(0, 'rgba(255,255,255,0.06)');
-    footerGrad.addColorStop(1, 'rgba(255,255,255,0.02)');
-    ctx.fillStyle = footerGrad;
-    ctx.fill();
+      ctx.fillStyle = '#c7c3d4';
+      ctx.font = '500 30px sans-serif';
+      ctx.fillText(RISK_LEVEL_INFO[result.riskLevel].description[lang], 96, 305);
 
-    const qrPanelX = 740;
-    const qrPanelY = 1450;
-    roundedRect(qrPanelX, qrPanelY, 224, 224, 24);
-    ctx.fillStyle = '#ffffff';
-    ctx.fill();
+      const metrics = [
+        { value: `${result.replacementProbability}%`, label: lang === 'en' ? 'Replacement Probability' : '替代概率', color: '#ff1744' },
+        { value: `${result.predictedReplacementYear}`, label: lang === 'en' ? 'AI Kill Line Year' : 'AI 斩杀线年份', color: '#ff8f00' },
+        { value: `${result.currentReplacementDegree}%`, label: lang === 'en' ? 'Current Degree' : '当前程度', color: '#4dd0e1' },
+      ];
 
-    try {
-      const qrDataUrl = await QRCode.toDataURL(shareUrl, {
-        errorCorrectionLevel: 'M',
-        margin: 1,
-        width: 208,
-        color: { dark: '#0a1020', light: '#ffffff' },
+      metrics.forEach((m, i) => {
+        const x = 96;
+        const y = 388 + i * 252;
+        roundedRect(x, y, 888, 210, 22);
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fill();
+        ctx.strokeStyle = m.color + '44';
+        ctx.lineWidth = 2;
+        roundedRect(x, y, 888, 210, 22);
+        ctx.stroke();
+
+        ctx.fillStyle = m.color;
+        ctx.font = '800 82px sans-serif';
+        ctx.fillText(m.value, x + 38, y + 126);
+        ctx.fillStyle = '#aca8bb';
+        ctx.font = '500 28px sans-serif';
+        ctx.fillText(m.label, x + 40, y + 171);
       });
-      const qrImage = await loadImage(qrDataUrl);
-      ctx.drawImage(qrImage, qrPanelX + 8, qrPanelY + 8, 208, 208);
-    } catch {
-      ctx.fillStyle = '#0a1020';
-      ctx.font = '700 22px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('QR', qrPanelX + 112, qrPanelY + 122);
+
+      roundedRect(96, 1168, 888, 188, 22);
+      ctx.fillStyle = 'rgba(255,255,255,0.055)';
+      ctx.fill();
+      ctx.fillStyle = '#f2f2f4';
+      ctx.font = '600 35px sans-serif';
+      ctx.fillText(
+        `${lang === 'en' ? 'Range' : '预测范围'}: ${result.confidenceInterval.earliest} — ${result.confidenceInterval.latest}`,
+        138,
+        1277,
+      );
+      return 1502;
+    };
+
+    const drawFooter = async (initialTop: number) => {
+      const bottomPadding = 56;
+      const minFooterHeight = 260;
+      const footerTop = Math.min(initialTop, canvas.height - bottomPadding - minFooterHeight);
+      const footerX = 48;
+      const footerY = footerTop;
+      const footerW = 984;
+      const footerH = canvas.height - bottomPadding - footerY;
+
+      roundedRect(footerX, footerY, footerW, footerH, 28);
+      const footerGrad = ctx.createLinearGradient(footerX, footerY, footerX + footerW, footerY + footerH);
+      footerGrad.addColorStop(0, 'rgba(255,255,255,0.08)');
+      footerGrad.addColorStop(1, 'rgba(255,255,255,0.03)');
+      ctx.fillStyle = footerGrad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1.5;
+      roundedRect(footerX, footerY, footerW, footerH, 28);
+      ctx.stroke();
+
+      const qrSize = Math.max(164, Math.min(220, footerH - 58));
+      const qrBoxSize = qrSize + 18;
+      const qrPanelX = footerX + footerW - qrBoxSize - 30;
+      const qrPanelY = footerY + (footerH - qrBoxSize) / 2;
+
+      roundedRect(qrPanelX, qrPanelY, qrBoxSize, qrBoxSize, 18);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+
+      try {
+        const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+          errorCorrectionLevel: 'M',
+          margin: 1,
+          width: qrSize,
+          color: { dark: '#0c1322', light: '#ffffff' },
+        });
+        const qrImage = await loadImage(qrDataUrl);
+        ctx.drawImage(qrImage, qrPanelX + 9, qrPanelY + 9, qrSize, qrSize);
+      } catch {
+        ctx.fillStyle = '#0a1020';
+        ctx.font = '700 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('QR', qrPanelX + qrBoxSize / 2, qrPanelY + qrBoxSize / 2 + 7);
+      }
+
+      const textX = footerX + 36;
+      const titleY = footerY + 84;
+      const subtitleY = titleY + 50;
+      const urlY = subtitleY + 50;
+      const watermarkY = urlY + 42;
+      const maxTextWidth = qrPanelX - textX - 24;
+      const shortUrl = shareUrl.replace(/^https?:\/\//, '');
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#eef1f6';
+      ctx.font = '700 42px sans-serif';
+      ctx.fillText(lang === 'en' ? 'Calculate your AI risk' : '测测你的 AI 替代风险', textX, titleY);
+
+      ctx.fillStyle = '#b4b9c7';
+      ctx.font = '500 27px sans-serif';
+      ctx.fillText(lang === 'en' ? 'Scan the QR code to view this page' : '扫码查看结果页并继续测试', textX, subtitleY);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.86)';
+      ctx.font = '600 24px sans-serif';
+      ctx.fillText(truncateText(shortUrl, maxTextWidth), textX, urlY);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.42)';
+      ctx.font = '500 21px sans-serif';
+      ctx.fillText('Generated by JOBLESS', textX, watermarkY);
+    };
+
+    drawBackground();
+
+    let footerTop = 1500;
+    const captureRoot = shareCaptureRef.current;
+    if (captureRoot) {
+      try {
+        const snapshot = await html2canvas(captureRoot, {
+          backgroundColor: '#0b0f16',
+          scale: Math.min(window.devicePixelRatio || 1, 2),
+          useCORS: true,
+          logging: false,
+        });
+
+        const drawY = 56;
+        const maxWidth = 988;
+        const maxHeight = 1498;
+        const scale = Math.min(maxWidth / snapshot.width, maxHeight / snapshot.height);
+        if (!Number.isFinite(scale) || scale <= 0) throw new Error('invalid snapshot scale');
+
+        const drawWidth = snapshot.width * scale;
+        const drawHeight = snapshot.height * scale;
+        const drawX = (canvas.width - drawWidth) / 2;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.38)';
+        ctx.shadowBlur = 36;
+        ctx.shadowOffsetY = 18;
+        ctx.fillStyle = 'rgba(9,11,16,0.84)';
+        roundedRect(drawX - 16, drawY - 16, drawWidth + 32, drawHeight + 32, 30);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        roundedRect(drawX, drawY, drawWidth, drawHeight, 24);
+        ctx.clip();
+        ctx.drawImage(snapshot, drawX, drawY, drawWidth, drawHeight);
+        ctx.restore();
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+        ctx.lineWidth = 2;
+        roundedRect(drawX, drawY, drawWidth, drawHeight, 24);
+        ctx.stroke();
+
+        footerTop = drawY + drawHeight + 34;
+      } catch {
+        footerTop = drawFallbackResult();
+      }
+    } else {
+      footerTop = drawFallbackResult();
     }
 
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#e6e2f0';
-    ctx.font = '700 38px sans-serif';
-    ctx.fillText(lang === 'en' ? 'Scan to view full result' : '扫码查看完整结果', 112, 1518);
-    ctx.fillStyle = '#a8a3b6';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(lang === 'en' ? 'Share this poster with friends' : '把这张海报分享给朋友', 112, 1562);
-
-    // Short domain text
-    const shortUrl = shareUrl.replace(/^https?:\/\//, '');
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
-    ctx.font = '600 23px sans-serif';
-    ctx.fillText(shortUrl.length > 48 ? `${shortUrl.slice(0, 45)}...` : shortUrl, 112, 1660);
-
-    // Decorative top bar
-    const barGrad = ctx.createLinearGradient(0, 0, 1080, 0);
-    barGrad.addColorStop(0, '#00e5ff');
-    barGrad.addColorStop(0.55, riskColor);
-    barGrad.addColorStop(1, '#ff4081');
-    ctx.fillStyle = barGrad;
-    ctx.fillRect(0, 0, 1080, 8);
-
-    // Watermark
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = '500 21px sans-serif';
-    ctx.fillText('Generated by JOBLESS', 112, 1750);
+    await drawFooter(footerTop);
 
     return new Promise((resolve) => {
       canvas.toBlob((blob) => resolve(blob), 'image/png');
@@ -1060,139 +1138,141 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              {/* Main Risk Level Display - Bold Typography */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="result-card rounded-2xl p-8 text-center relative overflow-hidden"
-              >
-                <div
-                  className="absolute top-0 left-0 right-0 h-1"
-                  style={{ background: `linear-gradient(90deg, ${RISK_LEVEL_INFO[result.riskLevel].color}, transparent)` }}
-                />
-                <div className="relative z-10">
-                  <div className="text-sm text-foreground-muted uppercase tracking-wider mb-3">{t.riskLevel}</div>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.2, type: 'spring' }}
-                    className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3"
-                    style={{ color: RISK_LEVEL_INFO[result.riskLevel].color, fontFamily: 'var(--font-display)' }}
-                  >
-                    {result.riskLevel === 'very-low' ? t.riskVeryLow :
-                     result.riskLevel === 'low' ? t.riskLow :
-                     result.riskLevel === 'medium' ? t.riskMedium :
-                     result.riskLevel === 'high' ? t.riskHigh : t.riskCritical}
-                  </motion.div>
-                  <div className="text-sm text-foreground-muted">{RISK_LEVEL_INFO[result.riskLevel].description[lang]}</div>
-                </div>
-              </motion.div>
-
-              {/* Three Metrics - Clean Number Display */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+              <div ref={shareCaptureRef} data-testid="share-result-capture" className="space-y-6">
+                {/* Main Risk Level Display - Bold Typography */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="result-card rounded-xl p-6 text-center group hover-lift"
+                  className="result-card rounded-2xl p-8 text-center relative overflow-hidden"
                 >
-                  <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-critical)' }}>
-                    <AnimatedNumber value={result.replacementProbability} suffix="%" />
-                  </div>
-                  <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric1Title}</div>
-                  <div className="text-xs text-foreground-muted/60 mt-1">{t.metric1Desc}</div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="result-card rounded-xl p-6 text-center group hover-lift"
-                >
-                  <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-high)' }}>
-                    <AnimatedNumber value={result.predictedReplacementYear} />
-                  </div>
-                  <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric2Title}</div>
-                  <div className="text-xs text-foreground-muted/60 mt-1">{lang === 'en' ? 'Projected' : '预计年份'}</div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="result-card rounded-xl p-6 text-center group hover-lift"
-                >
-                  <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--brand-primary)' }}>
-                    <AnimatedNumber value={result.currentReplacementDegree} suffix="%" />
-                  </div>
-                  <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric3Title}</div>
-                  <div className="text-xs text-foreground-muted/60 mt-1">{t.metric3Desc}</div>
-                </motion.div>
-              </div>
-
-              {/* Confidence Interval - Sleek Bar */}
-              <div className="result-card rounded-xl p-4 flex items-center justify-between">
-                <span className="text-sm text-foreground-muted">{t.yearRange}</span>
-                <span className="font-mono font-bold text-lg">
-                  {result.confidenceInterval.earliest} — {result.confidenceInterval.latest}
-                </span>
-              </div>
-
-              {/* Insights - Modern Tags */}
-              <div className="result-card rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-violet-500 flex items-center justify-center">
-                    <Eye className="w-4 h-4 text-white" />
-                  </div>
-                  <h5 className="font-semibold">{t.insights}</h5>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="text-foreground-muted">{t.primaryDriver}:</span>
-                    <span className="insight-tag px-3 py-1 rounded-full font-medium">{result.insights.primaryDriver}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {result.insights.secondaryFactors.map((factor, i) => (
-                      <span key={i} className="insight-tag px-3 py-1 rounded-full text-xs font-medium">{factor}</span>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {result.insights.protectionFactors.map((factor, i) => (
-                      <span key={i} className="px-3 py-1 bg-risk-low/20 text-risk-low rounded-full text-xs font-medium border border-risk-low/30">{factor}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Recommendations - Modern List */}
-              <div className="result-card rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-rose-500 flex items-center justify-center">
-                    <Target className="w-4 h-4 text-white" />
-                  </div>
-                  <h5 className="font-semibold">{t.recommendations}</h5>
-                </div>
-                <div className="space-y-3">
-                  {result.insights.recommendations.slice(0, 4).map((rec, i) => (
+                  <div
+                    className="absolute top-0 left-0 right-0 h-1"
+                    style={{ background: `linear-gradient(90deg, ${RISK_LEVEL_INFO[result.riskLevel].color}, transparent)` }}
+                  />
+                  <div className="relative z-10">
+                    <div className="text-sm text-foreground-muted uppercase tracking-wider mb-3">{t.riskLevel}</div>
                     <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + i * 0.1 }}
-                      className="flex items-start gap-3 text-sm p-3 rounded-lg bg-surface-card/50 border border-white/5"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2, type: 'spring' }}
+                      className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3"
+                      style={{ color: RISK_LEVEL_INFO[result.riskLevel].color, fontFamily: 'var(--font-display)' }}
                     >
-                      <CheckCircle2 className="w-5 h-5 text-risk-low flex-shrink-0 mt-0.5" />
-                      <span className="leading-relaxed">{rec}</span>
+                      {result.riskLevel === 'very-low' ? t.riskVeryLow :
+                       result.riskLevel === 'low' ? t.riskLow :
+                       result.riskLevel === 'medium' ? t.riskMedium :
+                       result.riskLevel === 'high' ? t.riskHigh : t.riskCritical}
                     </motion.div>
-                  ))}
-                </div>
-              </div>
+                    <div className="text-sm text-foreground-muted">{RISK_LEVEL_INFO[result.riskLevel].description[lang]}</div>
+                  </div>
+                </motion.div>
 
-              {/* Reality Check - Alert Style */}
-              <div className="rounded-xl p-5 bg-gradient-to-r from-risk-critical/10 to-risk-high/10 border border-risk-critical/20">
-                <p className="text-sm">
-                  <Flame className="w-5 h-5 inline text-risk-critical mr-2 align-middle" />
-                  <span className="font-semibold text-foreground">{t.realityCheck}</span>
-                </p>
-                <p className="text-sm text-foreground-muted mt-2 leading-relaxed">{t.realityCheckText}</p>
+                {/* Three Metrics - Clean Number Display */}
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="result-card rounded-xl p-6 text-center group hover-lift"
+                  >
+                    <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-critical)' }}>
+                      <AnimatedNumber value={result.replacementProbability} suffix="%" />
+                    </div>
+                    <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric1Title}</div>
+                    <div className="text-xs text-foreground-muted/60 mt-1">{t.metric1Desc}</div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="result-card rounded-xl p-6 text-center group hover-lift"
+                  >
+                    <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-high)' }}>
+                      <AnimatedNumber value={result.predictedReplacementYear} />
+                    </div>
+                    <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric2Title}</div>
+                    <div className="text-xs text-foreground-muted/60 mt-1">{lang === 'en' ? 'Projected' : '预计年份'}</div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="result-card rounded-xl p-6 text-center group hover-lift"
+                  >
+                    <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--brand-primary)' }}>
+                      <AnimatedNumber value={result.currentReplacementDegree} suffix="%" />
+                    </div>
+                    <div className="text-xs text-foreground-muted uppercase tracking-wider">{t.metric3Title}</div>
+                    <div className="text-xs text-foreground-muted/60 mt-1">{t.metric3Desc}</div>
+                  </motion.div>
+                </div>
+
+                {/* Confidence Interval - Sleek Bar */}
+                <div className="result-card rounded-xl p-4 flex items-center justify-between">
+                  <span className="text-sm text-foreground-muted">{t.yearRange}</span>
+                  <span className="font-mono font-bold text-lg">
+                    {result.confidenceInterval.earliest} — {result.confidenceInterval.latest}
+                  </span>
+                </div>
+
+                {/* Insights - Modern Tags */}
+                <div className="result-card rounded-xl p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-violet-500 flex items-center justify-center">
+                      <Eye className="w-4 h-4 text-white" />
+                    </div>
+                    <h5 className="font-semibold">{t.insights}</h5>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2 text-sm">
+                      <span className="text-foreground-muted">{t.primaryDriver}:</span>
+                      <span className="insight-tag px-3 py-1 rounded-full font-medium">{result.insights.primaryDriver}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {result.insights.secondaryFactors.map((factor, i) => (
+                        <span key={i} className="insight-tag px-3 py-1 rounded-full text-xs font-medium">{factor}</span>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {result.insights.protectionFactors.map((factor, i) => (
+                        <span key={i} className="px-3 py-1 bg-risk-low/20 text-risk-low rounded-full text-xs font-medium border border-risk-low/30">{factor}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommendations - Modern List */}
+                <div className="result-card rounded-xl p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-rose-500 flex items-center justify-center">
+                      <Target className="w-4 h-4 text-white" />
+                    </div>
+                    <h5 className="font-semibold">{t.recommendations}</h5>
+                  </div>
+                  <div className="space-y-3">
+                    {result.insights.recommendations.slice(0, 4).map((rec, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + i * 0.1 }}
+                        className="flex items-start gap-3 text-sm p-3 rounded-lg bg-surface-card/50 border border-white/5"
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-risk-low flex-shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">{rec}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reality Check - Alert Style */}
+                <div className="rounded-xl p-5 bg-gradient-to-r from-risk-critical/10 to-risk-high/10 border border-risk-critical/20">
+                  <p className="text-sm">
+                    <Flame className="w-5 h-5 inline text-risk-critical mr-2 align-middle" />
+                    <span className="font-semibold text-foreground">{t.realityCheck}</span>
+                  </p>
+                  <p className="text-sm text-foreground-muted mt-2 leading-relaxed">{t.realityCheckText}</p>
+                </div>
               </div>
 
               {/* Social Sharing */}
