@@ -12,6 +12,7 @@ import QRCode from 'qrcode';
 import { Language, translations } from '@/lib/translations';
 import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
 import { encodeSharePayload } from '@/lib/share_payload';
+import SharedResultPosterPanel from '@/components/share/SharedResultPosterPanel';
 
 function DimensionSlider({
   title,
@@ -298,6 +299,12 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       earliestYear: result.confidenceInterval.earliest,
       latestYear: result.confidenceInterval.latest,
       lang,
+      insights: {
+        primaryDriver: result.insights.primaryDriver,
+        secondaryFactors: result.insights.secondaryFactors.slice(0, 3),
+        protectionFactors: result.insights.protectionFactors.slice(0, 2),
+      },
+      recommendations: result.insights.recommendations.slice(0, 4),
     });
 
     const shareUrl = new URL(`/share/${payload}`, window.location.origin);
@@ -1138,7 +1145,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <div ref={shareCaptureRef} data-testid="share-result-capture" className="space-y-6">
+              <div data-testid="share-result-capture" className="space-y-6">
                 {/* Main Risk Level Display - Bold Typography */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -1272,6 +1279,28 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     <span className="font-semibold text-foreground">{t.realityCheck}</span>
                   </p>
                   <p className="text-sm text-foreground-muted mt-2 leading-relaxed">{t.realityCheckText}</p>
+                </div>
+              </div>
+
+              <div className="fixed -left-[12000px] top-0 w-[980px] p-6 pointer-events-none" aria-hidden="true">
+                <div ref={shareCaptureRef}>
+                  <SharedResultPosterPanel
+                    data={{
+                      lang,
+                      riskLevel: result.riskLevel,
+                      replacementProbability: result.replacementProbability,
+                      predictedReplacementYear: result.predictedReplacementYear,
+                      currentReplacementDegree: result.currentReplacementDegree,
+                      earliestYear: result.confidenceInterval.earliest,
+                      latestYear: result.confidenceInterval.latest,
+                      insights: {
+                        primaryDriver: result.insights.primaryDriver,
+                        secondaryFactors: result.insights.secondaryFactors.slice(0, 3),
+                        protectionFactors: result.insights.protectionFactors.slice(0, 2),
+                      },
+                      recommendations: result.insights.recommendations.slice(0, 4),
+                    }}
+                  />
                 </div>
               </div>
 

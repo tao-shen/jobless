@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import { decodeSharePayload, type SharePayload } from '@/lib/share_payload';
+import SharedResultPosterPanel from '@/components/share/SharedResultPosterPanel';
 
 type SharePageProps = {
   params: Promise<{ payload: string }>;
@@ -119,41 +120,32 @@ export default async function ShareResultPage({ params }: SharePageProps) {
   const isZh = result.lang === 'zh';
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 py-12">
-      <div className="max-w-2xl w-full rounded-2xl border border-surface-elevated bg-surface/70 p-8">
-        <div className="text-sm text-foreground-muted">
+    <main className="min-h-screen px-4 py-10 sm:px-6 sm:py-12">
+      <div className="max-w-5xl mx-auto">
+        <div className="mb-4 text-sm text-foreground-muted text-center">
           {isZh ? '来自 JOBLESS 的分享结果' : 'Shared from JOBLESS'}
         </div>
-        <h1 className="mt-2 text-3xl font-bold">{riskLabel(result)}</h1>
-        <p className="mt-3 text-foreground-muted">{riskDescription(result)}</p>
-
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="rounded-xl border border-surface-elevated p-4">
-            <div className="text-xs text-foreground-muted">{isZh ? '替代概率' : 'Replacement Probability'}</div>
-            <div className="mt-1 text-2xl font-bold">{result.replacementProbability}%</div>
-          </div>
-          <div className="rounded-xl border border-surface-elevated p-4">
-            <div className="text-xs text-foreground-muted">{isZh ? 'AI 斩杀线' : 'AI Kill Line'}</div>
-            <div className="mt-1 text-2xl font-bold">{result.predictedReplacementYear}</div>
-          </div>
-          <div className="rounded-xl border border-surface-elevated p-4">
-            <div className="text-xs text-foreground-muted">{isZh ? '当前程度' : 'Current Degree'}</div>
-            <div className="mt-1 text-2xl font-bold">{result.currentReplacementDegree}%</div>
-          </div>
+        <SharedResultPosterPanel
+          data={{
+            lang: result.lang,
+            riskLevel: result.riskLevel,
+            replacementProbability: result.replacementProbability,
+            predictedReplacementYear: result.predictedReplacementYear,
+            currentReplacementDegree: result.currentReplacementDegree,
+            earliestYear: result.earliestYear,
+            latestYear: result.latestYear,
+            insights: result.v === 2 ? result.insights : undefined,
+            recommendations: result.v === 2 ? result.recommendations : undefined,
+          }}
+        />
+        <div className="mt-8 flex justify-center">
+          <Link
+            href="/#risk-calculator"
+            className="inline-flex rounded-xl bg-risk-high px-6 py-3 text-white font-semibold hover:bg-risk-high/85 transition-colors"
+          >
+            {isZh ? '打开计算器' : 'Open Calculator'}
+          </Link>
         </div>
-
-        <p className="mt-5 text-sm text-foreground-muted">
-          {isZh
-            ? `预测范围：${result.earliestYear} — ${result.latestYear}`
-            : `Prediction range: ${result.earliestYear} — ${result.latestYear}`}
-        </p>
-
-        <Link
-          href="/#risk-calculator"
-          className="inline-flex mt-7 rounded-xl bg-risk-high px-5 py-2.5 text-white font-semibold hover:bg-risk-high/85 transition-colors"
-        >
-          {isZh ? '打开计算器' : 'Open Calculator'}
-        </Link>
       </div>
     </main>
   );
