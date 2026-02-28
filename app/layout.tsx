@@ -30,7 +30,7 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://jobless.wiki'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://jobless.democra.ai'),
   title: "JOBLESS - AI's Impact on Jobs: Displacement, Creation, and Your Future",
   description: "Comprehensive data-driven insights on AI's impact on employment. Calculate your AI replacement risk, view job displacement data, industry analysis, and personalized action recommendations. Data from MIT, McKinsey, WEF, PwC.",
   keywords: ["AI", "employment", "jobs", "automation", "replacement risk", "job creation", "data protection", "AI training data", "WEF", "PwC", "MIT", "McKinsey"],
@@ -40,13 +40,13 @@ export const metadata: Metadata = {
     siteName: "JOBLESS",
     type: "website",
     locale: "en_US",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "JOBLESS - AI Job Impact Platform" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "JOBLESS - AI Job Impact Platform" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "JOBLESS - How Fast Is AI Replacing Human Jobs?",
     description: "Calculate your AI replacement risk. MIT: 11.7% replaceable now. McKinsey: 57% technically possible.",
-    images: ["/og-image.png"],
+    images: ["/opengraph-image"],
   },
   robots: { index: true, follow: true },
 };

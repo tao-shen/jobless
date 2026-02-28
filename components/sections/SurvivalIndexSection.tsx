@@ -4,11 +4,12 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Target, Zap, Eye, Shield, Lock, Share2, Download, Copy, ExternalLink,
-  CheckCircle2, ChevronDown, ChevronRight, TrendingUp, AlertTriangle, Brain, Activity,
+  CheckCircle2, ChevronDown, ChevronRight, TrendingUp, AlertTriangle, Brain, Activity, Send,
   Database, FileText, Workflow, Bot, BarChart3, Flame, RefreshCw,
 } from 'lucide-react';
 import { Language, translations } from '@/lib/translations';
 import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
+import { encodeSharePayload } from '@/lib/share_payload';
 
 function DimensionSlider({
   title,
@@ -267,6 +268,8 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   const [result, setResult] = useState<RiskOutputResult | null>(null);
   const [copied, setCopied] = useState(false);
   const [wechatCopied, setWechatCopied] = useState(false);
+  const [sharePanelOpen, setSharePanelOpen] = useState(false);
+  const [telegramShareState, setTelegramShareState] = useState<'idle' | 'sending' | 'sent' | 'fallback'>('idle');
 
   // 分享功能
   const getShareText = () => {
@@ -282,31 +285,82 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       .replace('{year}', String(result.predictedReplacementYear));
   };
 
+  const getShareUrl = () => {
+    if (!result) return window.location.href;
+    const payload = encodeSharePayload({
+      riskLevel: result.riskLevel,
+      replacementProbability: result.replacementProbability,
+      predictedReplacementYear: result.predictedReplacementYear,
+      currentReplacementDegree: result.currentReplacementDegree,
+      earliestYear: result.confidenceInterval.earliest,
+      latestYear: result.confidenceInterval.latest,
+      lang,
+    });
+    return `${window.location.origin}/share/${payload}`;
+  };
+
+  const copyText = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // Fallback below for older browsers or blocked clipboard access
+      }
+    }
+
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', 'true');
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      textarea.style.top = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      const copiedByCommand = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      return copiedByCommand;
+    } catch {
+      return false;
+    }
+  };
+
   const handleCopyLink = async () => {
-    const text = getShareText() + '\n' + window.location.href;
-    await navigator.clipboard.writeText(text);
+    const text = getShareText() + '\n' + getShareUrl();
+    const didCopy = await copyText(text);
+    if (!didCopy) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyForWechat = async () => {
+    const text = getShareText() + '\n' + getShareUrl();
+    const didCopy = await copyText(text);
+    if (!didCopy) return;
+    setWechatCopied(true);
+    setTimeout(() => setWechatCopied(false), 3000);
+  };
+
   const handleShareTwitter = () => {
-    const text = encodeURIComponent(getShareText() + '\n' + window.location.href);
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+    const text = encodeURIComponent(getShareText());
+    const url = encodeURIComponent(getShareUrl());
+    window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank');
   };
 
   const handleShareWeibo = () => {
     const text = encodeURIComponent(getShareText());
-    const url = encodeURIComponent(window.location.href);
+    const url = encodeURIComponent(getShareUrl());
     window.open(`https://service.weibo.com/share/share.php?title=${text}&url=${url}`, '_blank');
   };
 
-  const handleDownloadImage = () => {
-    if (!result) return;
+  const buildShareImageBlob = async (): Promise<Blob | null> => {
+    if (!result) return null;
     const canvas = document.createElement('canvas');
     canvas.width = 1200;
     canvas.height = 630;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return null;
 
     // Background
     const grad = ctx.createLinearGradient(0, 0, 1200, 630);
@@ -392,15 +446,65 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
     ctx.fillStyle = barGrad;
     ctx.fillRect(0, 0, 1200, 4);
 
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ai-risk-result.png';
-      a.click();
-      URL.revokeObjectURL(url);
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), 'image/png');
     });
+  };
+
+  const handleShareTelegram = async () => {
+    const shareText = getShareText();
+    const shareUrl = getShareUrl();
+    const fallbackUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+
+    try {
+      setTelegramShareState('sending');
+      const imageBlob = await buildShareImageBlob();
+      if (imageBlob) {
+        const photoForm = new FormData();
+        photoForm.append('photo', imageBlob, 'ai-risk-result.png');
+        photoForm.append('caption', `${shareText}\n${shareUrl}`);
+
+        const photoResponse = await fetch('/api/share/telegram/photo', {
+          method: 'POST',
+          body: photoForm,
+        });
+
+        if (photoResponse.ok) {
+          setTelegramShareState('sent');
+          setTimeout(() => setTelegramShareState('idle'), 2600);
+          return;
+        }
+      }
+
+      const textResponse = await fetch('/api/share/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: shareText, url: shareUrl }),
+      });
+
+      if (textResponse.ok) {
+        setTelegramShareState('sent');
+        setTimeout(() => setTelegramShareState('idle'), 2600);
+        return;
+      }
+    } catch {
+      // Fallback to Telegram Web share if API call fails
+    }
+
+    window.open(fallbackUrl, '_blank');
+    setTelegramShareState('fallback');
+    setTimeout(() => setTelegramShareState('idle'), 3200);
+  };
+
+  const handleDownloadImage = async () => {
+    const blob = await buildShareImageBlob();
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ai-risk-result.png';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // 核心维度状态
@@ -567,6 +671,10 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
     };
     const assessment = calculateAIRisk(inputData, lang);
     setResult(assessment);
+    setSharePanelOpen(false);
+    setTelegramShareState('idle');
+    setCopied(false);
+    setWechatCopied(false);
     try {
       localStorage.setItem('ai-risk-last-result', JSON.stringify({
         result: assessment, dimensions, protections,
@@ -577,6 +685,10 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
 
   const resetCalculator = () => {
     setResult(null);
+    setSharePanelOpen(false);
+    setTelegramShareState('idle');
+    setCopied(false);
+    setWechatCopied(false);
     setDimensions({
       dataOpenness: 50,
       workDataDigitalization: 50,
@@ -998,7 +1110,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                 className="result-card rounded-xl p-6"
                 style={{ borderColor: RISK_LEVEL_INFO[result.riskLevel].color + '30', borderWidth: 1 }}
               >
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center justify-between gap-3 mb-4">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: RISK_LEVEL_INFO[result.riskLevel].color + '20' }}>
                     <Share2 className="w-4 h-4" style={{ color: RISK_LEVEL_INFO[result.riskLevel].color }} />
                   </div>
@@ -1006,60 +1118,98 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     <h5 className="font-semibold">{t.shareTitle}</h5>
                     <p className="text-xs text-foreground-muted">{t.shareSubtitle}</p>
                   </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
                   <motion.button
                     whileTap={{ scale: 0.95 }}
-                    onClick={handleCopyLink}
-                    className="flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] rounded-lg bg-surface-elevated hover:bg-surface-elevated/80 border border-white/10 text-sm font-medium transition-all"
+                    onClick={() => setSharePanelOpen((prev) => !prev)}
+                    data-testid="share-trigger"
+                    className="ml-auto inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-surface-elevated/70 hover:bg-surface-elevated text-sm font-medium transition-all"
                   >
-                    <Copy className="w-4 h-4" />
-                    {copied ? t.shareCopied : t.shareCopyLink}
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleShareTwitter}
-                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 border border-[#1DA1F2]/20 text-sm font-medium text-[#1DA1F2] transition-all"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    {t.shareTwitter}
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={async () => {
-                      const text = getShareText() + '\n' + window.location.href;
-                      await navigator.clipboard.writeText(text);
-                      setWechatCopied(true);
-                      setTimeout(() => setWechatCopied(false), 3000);
-                    }}
-                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#07C160]/10 hover:bg-[#07C160]/20 border border-[#07C160]/20 text-sm font-medium text-[#07C160] transition-all"
-                  >
-                    <Copy className="w-4 h-4" />
-                    {wechatCopied
-                      ? (lang === 'en' ? 'Copied! Paste in WeChat' : '已复制，去微信粘贴')
-                      : t.shareWeChat}
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleShareWeibo}
-                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#E6162D]/10 hover:bg-[#E6162D]/20 border border-[#E6162D]/20 text-sm font-medium text-[#E6162D] transition-all"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    {t.shareWeibo}
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleDownloadImage}
-                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 text-sm font-medium text-brand-primary transition-all"
-                  >
-                    <Download className="w-4 h-4" />
-                    {t.shareDownload}
+                    <Share2 className="w-4 h-4" />
+                    {sharePanelOpen ? t.shareClose : t.shareOpen}
                   </motion.button>
                 </div>
+                <AnimatePresence initial={false}>
+                  {sharePanelOpen && (
+                    <motion.div
+                      key="share-panel"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                      data-testid="share-panel"
+                      className="space-y-3"
+                    >
+                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleCopyLink}
+                          data-testid="share-copy-btn"
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 min-h-[44px] rounded-lg bg-surface-elevated hover:bg-surface-elevated/80 border border-white/10 text-sm font-medium transition-all"
+                        >
+                          <Copy className="w-4 h-4" />
+                          {copied ? t.shareCopied : t.shareCopyLink}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleShareTwitter}
+                          data-testid="share-twitter-btn"
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 border border-[#1DA1F2]/20 text-sm font-medium text-[#1DA1F2] transition-all"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {t.shareTwitter}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleCopyForWechat}
+                          data-testid="share-wechat-btn"
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#07C160]/10 hover:bg-[#07C160]/20 border border-[#07C160]/20 text-sm font-medium text-[#07C160] transition-all"
+                        >
+                          <Copy className="w-4 h-4" />
+                          {wechatCopied ? t.shareWeChatCopied : t.shareWeChat}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleShareTelegram}
+                          data-testid="share-telegram-btn"
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#229ED9]/10 hover:bg-[#229ED9]/20 border border-[#229ED9]/20 text-sm font-medium text-[#229ED9] transition-all"
+                        >
+                          <Send className="w-4 h-4" />
+                          {telegramShareState === 'sending'
+                            ? t.shareSending
+                            : telegramShareState === 'sent'
+                              ? t.shareSent
+                              : telegramShareState === 'fallback'
+                                ? t.shareTelegramFallback
+                                : t.shareTelegram}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleShareWeibo}
+                          data-testid="share-weibo-btn"
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#E6162D]/10 hover:bg-[#E6162D]/20 border border-[#E6162D]/20 text-sm font-medium text-[#E6162D] transition-all"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {t.shareWeibo}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleDownloadImage}
+                          data-testid="share-download-btn"
+                          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 text-sm font-medium text-brand-primary transition-all"
+                        >
+                          <Download className="w-4 h-4" />
+                          {t.shareDownload}
+                        </motion.button>
+                      </div>
+                      <p className="text-xs text-foreground-muted">{t.shareTelegramHint}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
 
               {/* Recalculate Button */}
