@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { CheckCircle2, Eye, Target } from 'lucide-react';
 import type { SharePayload } from '@/lib/share_payload';
 
@@ -90,6 +91,38 @@ function fallbackRecommendations(level: SharePayload['riskLevel'], isZh: boolean
   return base.slice(0, 4);
 }
 
+const panelStyle: CSSProperties = {
+  background: 'linear-gradient(130deg, rgba(7,10,22,0.86), rgba(13,18,33,0.76))',
+  border: '1px solid rgba(255,255,255,0.09)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+};
+
+function MetricCard({
+  value,
+  label,
+  desc,
+  color,
+}: {
+  value: string;
+  label: string;
+  desc: string;
+  color: string;
+}) {
+  return (
+    <div className="rounded-3xl p-6" style={{ ...panelStyle, borderColor: `${color}66` }}>
+      <div className="text-6xl font-bold mb-1" style={{ color, fontFamily: 'var(--font-display)' }}>
+        {value}
+      </div>
+      <div className="text-[15px] tracking-wide uppercase" style={{ color: 'rgba(223,227,240,0.82)' }}>
+        {label}
+      </div>
+      <div className="text-sm mt-1" style={{ color: 'rgba(186,192,208,0.7)' }}>
+        {desc}
+      </div>
+    </div>
+  );
+}
+
 export default function SharedResultPosterPanel({
   data,
   className,
@@ -104,88 +137,90 @@ export default function SharedResultPosterPanel({
       : fallbackRecommendations(data.riskLevel, isZh);
 
   return (
-    <div className={className ?? 'space-y-6'}>
-      <div className="result-card rounded-2xl p-8 text-center relative overflow-hidden">
+    <div className={className ?? 'space-y-5'}>
+      <div className="rounded-3xl p-7 text-left relative overflow-hidden" style={panelStyle}>
         <div
-          className="absolute top-0 left-0 right-0 h-1"
-          style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }}
+          className="absolute top-0 left-0 right-0 h-[4px]"
+          style={{ background: `linear-gradient(90deg, ${accent}, rgba(255,255,255,0.06))` }}
         />
         <div className="relative z-10">
-          {headingMode === 'title' ? (
-            <div className="text-sm text-foreground-muted uppercase tracking-wider mb-2">
-              {isZh ? '你的 AI 风险结果' : 'YOUR AI RISK RESULT'}
-            </div>
-          ) : (
-            <div className="text-sm text-foreground-muted uppercase tracking-wider mb-3">
-              {isZh ? '你的 AI 风险' : 'YOUR AI RISK'}
-            </div>
-          )}
-          <div
-            className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3"
-            style={{ color: accent, fontFamily: 'var(--font-display)' }}
-          >
-            {riskLabel(data.riskLevel, isZh)}
+          <div className="text-sm uppercase tracking-widest mb-3" style={{ color: 'rgba(196,201,214,0.78)' }}>
+            {headingMode === 'title'
+              ? isZh
+                ? '你的 AI 风险结果'
+                : 'YOUR AI RISK RESULT'
+              : isZh
+                ? '你的 AI 风险'
+                : 'YOUR AI RISK'}
           </div>
-          <div className="text-sm text-foreground-muted">{riskDescription(data.riskLevel, isZh)}</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <div className="result-card rounded-xl p-6 text-center">
-          <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-critical)' }}>
-            {data.replacementProbability}%
+          <div className="text-7xl font-bold leading-none mb-3" style={{ color: accent, fontFamily: 'var(--font-display)' }}>
+            {riskLabel(data.riskLevel, isZh).toUpperCase()}
           </div>
-          <div className="text-xs text-foreground-muted uppercase tracking-wider">
-            {isZh ? '替代概率' : 'REPLACEMENT PROBABILITY'}
-          </div>
-          <div className="text-xs text-foreground-muted/60 mt-1">
-            {isZh ? '你的岗位被 AI 替代可能性' : 'Likelihood AI will replace your job'}
-          </div>
-        </div>
-        <div className="result-card rounded-xl p-6 text-center">
-          <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: 'var(--risk-high)' }}>
-            {data.predictedReplacementYear}
-          </div>
-          <div className="text-xs text-foreground-muted uppercase tracking-wider">
-            {isZh ? 'AI 斩杀线（年份）' : 'AI KILL LINE (YEAR)'}
-          </div>
-          <div className="text-xs text-foreground-muted/60 mt-1">{isZh ? '预计年份' : 'Projected'}</div>
-        </div>
-        <div className="result-card rounded-xl p-6 text-center">
-          <div className="metric-value text-3xl sm:text-4xl md:text-5xl mb-2" style={{ color: '#ff6e40' }}>
-            {data.currentReplacementDegree}%
-          </div>
-          <div className="text-xs text-foreground-muted uppercase tracking-wider">
-            {isZh ? '当前程度' : 'CURRENT DEGREE'}
-          </div>
-          <div className="text-xs text-foreground-muted/60 mt-1">
-            {isZh ? 'AI 当前可完成程度' : 'How much AI can already do now'}
+          <div className="text-2xl" style={{ color: 'rgba(187,193,207,0.82)' }}>
+            {riskDescription(data.riskLevel, isZh)}
           </div>
         </div>
       </div>
 
-      <div className="result-card rounded-xl p-4 flex items-center justify-between">
-        <span className="text-sm text-foreground-muted">{isZh ? '预测范围' : 'Prediction Range'}</span>
-        <span className="font-mono font-bold text-lg">
+      <div className="grid grid-cols-1 gap-4">
+        <MetricCard
+          value={`${data.replacementProbability}%`}
+          label={isZh ? '替代概率' : 'Replacement Probability'}
+          desc={isZh ? '你的岗位被 AI 替代可能性' : 'Likelihood AI will replace your job'}
+          color="#ff2a61"
+        />
+        <MetricCard
+          value={`${data.predictedReplacementYear}`}
+          label={isZh ? 'AI 斩杀线（年份）' : 'AI Kill Line Year'}
+          desc={isZh ? '预计年份' : 'Projected'}
+          color="#ff9e1a"
+        />
+        <MetricCard
+          value={`${data.currentReplacementDegree}%`}
+          label={isZh ? '当前程度' : 'Current Degree'}
+          desc={isZh ? 'AI 当前可完成程度' : 'How much AI can already do now'}
+          color="#55d9ee"
+        />
+      </div>
+
+      <div className="rounded-3xl p-6 flex items-center justify-between" style={panelStyle}>
+        <span className="text-xl" style={{ color: 'rgba(205,211,225,0.8)' }}>
+          {isZh ? '预测范围' : 'Range'}
+        </span>
+        <span className="font-mono text-4xl font-bold" style={{ color: '#f3f5fa' }}>
           {data.earliestYear} — {data.latestYear}
         </span>
       </div>
 
-      <div className="result-card rounded-xl p-6">
+      <div className="rounded-3xl p-6" style={panelStyle}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-violet-500 flex items-center justify-center">
-            <Eye className="w-4 h-4 text-white" />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #38bdf8, #8b5cf6)' }}
+          >
+            <Eye className="w-5 h-5" style={{ color: '#fff' }} />
           </div>
-          <h5 className="font-semibold">{isZh ? '关键洞察' : 'Key Insights'}</h5>
+          <h5 className="font-semibold text-3xl" style={{ color: '#f3f5fa' }}>
+            {isZh ? 'Key Insights' : 'Key Insights'}
+          </h5>
         </div>
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="text-foreground-muted">{isZh ? '主要风险驱动：' : 'Primary Risk Driver:'}</span>
-            <span className="insight-tag px-3 py-1 rounded-full font-medium">{insights.primaryDriver}</span>
+          <div className="flex flex-wrap items-center gap-2 text-xl" style={{ color: 'rgba(203,208,222,0.85)' }}>
+            <span>{isZh ? '主要风险驱动：' : 'Primary Risk Driver:'}</span>
+            <span
+              className="px-3 py-1 rounded-full"
+              style={{ border: '1px solid rgba(122,126,255,0.55)', background: 'rgba(42,56,110,0.35)', color: '#eef1ff' }}
+            >
+              {insights.primaryDriver}
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {insights.secondaryFactors.map((factor, index) => (
-              <span key={index} className="insight-tag px-3 py-1 rounded-full text-xs font-medium">
+              <span
+                key={index}
+                className="px-3 py-1 rounded-full text-lg"
+                style={{ border: '1px solid rgba(122,126,255,0.55)', background: 'rgba(42,56,110,0.28)', color: '#eef1ff' }}
+              >
                 {factor}
               </span>
             ))}
@@ -194,7 +229,8 @@ export default function SharedResultPosterPanel({
             {insights.protectionFactors.map((factor, index) => (
               <span
                 key={index}
-                className="px-3 py-1 bg-risk-low/20 text-risk-low rounded-full text-xs font-medium border border-risk-low/30"
+                className="px-3 py-1 rounded-full text-lg"
+                style={{ border: '1px solid rgba(40,204,128,0.45)', background: 'rgba(22,100,70,0.35)', color: '#35dd8b' }}
               >
                 {factor}
               </span>
@@ -203,21 +239,27 @@ export default function SharedResultPosterPanel({
         </div>
       </div>
 
-      <div className="result-card rounded-xl p-6">
+      <div className="rounded-3xl p-6" style={panelStyle}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-rose-500 flex items-center justify-center">
-            <Target className="w-4 h-4 text-white" />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #a855f7, #fb7185)' }}
+          >
+            <Target className="w-5 h-5" style={{ color: '#fff' }} />
           </div>
-          <h5 className="font-semibold">{isZh ? '建议行动' : 'Recommendations'}</h5>
+          <h5 className="font-semibold text-3xl" style={{ color: '#f3f5fa' }}>
+            {isZh ? 'Recommendations' : 'Recommendations'}
+          </h5>
         </div>
         <div className="space-y-3">
           {recommendations.map((rec, index) => (
             <div
               key={index}
-              className="flex items-start gap-3 text-sm p-3 rounded-lg bg-surface-card/50 border border-white/5"
+              className="flex items-start gap-3 text-xl p-4 rounded-2xl"
+              style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(8,12,24,0.65)', color: '#ecf0fc' }}
             >
-              <CheckCircle2 className="w-5 h-5 text-risk-low flex-shrink-0 mt-0.5" />
-              <span className="leading-relaxed">{rec}</span>
+              <CheckCircle2 className="w-6 h-6 flex-shrink-0 mt-0.5" style={{ color: '#2ddc89' }} />
+              <span>{rec}</span>
             </div>
           ))}
         </div>
