@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { headers } from 'next/headers';
 import { decodeSharePayload, type SharePayload } from '@/lib/share_payload';
 
 type SharePageProps = {
   params: Promise<{ payload: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function riskLabel(payload: SharePayload): string {
@@ -22,20 +24,37 @@ function riskDescription(payload: SharePayload): string {
     : `My AI replacement risk is ${riskLabel(payload)} (${payload.replacementProbability}%), with an AI kill line around ${payload.predictedReplacementYear}.`;
 }
 
-function bypassSuffix(): string {
-  const secret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-  return secret ? `?x-vercel-protection-bypass=${secret}` : '';
+function pickFirst(value: string | string[] | undefined): string | null {
+  if (typeof value === 'string' && value.trim()) return value.trim();
+  if (Array.isArray(value) && value[0] && value[0].trim()) return value[0].trim();
+  return null;
 }
 
-export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
+async function requestOrigin(): Promise<string> {
+  const h = await headers();
+  const host = h.get('x-forwarded-host') ?? h.get('host');
+  if (!host) return process.env.NEXT_PUBLIC_BASE_URL || 'https://jobless.democra.ai';
+  const proto = h.get('x-forwarded-proto') ?? (host.includes('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https');
+  return `${proto}://${host}`;
+}
+
+function bypassSuffix(searchParams: Record<string, string | string[] | undefined> | undefined): string {
+  const tokenFromUrl = pickFirst(searchParams?.['x-vercel-protection-bypass']);
+  const secret = tokenFromUrl || process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  return secret ? `?x-vercel-protection-bypass=${encodeURIComponent(secret)}` : '';
+}
+
+export async function generateMetadata({ params, searchParams }: SharePageProps): Promise<Metadata> {
   const { payload } = await params;
+  const resolvedSearch = searchParams ? await searchParams : undefined;
   const decoded = decodeSharePayload(payload);
-  const bypass = bypassSuffix();
+  const bypass = bypassSuffix(resolvedSearch);
+  const origin = await requestOrigin();
 
   if (!decoded) {
     const title = 'JOBLESS - Shared AI Risk Result';
     const description = 'Open this result in JOBLESS to calculate and compare your AI replacement risk.';
-    const fallbackImage = `/opengraph-image${bypass}`;
+    const fallbackImage = `${origin}/opengraph-image${bypass}`;
     return {
       title,
       description,
@@ -55,7 +74,7 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
 
   const title = decoded.lang === 'zh' ? `AI 风险结果：${riskLabel(decoded)}` : `AI Risk Result: ${riskLabel(decoded)}`;
   const description = riskDescription(decoded);
-  const shareImageUrl = `/share/${payload}/opengraph-image${bypass}`;
+  const shareImageUrl = `${origin}/share/${payload}/opengraph-image${bypass}`;
 
   return {
     title,

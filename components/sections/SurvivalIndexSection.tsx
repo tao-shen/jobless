@@ -296,7 +296,14 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       latestYear: result.confidenceInterval.latest,
       lang,
     });
-    return `${window.location.origin}/share/${payload}`;
+
+    const shareUrl = new URL(`/share/${payload}`, window.location.origin);
+    const pageParams = new URLSearchParams(window.location.search);
+    const bypassToken = pageParams.get('x-vercel-protection-bypass');
+    if (bypassToken) {
+      shareUrl.searchParams.set('x-vercel-protection-bypass', bypassToken);
+    }
+    return shareUrl.toString();
   };
 
   const copyText = async (text: string) => {
