@@ -121,7 +121,7 @@ export default async function ShareResultPage({ params }: SharePageProps) {
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 sm:py-12">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-[860px] mx-auto">
         <div className="mb-4 text-sm text-foreground-muted text-center">
           {isZh ? '来自 JOBLESS 的分享结果' : 'Shared from JOBLESS'}
         </div>
@@ -137,6 +137,7 @@ export default async function ShareResultPage({ params }: SharePageProps) {
             insights: result.v === 2 ? result.insights : undefined,
             recommendations: result.v === 2 ? result.recommendations : undefined,
           }}
+          headingMode="title"
         />
         <div className="mt-8 flex justify-center">
           <Link

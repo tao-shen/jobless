@@ -20,6 +20,7 @@ type SharedResultPosterPanelProps = {
     recommendations?: string[];
   };
   className?: string;
+  headingMode?: 'label' | 'title';
 };
 
 function riskColor(level: SharePayload['riskLevel']): string {
@@ -89,7 +90,11 @@ function fallbackRecommendations(level: SharePayload['riskLevel'], isZh: boolean
   return base.slice(0, 4);
 }
 
-export default function SharedResultPosterPanel({ data, className }: SharedResultPosterPanelProps) {
+export default function SharedResultPosterPanel({
+  data,
+  className,
+  headingMode = 'label',
+}: SharedResultPosterPanelProps) {
   const isZh = data.lang === 'zh';
   const accent = riskColor(data.riskLevel);
   const insights = data.insights ?? fallbackInsights(data.riskLevel, isZh);
@@ -106,9 +111,15 @@ export default function SharedResultPosterPanel({ data, className }: SharedResul
           style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }}
         />
         <div className="relative z-10">
-          <div className="text-sm text-foreground-muted uppercase tracking-wider mb-3">
-            {isZh ? '风险等级' : 'RISK LEVEL'}
-          </div>
+          {headingMode === 'title' ? (
+            <div className="text-sm text-foreground-muted uppercase tracking-wider mb-2">
+              {isZh ? '你的 AI 风险结果' : 'YOUR AI RISK RESULT'}
+            </div>
+          ) : (
+            <div className="text-sm text-foreground-muted uppercase tracking-wider mb-3">
+              {isZh ? '你的 AI 风险' : 'YOUR AI RISK'}
+            </div>
+          )}
           <div
             className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3"
             style={{ color: accent, fontFamily: 'var(--font-display)' }}

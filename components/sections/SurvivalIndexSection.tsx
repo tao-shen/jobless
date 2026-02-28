@@ -614,7 +614,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
         roundedRect(drawX, drawY, drawWidth, drawHeight, 24);
         ctx.stroke();
 
-        footerTop = drawY + drawHeight + 34;
+        footerTop = drawY + drawHeight + 28;
       } catch {
         footerTop = drawFallbackResult();
       }
@@ -1282,7 +1282,10 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                 </div>
               </div>
 
-              <div className="fixed -left-[12000px] top-0 w-[980px] p-6 pointer-events-none" aria-hidden="true">
+              <div
+                className="fixed left-0 top-0 w-[820px] p-6 opacity-0 pointer-events-none"
+                aria-hidden="true"
+              >
                 <div ref={shareCaptureRef}>
                   <SharedResultPosterPanel
                     data={{
@@ -1300,6 +1303,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                       },
                       recommendations: result.insights.recommendations.slice(0, 4),
                     }}
+                    headingMode="title"
                   />
                 </div>
               </div>
