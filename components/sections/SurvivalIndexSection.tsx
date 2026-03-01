@@ -345,8 +345,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   };
 
   const handleCopyLink = async () => {
-    const text = getShareText() + '\n' + getShareUrl();
-    const didCopy = await copyText(text);
+    const didCopy = await copyText(getShareUrl());
     if (!didCopy) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -1370,6 +1369,16 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     >
                       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-6">
                         <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleDownloadImage}
+                          data-testid="share-download-btn"
+                          className="col-span-2 sm:col-span-3 md:col-span-2 flex items-center justify-center gap-2 px-3 py-3 rounded-lg bg-brand-primary/20 hover:bg-brand-primary/30 border border-brand-primary/40 text-sm font-semibold text-brand-primary transition-all"
+                        >
+                          <Download className="w-4 h-4" />
+                          {t.shareDownload}
+                        </motion.button>
+                        <motion.button
                           whileTap={{ scale: 0.95 }}
                           onClick={handleCopyLink}
                           data-testid="share-copy-btn"
@@ -1423,16 +1432,6 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                         >
                           <ExternalLink className="w-4 h-4" />
                           {t.shareWeibo}
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={handleDownloadImage}
-                          data-testid="share-download-btn"
-                          className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-brand-primary/10 hover:bg-brand-primary/20 border border-brand-primary/20 text-sm font-medium text-brand-primary transition-all"
-                        >
-                          <Download className="w-4 h-4" />
-                          {t.shareDownload}
                         </motion.button>
                       </div>
                       <p className="text-xs text-foreground-muted">{t.shareTelegramHint}</p>
