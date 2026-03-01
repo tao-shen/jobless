@@ -668,6 +668,10 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       if (button instanceof HTMLElement) minButtonWidth = Math.min(minButtonWidth, button.clientWidth);
     });
 
+    // Only allow downward transitions (regular → compact → tight) to
+    // avoid oscillation: switching density changes the displayed text
+    // (long name ↔ short name), which changes line counts, creating an
+    // infinite feedback loop that causes the UI to flash.
     setProfessionDensity((prev) => {
       if (prev === 'regular') {
         if (maxLines > 1.56 || minButtonWidth < 140) return 'compact';
@@ -675,10 +679,8 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       }
       if (prev === 'compact') {
         if (maxLines > 1.96 || minButtonWidth < 122) return 'tight';
-        if (maxLines < 1.18 && minButtonWidth > 160) return 'regular';
         return prev;
       }
-      if (maxLines < 1.62 && minButtonWidth > 132) return 'compact';
       return prev;
     });
   }, []);
