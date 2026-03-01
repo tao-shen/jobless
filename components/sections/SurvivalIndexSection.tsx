@@ -315,7 +315,9 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
     const shareUrl = new URL(`/share/${payload}`, baseOrigin);
     if (includeBypass) {
       const pageParams = new URLSearchParams(window.location.search);
-      const bypassToken = pageParams.get('x-vercel-protection-bypass');
+      const bypassTokenFromUrl = pageParams.get('x-vercel-protection-bypass');
+      const bypassTokenFromEnv = (process.env.NEXT_PUBLIC_VERCEL_AUTOMATION_BYPASS_SECRET || '').trim();
+      const bypassToken = bypassTokenFromUrl || bypassTokenFromEnv;
       if (bypassToken) {
         shareUrl.searchParams.set('x-vercel-protection-bypass', bypassToken);
         shareUrl.searchParams.set('x-vercel-set-bypass-cookie', 'true');
