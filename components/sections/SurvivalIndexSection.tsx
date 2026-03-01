@@ -318,6 +318,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       const bypassToken = pageParams.get('x-vercel-protection-bypass');
       if (bypassToken) {
         shareUrl.searchParams.set('x-vercel-protection-bypass', bypassToken);
+        shareUrl.searchParams.set('x-vercel-set-bypass-cookie', 'true');
       }
     }
     return shareUrl.toString();
@@ -380,7 +381,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   const buildShareImageBlob = async (): Promise<Blob | null> => {
     if (!result) return null;
     const shareUrl = getShareUrl();
-    const qrShareUrl = getShareUrl({ includeBypass: false, usePublicBase: true });
+    const qrShareUrl = getShareUrl({ includeBypass: true, usePublicBase: true });
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
     canvas.height = 1920;
@@ -507,7 +508,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
 
   const handleShareTelegram = async () => {
     const shareText = getShareText();
-    const shareUrl = getShareUrl({ includeBypass: false, usePublicBase: true });
+    const shareUrl = getShareUrl({ includeBypass: true, usePublicBase: true });
     const fallbackUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}`;
     const deepLinkUrl = `tg://msg_url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
 
