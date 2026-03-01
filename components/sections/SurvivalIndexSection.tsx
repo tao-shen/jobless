@@ -507,8 +507,9 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
 
   const handleShareTelegram = async () => {
     const shareText = getShareText();
-    const shareUrl = getShareUrl();
-    const fallbackUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    const shareUrl = getShareUrl({ includeBypass: false, usePublicBase: true });
+    const fallbackUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}`;
+    const deepLinkUrl = `tg://msg_url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
 
     try {
       setTelegramShareState('sending');
@@ -547,7 +548,11 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
 
     const isMobileBrowser = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (isMobileBrowser) {
-      window.location.href = fallbackUrl;
+      // Try app deep link first; if it fails, fall back to Telegram web share.
+      window.location.href = deepLinkUrl;
+      window.setTimeout(() => {
+        window.location.href = fallbackUrl;
+      }, 900);
     } else {
       window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
     }
