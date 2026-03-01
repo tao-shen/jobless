@@ -894,10 +894,9 @@ body::after {
   min-width: 0;
   line-height: 1.2;
   text-align: left;
-  text-wrap: balance;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
 

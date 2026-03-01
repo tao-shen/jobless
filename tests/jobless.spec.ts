@@ -1,4 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function openSharePanel(page: Page) {
+  const calculator = page.locator('#risk-calculator');
+  await calculator.scrollIntoViewIfNeeded();
+  const calculateBtn = calculator.getByRole('button', { name: /Calculate My Risk|计算我的风险/ });
+  await expect(calculateBtn).toBeVisible();
+  await calculateBtn.click();
+  const shareTrigger = page.getByTestId('share-trigger');
+  await expect(shareTrigger).toBeVisible();
+  await shareTrigger.click();
+  await expect(page.getByTestId('share-panel')).toBeVisible();
+}
 
 test.describe('JOBLESS Website Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -85,6 +97,101 @@ test.describe('JOBLESS Website Tests', () => {
     await page.waitForTimeout(500);
     await expect(page.getByText(/Survival Index|生存指数/)).toBeVisible();
     await expect(page.getByRole('button', { name: /Calculate|计算/ }).first()).toBeVisible();
+  });
+
+  test('Share - should open share panel after clicking share trigger', async ({ page }) => {
+    await openSharePanel(page);
+    await expect(page.getByTestId('share-copy-btn')).toBeVisible();
+    await expect(page.getByTestId('share-twitter-btn')).toBeVisible();
+    await expect(page.getByTestId('share-wechat-btn')).toBeVisible();
+    await expect(page.getByTestId('share-telegram-btn')).toBeVisible();
+  });
+
+  test('Share - should open Twitter share popup', async ({ page }) => {
+    await openSharePanel(page);
+    const [popup] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByTestId('share-twitter-btn').click(),
+    ]);
+    await popup.waitForLoadState('domcontentloaded');
+    expect(popup.url()).toMatch(/(twitter|x)\.com\/intent\/tweet/);
+    expect(popup.url()).toContain('url=');
+    expect(decodeURIComponent(popup.url())).toContain('/share/');
+  });
+
+  test('Share - should copy content for WeChat sharing', async ({ page }) => {
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText: async () => undefined },
+        configurable: true,
+      });
+    });
+    await openSharePanel(page);
+    const wechatBtn = page.getByTestId('share-wechat-btn');
+    await wechatBtn.click();
+    await expect(wechatBtn).toContainText(/Copied|已复制/);
+  });
+
+  test('Share - should call Telegram photo API and show success state', async ({ page }) => {
+    await page.route('**/api/share/telegram/photo', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, messageId: 321, fileId: 'photo-file-id' }),
+      });
+    });
+
+    await openSharePanel(page);
+    const telegramBtn = page.getByTestId('share-telegram-btn');
+    await telegramBtn.click();
+    await expect(telegramBtn).toContainText(/Sent|已发送/);
+  });
+
+  test('Share - should fallback to Telegram text API when photo API fails', async ({ page }) => {
+    await page.route('**/api/share/telegram/photo', async (route) => {
+      await route.fulfill({
+        status: 502,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, error: 'Telegram API rejected the photo' }),
+      });
+    });
+    await page.route('**/api/share/telegram', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, messageId: 321 }),
+      });
+    });
+
+    await openSharePanel(page);
+    const telegramBtn = page.getByTestId('share-telegram-btn');
+    await telegramBtn.click();
+    await expect(telegramBtn).toContainText(/Sent|已发送/);
+  });
+
+  test('Share - should fallback to Telegram web share when API is unavailable', async ({ page }) => {
+    await page.route('**/api/share/telegram/photo', async (route) => {
+      await route.fulfill({
+        status: 409,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, error: 'Telegram API is not configured' }),
+      });
+    });
+    await page.route('**/api/share/telegram', async (route) => {
+      await route.fulfill({
+        status: 409,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, error: 'Telegram API is not configured' }),
+      });
+    });
+
+    await openSharePanel(page);
+    const [popup] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByTestId('share-telegram-btn').click(),
+    ]);
+    await popup.waitForLoadState('domcontentloaded');
+    expect(popup.url()).toContain('t.me/share/url');
   });
 
   test('Footer - should display data sources', async ({ page }) => {
