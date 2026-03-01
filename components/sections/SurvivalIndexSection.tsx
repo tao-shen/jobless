@@ -288,7 +288,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       .replace('{year}', String(result.predictedReplacementYear));
   };
 
-  const getShareUrl = () => {
+  const getShareUrl = (options?: { includeBypass?: boolean; usePublicBase?: boolean }) => {
     if (!result) return window.location.href;
     const payload = encodeSharePayload({
       riskLevel: result.riskLevel,
@@ -304,15 +304,21 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
     const localhostPattern = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
     const configuredBase = (process.env.NEXT_PUBLIC_BASE_URL || '').trim().replace(/\/$/, '');
     const fallbackBase = 'https://jobless.democra.ai';
-    const baseOrigin = localhostPattern.test(runtimeOrigin)
+    const usePublicBase = options?.usePublicBase ?? false;
+    const includeBypass = options?.includeBypass ?? true;
+    const baseOrigin = usePublicBase
       ? (configuredBase || fallbackBase)
-      : runtimeOrigin;
+      : localhostPattern.test(runtimeOrigin)
+        ? (configuredBase || fallbackBase)
+        : runtimeOrigin;
 
     const shareUrl = new URL(`/share/${payload}`, baseOrigin);
-    const pageParams = new URLSearchParams(window.location.search);
-    const bypassToken = pageParams.get('x-vercel-protection-bypass');
-    if (bypassToken) {
-      shareUrl.searchParams.set('x-vercel-protection-bypass', bypassToken);
+    if (includeBypass) {
+      const pageParams = new URLSearchParams(window.location.search);
+      const bypassToken = pageParams.get('x-vercel-protection-bypass');
+      if (bypassToken) {
+        shareUrl.searchParams.set('x-vercel-protection-bypass', bypassToken);
+      }
     }
     return shareUrl.toString();
   };
@@ -374,6 +380,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   const buildShareImageBlob = async (): Promise<Blob | null> => {
     if (!result) return null;
     const shareUrl = getShareUrl();
+    const qrShareUrl = getShareUrl({ includeBypass: false, usePublicBase: true });
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
     canvas.height = 1920;
@@ -453,7 +460,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
     roundedRect(48, footerY, 984, footerH, 28);
     ctx.stroke();
 
-    const qrSize = 176;
+    const qrSize = 236;
     const qrBox = qrSize + 16;
     const qrX = 48 + 984 - qrBox - 28;
     const qrY = footerY + (footerH - qrBox) / 2;
@@ -461,8 +468,8 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
     ctx.fillStyle = '#ffffff';
     ctx.fill();
     try {
-      const qrDataUrl = await QRCode.toDataURL(shareUrl, {
-        errorCorrectionLevel: 'M',
+      const qrDataUrl = await QRCode.toDataURL(qrShareUrl, {
+        errorCorrectionLevel: 'L',
         margin: 1,
         width: qrSize,
         color: { dark: '#0c1322', light: '#ffffff' },
