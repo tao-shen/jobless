@@ -7,6 +7,7 @@ import {
   CheckCircle2, ChevronDown, ChevronRight, TrendingUp, AlertTriangle, Brain, Activity, Send,
   Database, FileText, Workflow, Bot, BarChart3, Flame, RefreshCw,
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
 import { Language, translations } from '@/lib/translations';
 import { calculateAIRisk, RISK_LEVEL_INFO, RiskInputData, RiskOutputResult } from '@/lib/ai_risk_calculator_v2';
@@ -271,6 +272,7 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
   const [wechatCopied, setWechatCopied] = useState(false);
   const [sharePanelOpen, setSharePanelOpen] = useState(false);
   const [telegramShareState, setTelegramShareState] = useState<'idle' | 'sending' | 'sent' | 'fallback'>('idle');
+  const posterCaptureRef = useRef<HTMLDivElement>(null);
 
   // 分享功能
   const getShareText = () => {
@@ -392,8 +394,6 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       ctx.roundRect(x, y, width, height, radius);
     };
 
-    const riskColor = RISK_LEVEL_INFO[result.riskLevel].color;
-
     const truncateText = (text: string, maxWidth: number) => {
       if (ctx.measureText(text).width <= maxWidth) return text;
       let trimmed = text;
@@ -402,186 +402,62 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       }
       return `${trimmed}...`;
     };
-    const drawCard = (x: number, y: number, width: number, height: number, border = 'rgba(255,255,255,0.11)') => {
-      const grad = ctx.createLinearGradient(x, y, x + width, y + height);
-      grad.addColorStop(0, 'rgba(8,12,24,0.92)');
-      grad.addColorStop(1, 'rgba(15,19,33,0.78)');
-      ctx.fillStyle = grad;
-      roundedRect(x, y, width, height, 28);
-      ctx.fill();
-      ctx.strokeStyle = border;
-      ctx.lineWidth = 1.5;
-      roundedRect(x, y, width, height, 28);
-      ctx.stroke();
-    };
-
-    const chip = (text: string, x: number, y: number, color = 'rgba(130,143,255,0.68)') => {
-      ctx.font = '600 24px sans-serif';
-      const w = Math.min(ctx.measureText(text).width + 40, 760);
-      roundedRect(x, y - 28, w, 46, 23);
-      ctx.fillStyle = 'rgba(33,42,78,0.48)';
-      ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.2;
-      roundedRect(x, y - 28, w, 46, 23);
-      ctx.stroke();
-      ctx.fillStyle = '#e9edff';
-      ctx.fillText(truncateText(text, w - 28), x + 16, y + 3);
-      return w + 12;
-    };
 
     const bg = ctx.createLinearGradient(0, 0, 1080, 1920);
-    bg.addColorStop(0, '#05080f');
-    bg.addColorStop(0.55, '#0a0f1d');
-    bg.addColorStop(1, '#17111c');
+    bg.addColorStop(0, '#060a12');
+    bg.addColorStop(0.6, '#0c1220');
+    bg.addColorStop(1, '#18121f');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, 1080, 1920);
 
-    const glow1 = ctx.createRadialGradient(120, 190, 0, 120, 190, 420);
-    glow1.addColorStop(0, 'rgba(12,219,255,0.2)');
-    glow1.addColorStop(1, 'transparent');
-    ctx.fillStyle = glow1;
-    ctx.fillRect(0, 0, 560, 560);
+    const captureNode = posterCaptureRef.current;
+    if (!captureNode) return null;
 
-    const glow2 = ctx.createRadialGradient(980, 1790, 0, 980, 1790, 520);
-    glow2.addColorStop(0, 'rgba(255,57,108,0.2)');
-    glow2.addColorStop(1, 'transparent');
-    ctx.fillStyle = glow2;
-    ctx.fillRect(480, 1300, 600, 620);
-
-    const topBar = ctx.createLinearGradient(0, 0, 1080, 0);
-    topBar.addColorStop(0, '#00dbff');
-    topBar.addColorStop(0.65, riskColor);
-    topBar.addColorStop(1, '#ff3d99');
-    ctx.fillStyle = topBar;
-    ctx.fillRect(0, 0, 1080, 9);
-
-    const left = 48;
-    const width = 984;
-    let y = 44;
-
-    drawCard(left, y, width, 236, riskColor + '66');
-    ctx.fillStyle = 'rgba(220,227,245,0.76)';
-    ctx.font = '700 18px sans-serif';
-    ctx.fillText(lang === 'en' ? 'YOUR AI RISK RESULT' : '你的 AI 风险结果', left + 36, y + 54);
-    ctx.fillStyle = riskColor;
-    ctx.font = '800 88px sans-serif';
-    const levelText = result.riskLevel === 'very-low' ? (lang === 'en' ? 'VERY LOW' : '极低风险') :
-      result.riskLevel === 'low' ? (lang === 'en' ? 'LOW RISK' : '低风险') :
-      result.riskLevel === 'medium' ? (lang === 'en' ? 'MEDIUM RISK' : '中等风险') :
-      result.riskLevel === 'high' ? (lang === 'en' ? 'HIGH RISK' : '高风险') :
-      (lang === 'en' ? 'CRITICAL RISK' : '极高风险');
-    ctx.fillText(levelText, left + 36, y + 142);
-    ctx.fillStyle = 'rgba(190,198,216,0.85)';
-    ctx.font = '500 38px sans-serif';
-    ctx.fillText(
-      truncateText(RISK_LEVEL_INFO[result.riskLevel].description[lang], width - 72),
-      left + 36,
-      y + 198,
-    );
-    y += 260;
-
-    const metrics = [
-      {
-        value: `${result.replacementProbability}%`,
-        label: lang === 'en' ? 'Replacement Probability' : '替代概率',
-        desc: lang === 'en' ? 'Likelihood AI will replace your job' : '你的岗位被 AI 替代可能性',
-        color: '#ff2f67',
-      },
-      {
-        value: `${result.predictedReplacementYear}`,
-        label: lang === 'en' ? 'AI Kill Line Year' : 'AI 斩杀线年份',
-        desc: lang === 'en' ? 'Projected' : '预计年份',
-        color: '#ff9e1f',
-      },
-      {
-        value: `${result.currentReplacementDegree}%`,
-        label: lang === 'en' ? 'Current Degree' : '当前程度',
-        desc: lang === 'en' ? 'How much AI can already do now' : 'AI 当前可完成程度',
-        color: '#57d9ef',
-      },
-    ];
-
-    metrics.forEach((m) => {
-      drawCard(left, y, width, 158, m.color + '66');
-      ctx.fillStyle = m.color;
-      ctx.font = '800 74px sans-serif';
-      ctx.fillText(m.value, left + 32, y + 94);
-      ctx.fillStyle = 'rgba(214,220,236,0.82)';
-      ctx.font = '600 34px sans-serif';
-      ctx.fillText(m.label, left + 32, y + 132);
-      ctx.fillStyle = 'rgba(171,180,201,0.72)';
-      ctx.font = '500 24px sans-serif';
-      ctx.fillText(m.desc, left + 430, y + 132);
-      y += 176;
-    });
-
-    drawCard(left, y, width, 112);
-    ctx.fillStyle = 'rgba(203,211,228,0.82)';
-    ctx.font = '500 40px sans-serif';
-    ctx.fillText(lang === 'en' ? 'Range' : '预测范围', left + 32, y + 70);
-    ctx.fillStyle = '#f4f7ff';
-    ctx.font = '700 54px monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText(`${result.confidenceInterval.earliest} — ${result.confidenceInterval.latest}`, left + width - 32, y + 72);
-    ctx.textAlign = 'left';
-    y += 130;
-
-    const insightsCardHeight = 212;
-    drawCard(left, y, width, insightsCardHeight);
-    ctx.fillStyle = '#e9eeff';
-    ctx.font = '700 46px sans-serif';
-    ctx.fillText(lang === 'en' ? 'Key Insights' : '关键洞察', left + 32, y + 62);
-    ctx.fillStyle = 'rgba(198,205,224,0.85)';
-    ctx.font = '500 28px sans-serif';
-    ctx.fillText(lang === 'en' ? 'Primary Risk Driver:' : '主要风险驱动：', left + 32, y + 110);
-    const driver = truncateText(result.insights.primaryDriver, 440);
-    chip(driver, left + 310, y + 104);
-    let chipX = left + 32;
-    const secondary = result.insights.secondaryFactors.slice(0, 2);
-    secondary.forEach((factor) => {
-      chipX += chip(factor, chipX, y + 158);
-    });
-    const protection = result.insights.protectionFactors.slice(0, 1)[0];
-    if (protection) {
-      chip(truncateText(protection, 400), left + 32, y + 206, 'rgba(44,210,137,0.72)');
-    }
-    y += insightsCardHeight + 18;
-
-    const recs = result.insights.recommendations.slice(0, 3);
-    const recCardHeight = 70 + recs.length * 62;
-    drawCard(left, y, width, recCardHeight);
-    ctx.fillStyle = '#f2f4ff';
-    ctx.font = '700 44px sans-serif';
-    ctx.fillText(lang === 'en' ? 'Recommendations' : '建议行动', left + 32, y + 60);
-    recs.forEach((rec, index) => {
-      const rowY = y + 88 + index * 62;
-      roundedRect(left + 24, rowY - 38, width - 48, 48, 18);
-      ctx.fillStyle = 'rgba(9,14,28,0.72)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 1;
-      roundedRect(left + 24, rowY - 38, width - 48, 48, 18);
+    let contentBottom = 1500;
+    try {
+      const snapshot = await html2canvas(captureNode, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+      const drawX = 48;
+      const drawY = 42;
+      const drawW = 984;
+      const drawH = Math.min(1490, (snapshot.height / snapshot.width) * drawW);
+      ctx.save();
+      roundedRect(drawX, drawY, drawW, drawH, 30);
+      ctx.clip();
+      ctx.drawImage(snapshot, drawX, drawY, drawW, drawH);
+      ctx.restore();
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 1.5;
+      roundedRect(drawX, drawY, drawW, drawH, 30);
       ctx.stroke();
-      ctx.fillStyle = '#2ee191';
-      ctx.font = '700 22px sans-serif';
-      ctx.fillText('●', left + 40, rowY - 5);
-      ctx.fillStyle = '#e9edfa';
-      ctx.font = '500 24px sans-serif';
-      ctx.fillText(truncateText(rec, width - 120), left + 72, rowY - 5);
-    });
-    y += recCardHeight + 18;
+      contentBottom = drawY + drawH + 20;
+    } catch {
+      contentBottom = 1500;
+    }
 
-    const footerY = Math.max(y, 1642);
-    const footerHeight = 230;
-    drawCard(left, footerY, width, footerHeight, 'rgba(255,255,255,0.14)');
+    const footerY = Math.max(1640, contentBottom);
+    const footerH = 230;
+    roundedRect(48, footerY, 984, footerH, 28);
+    const footerGrad = ctx.createLinearGradient(48, footerY, 1032, footerY + footerH);
+    footerGrad.addColorStop(0, 'rgba(255,255,255,0.08)');
+    footerGrad.addColorStop(1, 'rgba(255,255,255,0.03)');
+    ctx.fillStyle = footerGrad;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+    ctx.lineWidth = 1.5;
+    roundedRect(48, footerY, 984, footerH, 28);
+    ctx.stroke();
 
     const qrSize = 176;
     const qrBox = qrSize + 16;
-    const qrX = left + width - qrBox - 28;
-    const qrY = footerY + (footerHeight - qrBox) / 2;
+    const qrX = 48 + 984 - qrBox - 28;
+    const qrY = footerY + (footerH - qrBox) / 2;
     roundedRect(qrX, qrY, qrBox, qrBox, 16);
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = '#ffffff';
     ctx.fill();
     try {
       const qrDataUrl = await QRCode.toDataURL(shareUrl, {
@@ -594,23 +470,24 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
       ctx.drawImage(qrImage, qrX + 8, qrY + 8, qrSize, qrSize);
     } catch {
       ctx.fillStyle = '#0a1020';
-      ctx.font = '700 26px sans-serif';
+      ctx.font = '700 24px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('QR', qrX + qrBox / 2, qrY + qrBox / 2 + 8);
       ctx.textAlign = 'left';
     }
 
     const shortUrl = shareUrl.replace(/^https?:\/\//, '');
-    const textX = left + 28;
-    ctx.fillStyle = '#eff3ff';
+    const textX = 76;
+    const textMax = qrX - textX - 16;
+    ctx.fillStyle = '#eef2ff';
     ctx.font = '700 52px sans-serif';
     ctx.fillText(lang === 'en' ? 'Calculate your AI risk' : '测测你的 AI 风险', textX, footerY + 78);
-    ctx.fillStyle = 'rgba(186,194,213,0.88)';
+    ctx.fillStyle = 'rgba(183,191,210,0.86)';
     ctx.font = '500 33px sans-serif';
     ctx.fillText(lang === 'en' ? 'Scan the QR code to view this page' : '扫码查看结果页', textX, footerY + 124);
-    ctx.fillStyle = 'rgba(239,243,255,0.88)';
+    ctx.fillStyle = 'rgba(238,242,255,0.88)';
     ctx.font = '600 28px sans-serif';
-    ctx.fillText(truncateText(shortUrl, qrX - textX - 18), textX, footerY + 164);
+    ctx.fillText(truncateText(shortUrl, textMax), textX, footerY + 164);
     ctx.fillStyle = 'rgba(255,255,255,0.42)';
     ctx.font = '500 22px sans-serif';
     ctx.fillText('Generated by JOBLESS', textX, footerY + 200);
@@ -1270,6 +1147,165 @@ function SurvivalIndexSection({ lang, t }: { lang: Language; t: typeof translati
                     <span className="font-semibold text-foreground">{t.realityCheck}</span>
                   </p>
                   <p className="text-sm text-foreground-muted mt-2 leading-relaxed">{t.realityCheckText}</p>
+                </div>
+              </div>
+
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'fixed',
+                  left: '-99999px',
+                  top: '0',
+                  width: '880px',
+                  padding: '26px',
+                  background: 'linear-gradient(140deg, #060b13, #121427)',
+                  borderRadius: '28px',
+                  boxSizing: 'border-box',
+                  color: '#eef2ff',
+                  fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+                }}
+              >
+                <div ref={posterCaptureRef} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  <div
+                    style={{
+                      borderRadius: '24px',
+                      border: `1.5px solid ${RISK_LEVEL_INFO[result.riskLevel].color}66`,
+                      background: 'linear-gradient(140deg, rgba(8,14,31,0.9), rgba(14,20,38,0.78))',
+                      padding: '24px',
+                    }}
+                  >
+                    <div style={{ fontSize: '12px', letterSpacing: '1.5px', opacity: 0.72 }}>
+                      {lang === 'en' ? 'YOUR AI RISK RESULT' : '你的 AI 风险结果'}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: '10px',
+                        fontSize: '72px',
+                        fontWeight: 800,
+                        lineHeight: 1,
+                        color: RISK_LEVEL_INFO[result.riskLevel].color,
+                      }}
+                    >
+                      {result.riskLevel === 'very-low' ? (lang === 'en' ? 'VERY LOW' : '极低风险') :
+                       result.riskLevel === 'low' ? (lang === 'en' ? 'LOW RISK' : '低风险') :
+                       result.riskLevel === 'medium' ? (lang === 'en' ? 'MEDIUM RISK' : '中等风险') :
+                       result.riskLevel === 'high' ? (lang === 'en' ? 'HIGH RISK' : '高风险') :
+                       (lang === 'en' ? 'CRITICAL RISK' : '极高风险')}
+                    </div>
+                    <div style={{ marginTop: '10px', fontSize: '22px', opacity: 0.84 }}>
+                      {RISK_LEVEL_INFO[result.riskLevel].description[lang]}
+                    </div>
+                  </div>
+
+                  {[
+                    {
+                      value: `${result.replacementProbability}%`,
+                      label: lang === 'en' ? 'Replacement Probability' : '替代概率',
+                      desc: lang === 'en' ? 'Likelihood AI will replace your job' : '你的岗位被 AI 替代可能性',
+                      color: '#ff2f67',
+                    },
+                    {
+                      value: `${result.predictedReplacementYear}`,
+                      label: lang === 'en' ? 'AI Kill Line Year' : 'AI 斩杀线年份',
+                      desc: lang === 'en' ? 'Projected' : '预计年份',
+                      color: '#ff9e1f',
+                    },
+                    {
+                      value: `${result.currentReplacementDegree}%`,
+                      label: lang === 'en' ? 'Current Degree' : '当前程度',
+                      desc: lang === 'en' ? 'How much AI can already do now' : 'AI 当前可完成程度',
+                      color: '#57d9ef',
+                    },
+                  ].map((metric) => (
+                    <div
+                      key={metric.label}
+                      style={{
+                        borderRadius: '22px',
+                        border: `1.2px solid ${metric.color}66`,
+                        background: 'linear-gradient(140deg, rgba(8,14,31,0.9), rgba(14,20,38,0.78))',
+                        padding: '20px 24px',
+                      }}
+                    >
+                      <div style={{ fontSize: '62px', fontWeight: 800, lineHeight: 1, color: metric.color }}>{metric.value}</div>
+                      <div style={{ marginTop: '8px', fontSize: '38px', fontWeight: 700, lineHeight: 1.1 }}>{metric.label}</div>
+                      <div style={{ marginTop: '6px', fontSize: '24px', opacity: 0.72 }}>{metric.desc}</div>
+                    </div>
+                  ))}
+
+                  <div
+                    style={{
+                      borderRadius: '22px',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: 'linear-gradient(140deg, rgba(8,14,31,0.9), rgba(14,20,38,0.78))',
+                      padding: '20px 24px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span style={{ fontSize: '40px', opacity: 0.82 }}>{lang === 'en' ? 'Range' : '预测范围'}</span>
+                    <span style={{ fontSize: '52px', fontWeight: 700, fontFamily: 'monospace' }}>
+                      {result.confidenceInterval.earliest} — {result.confidenceInterval.latest}
+                    </span>
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: '22px',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: 'linear-gradient(140deg, rgba(8,14,31,0.9), rgba(14,20,38,0.78))',
+                      padding: '20px 24px',
+                    }}
+                  >
+                    <div style={{ fontSize: '52px', fontWeight: 700 }}>{lang === 'en' ? 'Key Insights' : '关键洞察'}</div>
+                    <div style={{ marginTop: '10px', fontSize: '26px', opacity: 0.78 }}>
+                      {lang === 'en' ? 'Primary Risk Driver:' : '主要风险驱动：'} {result.insights.primaryDriver}
+                    </div>
+                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {result.insights.secondaryFactors.slice(0, 2).map((factor, idx) => (
+                        <span
+                          key={idx}
+                          style={{
+                            borderRadius: '999px',
+                            border: '1px solid rgba(132,145,255,0.65)',
+                            background: 'rgba(35,46,86,0.45)',
+                            padding: '6px 14px',
+                            fontSize: '24px',
+                          }}
+                        >
+                          {factor}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      borderRadius: '22px',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: 'linear-gradient(140deg, rgba(8,14,31,0.9), rgba(14,20,38,0.78))',
+                      padding: '20px 24px',
+                    }}
+                  >
+                    <div style={{ fontSize: '46px', fontWeight: 700 }}>{lang === 'en' ? 'Recommendations' : '建议行动'}</div>
+                    <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {result.insights.recommendations.slice(0, 2).map((rec, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            borderRadius: '14px',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            background: 'rgba(8,12,24,0.66)',
+                            padding: '8px 12px',
+                            fontSize: '20px',
+                            lineHeight: 1.35,
+                          }}
+                        >
+                          {rec}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
